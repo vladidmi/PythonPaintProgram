@@ -20,7 +20,9 @@ PIXEL_SIZE = WIDTH // COLS
 
 BG_COLOR = WHITE
 
-DRAW_GRID_LINES = True
+DRAW_GRID_LINES = False
+
+pixel_size_increment = 1
 
 
 def get_font(size):

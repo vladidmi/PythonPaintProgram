@@ -64,7 +64,9 @@ buttons = [
     Button(130, button_y, 50, 50, GREEN),
     Button(190, button_y, 50, 50, BLUE),
     Button(250, button_y, 50, 50, WHITE, "Erase", BLACK),
-    Button(310, button_y, 50, 50, WHITE, "Clear", BLACK)
+    Button(310, button_y, 50, 50, WHITE, "Clear", BLACK),
+    Button(370, button_y, 50, 50, WHITE, "Bigger", BLACK),
+    Button(430, button_y, 50, 50, WHITE, "Smaller", BLACK),
 ]
 
 while run:
@@ -79,16 +81,27 @@ while run:
 
             try:
                 row, col = get_row_col_from_pos(pos)
-                grid[row][col] = drawing_color
+                for pixel_width in range(pixel_size_increment):
+                    for pixel_height in range(pixel_size_increment):
+                        if 0<=pixel_width+col<ROWS and 0<=pixel_height+row<ROWS:
+                            grid[row+pixel_height][col+pixel_width] = drawing_color
             except IndexError:
                 for button in buttons:
                     if not button.clicked(pos):
                         continue
-
-                    drawing_color = button.color
+                    
                     if button.text == "Clear":
                         grid = init_grid(ROWS, COLS, BG_COLOR)
                         drawing_color = BLACK
+                    elif button.text == "Bigger":
+                        pixel_size_increment+=1
+                    elif button.text == "Smaller":
+                        pixel_size_increment=max(1,pixel_size_increment-1)
+                    else:
+                        drawing_color = button.color
+
+                    
+                    
 
     draw(WIN, grid, buttons)
 
