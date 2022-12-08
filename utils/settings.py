@@ -1,4 +1,13 @@
 import pygame
+import os
+
+cur_dir = os.getcwd()
+
+image_path = os.path.join(cur_dir,'utils','imgs','grundriss.jpg')
+img = pygame.image.load(image_path)
+#img.convert()
+img_rect = img.get_rect()
+
 pygame.init()
 pygame.font.init()
 
@@ -22,8 +31,9 @@ BG_COLOR = WHITE
 
 DRAW_GRID_LINES = False
 
-pixel_size_increment = 1
+pixel_size_increase = 5
 
+DRAWING_COLOR_ORDER = [WHITE, BLACK, RED, GREEN, BLUE, WHITE]
 
 def get_font(size):
     return pygame.font.SysFont("comicsans", size)
