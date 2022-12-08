@@ -18,8 +18,9 @@ def init_grid(rows, cols, color):
 def draw_grid(win, grid):
     for i, row in enumerate(grid):
         for j, pixel in enumerate(row):
-            pygame.draw.rect(win, pixel, (j * PIXEL_SIZE, i *
-                                          PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE))
+            if pixel!=WHITE:
+                pygame.draw.rect(win, pixel, (j * PIXEL_SIZE, i *
+                                            PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE))
 
     if DRAW_GRID_LINES:
         for i in range(ROWS + 1):
@@ -32,7 +33,6 @@ def draw_grid(win, grid):
 
 
 def draw(win, grid, buttons):
-    win.fill(BG_COLOR)
     draw_grid(win, grid)
 
     for button in buttons:
@@ -69,8 +69,14 @@ buttons = [
     Button(430, button_y, 50, 50, WHITE, "Smaller", BLACK),
 ]
 
+
 while run:
+
+    WIN.fill(BG_COLOR)
     clock.tick(FPS)
+    
+    #Background image
+    WIN.blit(img, img_rect)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -81,10 +87,17 @@ while run:
 
             try:
                 row, col = get_row_col_from_pos(pos)
-                for pixel_width in range(pixel_size_increment):
-                    for pixel_height in range(pixel_size_increment):
-                        if 0<=pixel_width+col<ROWS and 0<=pixel_height+row<ROWS:
-                            grid[row+pixel_height][col+pixel_width] = drawing_color
+                for pixel_width in range(pixel_size_increase):
+                    for pixel_height in range(pixel_size_increase):
+
+                        curren_pixel_x = pixel_width+col-pixel_size_increase//2
+                        current_pixel_y = pixel_height+row-pixel_size_increase//2
+                        
+                        if 0<=curren_pixel_x<ROWS and 0<=current_pixel_y<ROWS and \
+                            DRAWING_COLOR_ORDER[DRAWING_COLOR_ORDER.index(
+                                grid[current_pixel_y][curren_pixel_x]
+                                )+1]==drawing_color and drawing_color!=WHITE:
+                            grid[current_pixel_y][curren_pixel_x] = drawing_color
             except IndexError:
                 for button in buttons:
                     if not button.clicked(pos):
@@ -94,15 +107,13 @@ while run:
                         grid = init_grid(ROWS, COLS, BG_COLOR)
                         drawing_color = BLACK
                     elif button.text == "Bigger":
-                        pixel_size_increment+=1
+                        pixel_size_increase+=1
                     elif button.text == "Smaller":
-                        pixel_size_increment=max(1,pixel_size_increment-1)
+                        pixel_size_increase=max(1,pixel_size_increase-1)
                     else:
-                        drawing_color = button.color
-
-                    
-                    
+                        drawing_color = button.color         
 
     draw(WIN, grid, buttons)
-
+    
+    
 pygame.quit()
