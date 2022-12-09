@@ -19,8 +19,16 @@ def draw_grid(win, grid):
     for i, row in enumerate(grid):
         for j, pixel in enumerate(row):
             if pixel!=WHITE:
-                pygame.draw.rect(win, pixel, (j * PIXEL_SIZE, i *
-                                            PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE))
+                #drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
+                s = pygame.Surface((PIXEL_SIZE,PIXEL_SIZE)) # the size of your rect
+                s.set_alpha(128) # alpha level
+                s.fill(pixel) # this fills the entire surface
+                win.blit(s, (j * PIXEL_SIZE,i *
+                                            PIXEL_SIZE)) # the top-left coordinates
+                
+                #drawing without transparency
+                # pygame.draw.rect(win, pixel, (j * PIXEL_SIZE, i *
+                #                             PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE))
 
     if DRAW_GRID_LINES:
         for i in range(ROWS + 1):
