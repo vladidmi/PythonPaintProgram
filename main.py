@@ -67,8 +67,11 @@ buttons = [
     Button(310, button_y, 50, 50, WHITE, "Clear", BLACK),
     Button(370, button_y, 50, 50, WHITE, "Bigger", BLACK),
     Button(430, button_y, 50, 50, WHITE, "Smaller", BLACK),
+    Button(490, button_y, 50, 50, WHITE, "Last", BLACK),
+    Button(550, button_y, 50, 50, WHITE, "Next", BLACK),
 ]
 
+today = datetime.date.today()
 
 while run:
 
@@ -77,6 +80,10 @@ while run:
     
     #Background image
     WIN.blit(img, img_rect)
+    #Date with day name
+    today_string = today.strftime("%A-%d-%m-%Y")
+    text_surface = get_font(22).render(today_string, 1, BLACK)
+    WIN.blit(text_surface, (10,10))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -110,10 +117,13 @@ while run:
                         pixel_size_increase+=1
                     elif button.text == "Smaller":
                         pixel_size_increase=max(1,pixel_size_increase-1)
+                    elif button.text == "Next":
+                        today+=1*german_business_day
+                    elif button.text == "Last":
+                        today-=1*german_business_day    
                     else:
                         drawing_color = button.color         
 
     draw(WIN, grid, buttons)
-    
     
 pygame.quit()
