@@ -1,7 +1,7 @@
 from utils import *
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Drawing Program")
+WIN = pygame.display.set_mode((WIDTH, HEIGHT+TOOLBAR_HEIGHT))
+pygame.display.set_caption("Wochenprogramm")
 
 
 def init_grid(rows, cols, color):
@@ -20,8 +20,8 @@ def draw_grid(win, grid):
         for j, pixel in enumerate(row):
             if pixel!=WHITE:
                 #drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
-                s = pygame.Surface((PIXEL_SIZE,PIXEL_SIZE)) # the size of your rect
-                s.set_alpha(128) # alpha level
+                s = pygame.Surface((PIXEL_SIZE,PIXEL_SIZE)) # the size of the rect
+                s.set_alpha(int(TRANSPARENCY*256)) # alpha level
                 s.fill(pixel) # this fills the entire surface
                 win.blit(s, (j * PIXEL_SIZE,i *
                                             PIXEL_SIZE)) # the top-left coordinates
@@ -65,18 +65,18 @@ clock = pygame.time.Clock()
 grid = init_grid(ROWS, COLS, BG_COLOR)
 drawing_color = BLACK
 
-button_y = HEIGHT - TOOLBAR_HEIGHT/2 - 25
+button_y = HEIGHT + BOX_SIZE//2
 buttons = [
-    Button(10, button_y, 50, 50, BLACK),
-    Button(70, button_y, 50, 50, RED),
-    Button(130, button_y, 50, 50, GREEN),
-    Button(190, button_y, 50, 50, BLUE),
-    Button(250, button_y, 50, 50, WHITE, "Erase", BLACK),
-    Button(310, button_y, 50, 50, WHITE, "Clear", BLACK),
-    Button(370, button_y, 50, 50, WHITE, "Bigger", BLACK),
-    Button(430, button_y, 50, 50, WHITE, "Smaller", BLACK),
-    Button(490, button_y, 50, 50, WHITE, "Last", BLACK),
-    Button(550, button_y, 50, 50, WHITE, "Next", BLACK),
+    Button(10, button_y, BOX_SIZE, BOX_SIZE, BLACK),
+    Button(70, button_y, BOX_SIZE, BOX_SIZE, RED),
+    Button(130, button_y, BOX_SIZE, BOX_SIZE, GREEN),
+    Button(190, button_y, BOX_SIZE, BOX_SIZE, BLUE),
+    Button(250, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Erase", BLACK),
+    Button(310, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Clear", BLACK),
+    Button(370, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Bigger", BLACK),
+    Button(430, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Smaller", BLACK),
+    Button(490, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Last", BLACK),
+    Button(550, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Next", BLACK),
 ]
 
 today = datetime.date.today()
@@ -99,7 +99,6 @@ while run:
 
         if pygame.mouse.get_pressed()[0]:
             pos = pygame.mouse.get_pos()
-
             try:
                 row, col = get_row_col_from_pos(pos)
                 for pixel_width in range(pixel_size_increase):
@@ -108,7 +107,7 @@ while run:
                         curren_pixel_x = pixel_width+col-pixel_size_increase//2
                         current_pixel_y = pixel_height+row-pixel_size_increase//2
                         
-                        if 0<=curren_pixel_x<ROWS and 0<=current_pixel_y<ROWS and \
+                        if 0<=curren_pixel_x<WIDTH and 0<=current_pixel_y<ROWS and \
                             DRAWING_COLOR_ORDER[DRAWING_COLOR_ORDER.index(
                                 grid[current_pixel_y][curren_pixel_x]
                                 )+1]==drawing_color and drawing_color!=WHITE:

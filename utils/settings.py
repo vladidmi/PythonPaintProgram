@@ -3,12 +3,23 @@ import os
 import datetime
 import holidays
 from pandas.tseries.offsets import CustomBusinessDay
+from PIL import Image
 
 cur_dir = os.getcwd()
 
-image_path = os.path.join(cur_dir,'utils','imgs','grundriss.jpg')
+WIDTH, HEIGHT = 1000, 700
+
+image_path = os.path.join(cur_dir,'utils','imgs','grundriss.jpg') 
+#resizing the image to fit into rect 1000x700
+image = Image.open(image_path)
+current_image_width, current_image_height = image.size
+resize_ratio = min(WIDTH/current_image_width, HEIGHT/current_image_height)
+new_image_size = (int(current_image_width * resize_ratio), 
+                    int(current_image_height * resize_ratio))
+image_resized = image.resize(new_image_size)
+image_resized.save(image_path.replace('grundriss.jpg','grundriss_resized.jpg'))
+
 img = pygame.image.load(image_path)
-#img.convert()
 img_rect = img.get_rect()
 
 pygame.init()
@@ -34,19 +45,20 @@ GREEN = (0, 0, 255)
 
 FPS = 240
 
-WIDTH, HEIGHT = 600, 700
+PIXEL_SIZE = 3
 
-ROWS = COLS = 200
+ROWS = HEIGHT//PIXEL_SIZE
+COLS = WIDTH//PIXEL_SIZE
 
-TOOLBAR_HEIGHT = HEIGHT - WIDTH
-
-PIXEL_SIZE = WIDTH // COLS
+BOX_SIZE = 50
+TOOLBAR_HEIGHT = 2* BOX_SIZE
 
 BG_COLOR = WHITE
+TRANSPARENCY = 0.2
 
 DRAW_GRID_LINES = False
 
-pixel_size_increase = 5
+pixel_size_increase = 3
 
 DRAWING_COLOR_ORDER = [WHITE, BLACK, RED, GREEN, BLUE, WHITE]
 
