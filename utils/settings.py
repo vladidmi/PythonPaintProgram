@@ -17,9 +17,10 @@ resize_ratio = min(WIDTH/current_image_width, HEIGHT/current_image_height)
 new_image_size = (int(current_image_width * resize_ratio), 
                     int(current_image_height * resize_ratio))
 image_resized = image.resize(new_image_size)
-image_resized.save(image_path.replace('grundriss.jpg','grundriss_resized.jpg'))
+resized_image_path = image_path.replace('grundriss.jpg','grundriss_resized.jpg')
+image_resized.save(resized_image_path)
 
-img = pygame.image.load(image_path)
+img = pygame.image.load(resized_image_path)
 img_rect = img.get_rect()
 
 pygame.init()
