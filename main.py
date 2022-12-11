@@ -3,51 +3,29 @@ from utils import *
 WIN = pygame.display.set_mode((WIDTH, HEIGHT+TOOLBAR_HEIGHT))
 pygame.display.set_caption("Wochenprogramm")
 
-
 def init_grid(rows, cols, color):
-    grid = []
-
-    for i in range(rows):
-        grid.append([])
-        for _ in range(cols):
-            grid[i].append(color)
-
+    grid = [[Pixel(i,j,color) for i in range(cols)] for j in range(rows)]
     return grid
-
 
 def draw_grid(win, grid):
     for i, row in enumerate(grid):
         for j, pixel in enumerate(row):
-            if pixel!=WHITE:
+            if pixel.color!=WHITE:
                 #drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
                 s = pygame.Surface((PIXEL_SIZE,PIXEL_SIZE)) # the size of the rect
                 s.set_alpha(int(TRANSPARENCY*256)) # alpha level
-                s.fill(pixel) # this fills the entire surface
+                s.fill(pixel.color) # this fills the entire surface
                 win.blit(s, (j * PIXEL_SIZE,i *
                                             PIXEL_SIZE)) # the top-left coordinates
                 
-                #drawing without transparency
-                # pygame.draw.rect(win, pixel, (j * PIXEL_SIZE, i *
-                #                             PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE))
-
-    if DRAW_GRID_LINES:
-        for i in range(ROWS + 1):
-            pygame.draw.line(win, BLACK, (0, i * PIXEL_SIZE),
-                             (WIDTH, i * PIXEL_SIZE))
-
-        for i in range(COLS + 1):
-            pygame.draw.line(win, BLACK, (i * PIXEL_SIZE, 0),
-                             (i * PIXEL_SIZE, HEIGHT - TOOLBAR_HEIGHT))
-
-
 def draw(win, grid, buttons):
     draw_grid(win, grid)
 
-    for button in buttons:
+    for current_button in DRAWING_MODES[list(DRAWING_MODES)[drawing_mode_id]]:
+        button = buttons[current_button]
         button.draw(win)
 
     pygame.display.update()
-
 
 def get_row_col_from_pos(pos):
     x, y = pos
@@ -59,25 +37,27 @@ def get_row_col_from_pos(pos):
 
     return row, col
 
-
 run = True
 clock = pygame.time.Clock()
 grid = init_grid(ROWS, COLS, BG_COLOR)
 drawing_color = BLACK
+drawing_mode_id = 0
 
 button_y = HEIGHT + BOX_SIZE//2
-buttons = [
-    Button(10, button_y, BOX_SIZE, BOX_SIZE, BLACK),
-    Button(70, button_y, BOX_SIZE, BOX_SIZE, RED),
-    Button(130, button_y, BOX_SIZE, BOX_SIZE, GREEN),
-    Button(190, button_y, BOX_SIZE, BOX_SIZE, BLUE),
-    Button(250, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Erase", BLACK),
-    Button(310, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Clear", BLACK),
-    Button(370, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Bigger", BLACK),
-    Button(430, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Smaller", BLACK),
-    Button(490, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Last", BLACK),
-    Button(550, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Next", BLACK),
-]
+
+buttons = {
+    'Black':Button(10, button_y, BOX_SIZE, BOX_SIZE, BLACK),
+    'Red':Button(70, button_y, BOX_SIZE, BOX_SIZE, RED),
+    'Green':Button(130, button_y, BOX_SIZE, BOX_SIZE, GREEN),
+    'Blue':Button(190, button_y, BOX_SIZE, BOX_SIZE, BLUE),
+    'Erase':Button(250, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Erase", BLACK),
+    'Clear':Button(310, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Clear", BLACK),
+    'Bigger':Button(370, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Bigger", BLACK),
+    'Smaller':Button(430, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Smaller", BLACK),
+    'Last day':Button(490, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Last day", BLACK),
+    'Next day':Button(550, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Next day", BLACK),
+    'Draw mode':Button(610, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Draw mode", BLACK),
+}
 
 today = datetime.date.today()
 
@@ -107,13 +87,14 @@ while run:
                         curren_pixel_x = pixel_width+col-pixel_size_increase//2
                         current_pixel_y = pixel_height+row-pixel_size_increase//2
                         
-                        if 0<=curren_pixel_x<WIDTH and 0<=current_pixel_y<ROWS and \
+                        if 0<=curren_pixel_x<COLS and 0<=current_pixel_y<ROWS and \
                             DRAWING_COLOR_ORDER[DRAWING_COLOR_ORDER.index(
-                                grid[current_pixel_y][curren_pixel_x]
-                                )+1]==drawing_color and drawing_color!=WHITE:
-                            grid[current_pixel_y][curren_pixel_x] = drawing_color
+                                grid[current_pixel_y][curren_pixel_x].color
+                                )+1] == drawing_color and drawing_color!=WHITE:
+                            grid[current_pixel_y][curren_pixel_x].color = drawing_color
             except IndexError:
-                for button in buttons:
+                for current_button in buttons:
+                    button = buttons[current_button]
                     if not button.clicked(pos):
                         continue
                     
@@ -124,10 +105,12 @@ while run:
                         pixel_size_increase+=1
                     elif button.text == "Smaller":
                         pixel_size_increase=max(1,pixel_size_increase-1)
-                    elif button.text == "Next":
+                    elif button.text == "Next day":
                         today+=1*german_business_day
-                    elif button.text == "Last":
-                        today-=1*german_business_day    
+                    elif button.text == "Last day":
+                        today-=1*german_business_day
+                    elif button.text == "Draw mode":
+                        drawing_mode_id = (drawing_mode_id+1)%2
                     else:
                         drawing_color = button.color         
 

@@ -14,29 +14,34 @@ image_path = os.path.join(cur_dir,'utils','imgs','grundriss.jpg')
 image = Image.open(image_path)
 current_image_width, current_image_height = image.size
 resize_ratio = min(WIDTH/current_image_width, HEIGHT/current_image_height)
-new_image_size = (int(current_image_width * resize_ratio), 
-                    int(current_image_height * resize_ratio))
-image_resized = image.resize(new_image_size)
+new_image_width = int(current_image_width * resize_ratio)
+new_image_height = int(current_image_height * resize_ratio)
+image_resized = image.resize((new_image_width, new_image_height))
 resized_image_path = image_path.replace('grundriss.jpg','grundriss_resized.jpg')
 image_resized.save(resized_image_path)
 
 img = pygame.image.load(resized_image_path)
-img_rect = img.get_rect()
+img_rect = img.get_rect(topleft=(
+        (WIDTH-new_image_width)//2, 
+        (HEIGHT-new_image_height)//2)
+        )
 
 pygame.init()
 pygame.font.init()
 
-weekmask_ger = 'Mon Tue Wed Thu Fri'
-german_holidays=[date[0] for date in holidays.Germany(years=list(range(2020,2040)),prov='BW').items()]
+weekmask_germany = 'Mon Tue Wed Thu Fri'
+german_holidays=[date[0] for date in holidays.Germany(years=list(range(2020,2040)),
+                prov='BW').items()]
+
 for year in range(2020,2030):
-# adding the summer pause (CW 33,34) and the winter pause (CW52,CW1)
+# adding the winter pause (CW52,CW1)
     for week in [52,1]:
         for day in range(7):
             week1 = f"{year}-W{week}"
             day1 = datetime.datetime.strptime(week1 + '-1', "%Y-W%W-%w")+datetime.timedelta(days=day)
             german_holidays.append(day1)
 
-german_business_day = CustomBusinessDay(holidays=german_holidays, weekmask=weekmask_ger)
+german_business_day = CustomBusinessDay(holidays=german_holidays, weekmask=weekmask_germany)
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -52,16 +57,20 @@ ROWS = HEIGHT//PIXEL_SIZE
 COLS = WIDTH//PIXEL_SIZE
 
 BOX_SIZE = 50
-TOOLBAR_HEIGHT = 2* BOX_SIZE
+TOOLBAR_HEIGHT = 2 * BOX_SIZE
 
 BG_COLOR = WHITE
-TRANSPARENCY = 0.2
-
-DRAW_GRID_LINES = False
+TRANSPARENCY = 0.7
 
 pixel_size_increase = 3
 
-DRAWING_COLOR_ORDER = [WHITE, BLACK, RED, GREEN, BLUE, WHITE]
+DRAWING_COLOR_ORDER = [WHITE,  BLACK, RED, GREEN, BLUE, WHITE]
+
+DRAWING_MODES = {
+    'Draw structure':['Black','Erase','Clear','Bigger','Smaller','Draw mode'],
+    'Plan':['Red','Green','Blue','Erase','Clear','Bigger','Smaller',
+            'Last day','Next day','Draw mode'],
+    }
 
 def get_font(size):
     return pygame.font.SysFont("comicsans", size)
