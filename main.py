@@ -46,22 +46,23 @@ drawing_mode_id = 0
 button_y = HEIGHT + BOX_SIZE//2
 
 buttons = {
-    'Black':Button(10, button_y, BOX_SIZE, BOX_SIZE, BLACK),
-    'Red':Button(70, button_y, BOX_SIZE, BOX_SIZE, RED),
-    'Green':Button(130, button_y, BOX_SIZE, BOX_SIZE, GREEN),
-    'Blue':Button(190, button_y, BOX_SIZE, BOX_SIZE, BLUE),
-    'Erase':Button(250, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Erase", BLACK),
-    'Clear':Button(310, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Clear", BLACK),
-    'Bigger':Button(370, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Bigger", BLACK),
-    'Smaller':Button(430, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Smaller", BLACK),
-    'Last day':Button(490, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Last day", BLACK),
-    'Next day':Button(550, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Next day", BLACK),
-    'Draw mode':Button(610, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Draw mode", BLACK),
+    'Black':Button(10, button_y, BOX_SIZE, BOX_SIZE, BLACK, label = 'Black'),
+    'Red':Button(70, button_y, BOX_SIZE, BOX_SIZE, RED, label = 'Red'),
+    'Green':Button(130, button_y, BOX_SIZE, BOX_SIZE, GREEN, label = 'Green'),
+    'Blue':Button(190, button_y, BOX_SIZE, BOX_SIZE, BLUE, label = 'Blue'),
+    'Erase':Button(250, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Erase", BLACK, label = 'Erase'),
+    'Clear':Button(310, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Clear", BLACK, label = 'Clear'),
+    'Bigger':Button(370, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Bigger", BLACK, label = 'Bigger'),
+    'Smaller':Button(430, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Smaller", BLACK, label = 'Smaller'),
+    'Last day':Button(490, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Last day", BLACK, label = 'Last day'),
+    'Next day':Button(550, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Next day", BLACK, label = 'Next day'),
+    'Draw mode':Button(610, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Draw mode", BLACK, label = 'Draw mode'),
 }
 
 today = datetime.date.today()
 
 while run:
+    current_mode = list(DRAWING_MODES)[drawing_mode_id]
 
     WIN.fill(BG_COLOR)
     clock.tick(FPS)
@@ -92,10 +93,12 @@ while run:
                                 grid[current_pixel_y][curren_pixel_x].color
                                 )+1] == drawing_color and drawing_color!=WHITE:
                             grid[current_pixel_y][curren_pixel_x].color = drawing_color
+                            if current_mode == 'Draw structure':
+                                grid[current_pixel_y][curren_pixel_x].structure = 1
             except IndexError:
                 for current_button in buttons:
                     button = buttons[current_button]
-                    if not button.clicked(pos):
+                    if not button.clicked(pos, current_mode):
                         continue
                     
                     if button.text == "Clear":
