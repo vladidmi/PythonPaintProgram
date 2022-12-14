@@ -1,1 +1,4 @@
 pygame
+holidays
+pandas
+Pillow

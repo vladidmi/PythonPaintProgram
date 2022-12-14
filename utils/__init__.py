@@ -1,6 +1,6 @@
 from .settings import *
-from .button import Button
-from .pixel import Pixel
+from .button import *
+from .pixel import *
 import pygame
 pygame.init()
 pygame.font.init()

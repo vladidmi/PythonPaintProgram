@@ -47,7 +47,13 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 255, 0)
-GREEN = (0, 0, 255)
+GREEN = (0, 0, 255) 
+YELLOW = (255, 255, 0) #Schalen
+LIGHT_BLUE = (0, 176, 240) #Bewehren
+LIGHT_GREEN = (0, 192, 0) #Betonieren
+VIOLET = (128, 87, 255) #Fertigteil setzen
+ORANGE = (255, 192, 0) #Mauern
+DARK_RED = (192, 0 , 0) #Fertig
 
 FPS = 240
 
@@ -63,14 +69,6 @@ BG_COLOR = WHITE
 TRANSPARENCY = 0.7
 
 pixel_size_increase = 3
-
-DRAWING_COLOR_ORDER = [WHITE,  BLACK, RED, GREEN, BLUE, WHITE]
-
-DRAWING_MODES = {
-    'Draw structure':['Black','Erase','Clear','Bigger','Smaller','Draw mode'],
-    'Plan':['Red','Green','Blue','Erase','Clear','Bigger','Smaller',
-            'Last day','Next day','Draw mode'],
-    }
 
 def get_font(size):
     return pygame.font.SysFont("comicsans", size)

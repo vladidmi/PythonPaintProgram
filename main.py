@@ -21,8 +21,9 @@ def draw_grid(win, grid):
 def draw(win, grid, buttons):
     draw_grid(win, grid)
 
-    for current_button in DRAWING_MODES[list(DRAWING_MODES)[drawing_mode_id]]:
-        button = buttons[current_button]
+    for i,current_button in enumerate(DRAWING_MODES[current_mode]):
+        button = DRAWING_MODES[current_mode][current_button]
+        button.x = 10 * (1+i) + i * BOX_SIZE 
         button.draw(win)
 
     pygame.display.update()
@@ -42,22 +43,6 @@ clock = pygame.time.Clock()
 grid = init_grid(ROWS, COLS, BG_COLOR)
 drawing_color = BLACK
 drawing_mode_id = 0
-
-button_y = HEIGHT + BOX_SIZE//2
-
-buttons = {
-    'Black':Button(10, button_y, BOX_SIZE, BOX_SIZE, BLACK, label = 'Black'),
-    'Red':Button(70, button_y, BOX_SIZE, BOX_SIZE, RED, label = 'Red'),
-    'Green':Button(130, button_y, BOX_SIZE, BOX_SIZE, GREEN, label = 'Green'),
-    'Blue':Button(190, button_y, BOX_SIZE, BOX_SIZE, BLUE, label = 'Blue'),
-    'Erase':Button(250, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Erase", BLACK, label = 'Erase'),
-    'Clear':Button(310, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Clear", BLACK, label = 'Clear'),
-    'Bigger':Button(370, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Bigger", BLACK, label = 'Bigger'),
-    'Smaller':Button(430, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Smaller", BLACK, label = 'Smaller'),
-    'Last day':Button(490, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Last day", BLACK, label = 'Last day'),
-    'Next day':Button(550, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Next day", BLACK, label = 'Next day'),
-    'Draw mode':Button(610, button_y, BOX_SIZE, BOX_SIZE, WHITE, "Draw mode", BLACK, label = 'Draw mode'),
-}
 
 today = datetime.date.today()
 
@@ -96,27 +81,27 @@ while run:
                             if current_mode == 'Draw structure':
                                 grid[current_pixel_y][curren_pixel_x].structure = 1
             except IndexError:
-                for current_button in buttons:
-                    button = buttons[current_button]
+                for current_button in DRAWING_MODES[current_mode]:
+                    button = DRAWING_MODES[current_mode][current_button]
                     if not button.clicked(pos, current_mode):
                         continue
                     
-                    if button.text == "Clear":
+                    if button.text == CLEAR:
                         grid = init_grid(ROWS, COLS, BG_COLOR)
                         drawing_color = BLACK
-                    elif button.text == "Bigger":
+                    elif button.text == BIGGER:
                         pixel_size_increase+=1
-                    elif button.text == "Smaller":
+                    elif button.text == SMALLER:
                         pixel_size_increase=max(1,pixel_size_increase-1)
-                    elif button.text == "Next day":
+                    elif button.text == NEXT_DAY:
                         today+=1*german_business_day
-                    elif button.text == "Last day":
+                    elif button.text == LAST_DAY:
                         today-=1*german_business_day
-                    elif button.text == "Draw mode":
+                    elif button.text == DRAW_MODE:
                         drawing_mode_id = (drawing_mode_id+1)%2
                     else:
                         drawing_color = button.color         
 
-    draw(WIN, grid, buttons)
+    draw(WIN, grid, current_mode)
     
 pygame.quit()
