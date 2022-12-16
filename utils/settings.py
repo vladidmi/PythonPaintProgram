@@ -46,14 +46,16 @@ german_business_day = CustomBusinessDay(holidays=german_holidays, weekmask=weekm
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-BLUE = (0, 255, 0)
-GREEN = (0, 0, 255) 
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0) 
 YELLOW = (255, 255, 0) #Schalen
 LIGHT_BLUE = (0, 176, 240) #Bewehren
 LIGHT_GREEN = (0, 192, 0) #Betonieren
 VIOLET = (128, 87, 255) #Fertigteil setzen
 ORANGE = (255, 192, 0) #Mauern
 DARK_RED = (192, 0 , 0) #Fertig
+GREY = (128, 128, 128)
+BROWN = (165, 42, 42)
 
 FPS = 240
 

@@ -50,7 +50,7 @@ common_buttons = {
     DRAW_MODE:Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color= WHITE, text = DRAW_MODE,  label = DRAW_MODE),
 }
 
-#Draw structure
+#Drawing structure
 CONCRETE = 'Beton'
 PREFABRICATED_PART = 'Feftigteil'
 MASONRY = 'Mauer'
@@ -58,10 +58,10 @@ MASONRY = 'Mauer'
 draw_structure_buttons = {
     CONCRETE:Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=BLACK, text = CONCRETE, text_color= WHITE, label = CONCRETE),
     PREFABRICATED_PART:Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=RED, text = PREFABRICATED_PART, text_color= WHITE, label = PREFABRICATED_PART),
-    MASONRY:Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=GREEN, text = PREFABRICATED_PART, text_color= WHITE, label = MASONRY),
+    MASONRY:Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=GREEN, text = MASONRY, text_color= WHITE, label = MASONRY),
 }
 
-#PLAN
+#Plannuing
 FORMWORK = 'Schalen'
 REINFORCE = 'Bewehren'
 POUR_CONCRETE ='Betonieren'
@@ -82,9 +82,25 @@ plan_buttons = {
     NEXT_DAY:Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color= WHITE, text = NEXT_DAY,  label = NEXT_DAY),
 }
 
-DRAWING_COLOR_ORDER = [WHITE, BLACK, YELLOW, LIGHT_BLUE, LIGHT_GREEN, DARK_RED, WHITE]
+#Tact division
+tact_id = 3
+TACT = 'Taktber.'
+tact_add = 'Takt+'
+tact_delete = 'Takt-'
+tact_button_options = {
+    tact_add: Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=WHITE, text = tact_add, label = tact_add),
+    tact_delete: Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=WHITE, text = tact_delete, label = tact_delete),
+}
+tact_button_colors = [BLUE, ORANGE, VIOLET, GREY, YELLOW, BROWN]
+tact_buttons = {
+    f'{TACT} {i+1}': Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=tact_button_colors[i], text = f'{TACT} {i+1}', label = f'{TACT} {i+1}') 
+    for i in range(tact_id-1)
+}
+
+DRAWING_COLOR_ORDER = [WHITE, BLACK, YELLOW, LIGHT_BLUE, LIGHT_GREEN, DARK_RED, WHITE, RED, VIOLET, DARK_RED, WHITE, GREEN, ORANGE, DARK_RED, WHITE,]
 
 DRAWING_MODES = {
     'Draw structure':{**common_buttons, **draw_structure_buttons},
     'Plan':{**common_buttons, **plan_buttons},
+    'Tact':{**common_buttons, **tact_button_options, **tact_buttons},
     }

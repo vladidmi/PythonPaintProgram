@@ -18,7 +18,7 @@ def draw_grid(win, grid):
                 win.blit(s, (j * PIXEL_SIZE,i *
                                             PIXEL_SIZE)) # the top-left coordinates
                 
-def draw(win, grid, buttons):
+def draw(win, grid, current_mode):
     draw_grid(win, grid)
 
     for i,current_button in enumerate(DRAWING_MODES[current_mode]):
@@ -65,6 +65,7 @@ while run:
 
         if pygame.mouse.get_pressed()[0]:
             pos = pygame.mouse.get_pos()
+            print(current_mode)
             try:
                 row, col = get_row_col_from_pos(pos)
                 for pixel_width in range(pixel_size_increase):
@@ -73,16 +74,23 @@ while run:
                         curren_pixel_x = pixel_width+col-pixel_size_increase//2
                         current_pixel_y = pixel_height+row-pixel_size_increase//2
                         
-                        if 0<=curren_pixel_x<COLS and 0<=current_pixel_y<ROWS and \
+                        if not (0<=curren_pixel_x<COLS and 0<=current_pixel_y<ROWS):
+                            continue
+                        elif current_mode == 'Plan' and \
                             DRAWING_COLOR_ORDER[DRAWING_COLOR_ORDER.index(
                                 grid[current_pixel_y][curren_pixel_x].color
-                                )+1] == drawing_color and drawing_color!=WHITE:
+                                )+1] == drawing_color:
                             grid[current_pixel_y][curren_pixel_x].color = drawing_color
-                            if current_mode == 'Draw structure':
-                                grid[current_pixel_y][curren_pixel_x].structure = 1
+                        elif current_mode == 'Draw structure':
+                            grid[current_pixel_y][curren_pixel_x].color = drawing_color
+                        elif current_mode == 'Tact':
+                            grid[current_pixel_y][curren_pixel_x].color = drawing_color
             except IndexError:
                 for current_button in DRAWING_MODES[current_mode]:
-                    button = DRAWING_MODES[current_mode][current_button]
+                    try:
+                        button = DRAWING_MODES[current_mode][current_button]
+                    except KeyError as e:
+                        e
                     if not button.clicked(pos, current_mode):
                         continue
                     
@@ -98,7 +106,15 @@ while run:
                     elif button.text == LAST_DAY:
                         today-=1*german_business_day
                     elif button.text == DRAW_MODE:
-                        drawing_mode_id = (drawing_mode_id+1)%2
+                        drawing_mode_id = (drawing_mode_id+1)%len(DRAWING_MODES)
+                    elif button.text == tact_add:
+                        tact_buttons[f'{TACT} {tact_id}'] = Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=tact_button_colors[tact_id-1], text = f'{TACT} {tact_id}', label = f'{TACT} {tact_id}')
+                        DRAWING_MODES['Tact'] = {**common_buttons, **tact_button_options, **tact_buttons}
+                        tact_id= min(6, tact_id+1)
+                    elif button.text == tact_delete and tact_id>2:
+                        tact_id-=1
+                        del (tact_buttons[list(tact_buttons)[-1]])
+                        DRAWING_MODES['Tact'] = {**common_buttons, **tact_button_options, **tact_buttons}
                     else:
                         drawing_color = button.color         
 
