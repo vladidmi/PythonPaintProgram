@@ -7,7 +7,7 @@ from PIL import Image
 
 cur_dir = os.getcwd()
 
-WIDTH, HEIGHT = 1000, 700
+WIDTH, HEIGHT = 1200, 800
 
 image_path = os.path.join(cur_dir,'utils','imgs','grundriss.jpg') 
 #resizing the image to fit into rect 1000x700

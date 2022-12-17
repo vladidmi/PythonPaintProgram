@@ -3,14 +3,14 @@ from utils import *
 WIN = pygame.display.set_mode((WIDTH, HEIGHT+TOOLBAR_HEIGHT))
 pygame.display.set_caption("Wochenprogramm")
 
-def init_grid(rows, cols, color):
-    grid = [[Pixel(i,j,color) for i in range(cols)] for j in range(rows)]
+def init_grid(rows, cols):
+    grid = [[Pixel(i,j) for i in range(cols)] for j in range(rows)]
     return grid
 
 def draw_grid(win, grid):
     for i, row in enumerate(grid):
         for j, pixel in enumerate(row):
-            if pixel.color!=WHITE:
+            if pixel.color!=None:
                 #drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
                 s = pygame.Surface((PIXEL_SIZE,PIXEL_SIZE)) # the size of the rect
                 s.set_alpha(int(TRANSPARENCY*256)) # alpha level
@@ -38,9 +38,16 @@ def get_row_col_from_pos(pos):
 
     return row, col
 
+def tact_deleted(grid, number_of_tacts):
+    for i, row in enumerate(grid):
+        for j, pixel in enumerate(row):
+            if pixel.tact == number_of_tacts:
+                pixel.tact = None
+                pixel.color = None
+
 run = True
 clock = pygame.time.Clock()
-grid = init_grid(ROWS, COLS, BG_COLOR)
+grid = init_grid(ROWS, COLS)
 drawing_color = BLACK
 drawing_mode_id = 0
 
@@ -65,7 +72,6 @@ while run:
 
         if pygame.mouse.get_pressed()[0]:
             pos = pygame.mouse.get_pos()
-            print(current_mode)
             try:
                 row, col = get_row_col_from_pos(pos)
                 for pixel_width in range(pixel_size_increase):
@@ -85,6 +91,7 @@ while run:
                             grid[current_pixel_y][curren_pixel_x].color = drawing_color
                         elif current_mode == 'Tact':
                             grid[current_pixel_y][curren_pixel_x].color = drawing_color
+                            grid[current_pixel_y][curren_pixel_x].tact = tact_id
             except IndexError:
                 for current_button in DRAWING_MODES[current_mode]:
                     try:
@@ -95,7 +102,7 @@ while run:
                         continue
                     
                     if button.text == CLEAR:
-                        grid = init_grid(ROWS, COLS, BG_COLOR)
+                        grid = init_grid(ROWS, COLS)
                         drawing_color = BLACK
                     elif button.text == BIGGER:
                         pixel_size_increase+=1
@@ -107,14 +114,18 @@ while run:
                         today-=1*german_business_day
                     elif button.text == DRAW_MODE:
                         drawing_mode_id = (drawing_mode_id+1)%len(DRAWING_MODES)
-                    elif button.text == tact_add:
-                        tact_buttons[f'{TACT} {tact_id}'] = Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=tact_button_colors[tact_id-1], text = f'{TACT} {tact_id}', label = f'{TACT} {tact_id}')
+                    elif button.text == tact_add and number_of_tacts<6:
+                        number_of_tacts+=1
+                        tact_buttons[f'{TACT} {number_of_tacts}'] = Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=tact_button_colors[number_of_tacts-1], text = f'{TACT} {number_of_tacts}', label = f'{TACT} {number_of_tacts}')
                         DRAWING_MODES['Tact'] = {**common_buttons, **tact_button_options, **tact_buttons}
-                        tact_id= min(6, tact_id+1)
-                    elif button.text == tact_delete and tact_id>2:
-                        tact_id-=1
+                    elif button.text == tact_delete and number_of_tacts>2:
+                        tact_deleted(grid, number_of_tacts)
                         del (tact_buttons[list(tact_buttons)[-1]])
                         DRAWING_MODES['Tact'] = {**common_buttons, **tact_button_options, **tact_buttons}
+                        number_of_tacts-=1
+                    elif TACT in button.text:
+                        tact_id = int(button.text.replace(TACT,''))
+                        drawing_color = tact_button_colors[tact_id-1]
                     else:
                         drawing_color = button.color         
 

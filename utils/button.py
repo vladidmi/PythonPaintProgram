@@ -83,7 +83,8 @@ plan_buttons = {
 }
 
 #Tact division
-tact_id = 3
+number_of_tacts = 2
+tact_id = None
 TACT = 'Taktber.'
 tact_add = 'Takt+'
 tact_delete = 'Takt-'
@@ -94,10 +95,14 @@ tact_button_options = {
 tact_button_colors = [BLUE, ORANGE, VIOLET, GREY, YELLOW, BROWN]
 tact_buttons = {
     f'{TACT} {i+1}': Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=tact_button_colors[i], text = f'{TACT} {i+1}', label = f'{TACT} {i+1}') 
-    for i in range(tact_id-1)
+    for i in range(number_of_tacts)
 }
 
-DRAWING_COLOR_ORDER = [WHITE, BLACK, YELLOW, LIGHT_BLUE, LIGHT_GREEN, DARK_RED, WHITE, RED, VIOLET, DARK_RED, WHITE, GREEN, ORANGE, DARK_RED, WHITE,]
+DRAWING_COLOR_ORDER = [
+    None, BLACK, YELLOW, LIGHT_BLUE, LIGHT_GREEN, DARK_RED, 
+    None, RED, VIOLET, DARK_RED, 
+    None, GREEN, ORANGE, DARK_RED, None,
+    ]
 
 DRAWING_MODES = {
     'Draw structure':{**common_buttons, **draw_structure_buttons},
