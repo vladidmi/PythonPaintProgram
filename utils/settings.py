@@ -74,3 +74,13 @@ pixel_size_increase = 3
 
 def get_font(size):
     return pygame.font.SysFont("comicsans", size)
+
+GERMAN_WEEK_DAYS = (
+    ('Monday','Montag'),
+    ('Tuesday','Diesntag'),
+    ('Wednesday','Mittwoch'),
+    ('Thursday','Donnerstag'),
+    ('Friday','Freitag'),
+    ('Saturday','Samstag'),
+    ('Sunday','Sonntag')
+)
