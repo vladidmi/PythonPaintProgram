@@ -38,7 +38,7 @@ button_y = HEIGHT + BOX_SIZE//2
 #COMMON
 ERASE = 'Entf.'
 CLEAR = 'Alles entf.'
-BIGGER = 'Großer'
+BIGGER = 'Größer'
 SMALLER = 'Kleiner'
 DRAW_MODE = 'Modus'
 
@@ -86,12 +86,12 @@ plan_buttons = {
 }
 
 #Tact division
-TACT = 'Takt'
+TACT = 'BA'
 number_of_tacts = 2
 tact_id = None
-TACT_PART = 'Taktber.'
-tact_add = 'Takt+'
-tact_delete = 'Takt-'
+TACT_PART = 'BA.'
+tact_add = 'BA+'
+tact_delete = 'BA-'
 tact_button_options = {
     tact_add: Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=WHITE, text = tact_add, label = tact_add),
     tact_delete: Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=WHITE, text = tact_delete, label = tact_delete),
@@ -102,14 +102,21 @@ tact_buttons = {
     for i in range(number_of_tacts)
 }
 
+DRAWING_MODES = {
+    DRAW_SCTRUCTURE:{**common_buttons, **draw_structure_buttons},
+    PLAN:{**common_buttons, **plan_buttons_options, **plan_buttons},
+    TACT:{**common_buttons, **tact_button_options, **tact_buttons},
+    }
+
 DRAWING_COLOR_ORDER = [
     None, BLACK, YELLOW, LIGHT_BLUE, LIGHT_GREEN, DARK_RED, 
     None, RED, VIOLET, DARK_RED, 
     None, GREEN, ORANGE, DARK_RED, None,
     ]
 
-DRAWING_MODES = {
-    DRAW_SCTRUCTURE:{**common_buttons, **draw_structure_buttons},
-    PLAN:{**common_buttons, **plan_buttons_options, **plan_buttons},
-    TACT:{**common_buttons, **tact_button_options, **tact_buttons},
-    }
+#Working steps for structures
+working_steps = {
+    CONCRETE : [FORMWORK,REINFORCE,POUR_CONCRETE,PART_COMPLETE],
+    PREFABRICATED_PART : [PREFABRICATED_PART_ASSEMBLE, PART_COMPLETE],
+    MASONRY : [DO_MASONRY, PART_COMPLETE]
+}
