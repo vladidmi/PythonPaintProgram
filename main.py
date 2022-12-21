@@ -10,11 +10,11 @@ def init_grid(rows, cols):
 def draw_grid(win, grid, current_mode):
     for i, row in enumerate(grid): 
         for j, pixel in enumerate(row):
-            current_color = pixel.get_color(current_mode)
-            if current_color!= None:
-                pixel.draw_color(win,current_color,i,j)
+            current_color_key = pixel.get_color_key(current_mode, current_day)
+            if current_color_key:
+                pixel.draw_color(win,current_color_key,i,j)
                 
-def draw_buttons(win, grid, current_mode):
+def draw_buttons(win, current_mode):
     for i,current_button in enumerate(DRAWING_MODES[current_mode]):
         button = DRAWING_MODES[current_mode][current_button]
         button.x = 10 * (1+i) + i * BOX_SIZE 
@@ -45,8 +45,9 @@ drawing_color = BLACK
 drawing_mode_id = 0
 current_tact = None
 current_structure = None
+current_status = None
 
-today = datetime.date.today()
+current_day = datetime.date.today()
 
 while run:
     current_mode = list(DRAWING_MODES)[drawing_mode_id]
@@ -57,7 +58,7 @@ while run:
     #Background image
     WIN.blit(img, img_rect)
     #Date with day name
-    today_string = today.strftime("%A-%d-%m-%Y")
+    today_string = current_day.strftime("%A-%d-%m-%Y")
     for german_week_day in GERMAN_WEEK_DAYS:
         today_string = today_string.replace(*german_week_day)
     text_surface = get_font(22).render(today_string, 1, BLACK)
@@ -85,12 +86,15 @@ while run:
                                 curren_pixel.color
                                 )+1] == drawing_color:
                             curren_pixel.color = drawing_color
+                            curren_pixel.status[current_status].append(current_day)
+
                         elif current_mode == DRAW_SCTRUCTURE and current_structure:
                             curren_pixel.color = drawing_color
                             curren_pixel.type_structure = current_structure
 
-                            for step in working_steps[current_structure]:
-                                curren_pixel.status[step] = list()
+                            if not curren_pixel.status:
+                                for step in working_steps[current_structure]:
+                                    curren_pixel.status[step] = list()
 
                         elif current_mode == TACT:
                             curren_pixel.tact = tact_id
@@ -111,17 +115,19 @@ while run:
                     elif button.text == SMALLER:
                         pixel_size_increase=max(1,pixel_size_increase-1)
                     elif button.text == NEXT_DAY:
-                        today+=1*german_business_day
+                        current_day+=1*german_business_day
                     elif button.text == LAST_DAY:
-                        today-=1*german_business_day
+                        current_day-=1*german_business_day
                     elif button.text == DRAW_MODE:
                         drawing_mode_id = (drawing_mode_id+1)%len(DRAWING_MODES)
                         current_structure = None
                         current_tact = None
                         drawing_color = None
+                        current_status= None
                     elif button.text == tact_add and number_of_tacts<6:
                         number_of_tacts+=1
-                        tact_buttons[f'{TACT_PART} {number_of_tacts}'] = Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=tact_button_colors[number_of_tacts-1], text = f'{TACT_PART} {number_of_tacts}', label = f'{TACT_PART} {number_of_tacts}')
+                        temp_tact = f'{TACT_PART} {number_of_tacts}'
+                        tact_buttons[temp_tact] = Button(y=button_y, width=BOX_SIZE, height=BOX_SIZE, color=all_colors[temp_tact], text = temp_tact, label = temp_tact)
                         DRAWING_MODES[TACT] = {**common_buttons, **tact_button_options, **tact_buttons}
                     elif button.text == tact_delete and number_of_tacts>2:
                         tact_deleted(grid, number_of_tacts)
@@ -129,14 +135,17 @@ while run:
                         DRAWING_MODES[TACT] = {**common_buttons, **tact_button_options, **tact_buttons}
                         number_of_tacts-=1
                     elif TACT_PART in button.text:
-                        tact_id = int(button.text.replace(TACT_PART,''))
-                        drawing_color = tact_button_colors[tact_id-1]
+                        tact_id = button.text
+                        drawing_color = all_colors[button.text]
                     elif current_mode == DRAW_SCTRUCTURE and button.text in draw_structure_buttons:
                         current_structure = button.text
+                        drawing_color = button.color
+                    elif current_mode == PLAN and button.text in plan_buttons:
+                        current_status = button.text
                         drawing_color = button.color
                     else:
                         drawing_color = button.color         
     draw_grid(WIN, grid, current_mode)
-    draw_buttons(WIN, grid, current_mode)
+    draw_buttons(WIN, current_mode)
     
 pygame.quit()
