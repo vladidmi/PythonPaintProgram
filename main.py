@@ -10,9 +10,9 @@ def init_grid(rows, cols):
 def draw_grid(win, grid, current_mode):
     for i, row in enumerate(grid): 
         for j, pixel in enumerate(row):
-            current_color_key = pixel.get_color_key(current_mode, current_day)
+            current_color_key, current_transparency = pixel.get_color_key(current_mode, current_day)
             if current_color_key:
-                pixel.draw_color(win,current_color_key,i,j)
+                pixel.draw_color(win,current_color_key,current_transparency,i,j)
                 
 def draw_buttons(win, current_mode):
     for i,current_button in enumerate(DRAWING_MODES[current_mode]):
@@ -47,7 +47,7 @@ current_tact = None
 current_structure = None
 current_status = None
 
-current_day = datetime.date.today()
+current_day = pd.Timestamp(datetime.date.today())
 
 while run:
     current_mode = list(DRAWING_MODES)[drawing_mode_id]
@@ -86,15 +86,17 @@ while run:
                                 curren_pixel.color
                                 )+1] == drawing_color:
                             curren_pixel.color = drawing_color
-                            curren_pixel.status[current_status].append(current_day)
+                            try:
+                                curren_pixel.status[current_status].append(current_day)
+                            except KeyError as e:
+                                print(curren_pixel.status)
 
                         elif current_mode == DRAW_SCTRUCTURE and current_structure:
                             curren_pixel.color = drawing_color
                             curren_pixel.type_structure = current_structure
 
-                            if not curren_pixel.status:
-                                for step in working_steps[current_structure]:
-                                    curren_pixel.status[step] = list()
+                            for step in working_steps[current_structure]:
+                                curren_pixel.status[step] = list()
 
                         elif current_mode == TACT:
                             curren_pixel.tact = tact_id

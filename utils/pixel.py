@@ -16,25 +16,27 @@ class Pixel:
     def get_color_key(self, current_mode, current_day):
         if current_mode == PLAN:
             if not self.type_structure and not self.tact:
-                return None
+                return None,None
             elif not self.type_structure:
-                return self.tact
+                return self.tact, TRANSPARENT
             elif not self.status:
-                return self.type_structure
+                return self.type_structure, TRANSPARENT
             else:
                 for step in list(self.status)[::-1]:
-                    if self.status[step] and max(self.status[step]) <= current_day:
-                        return step
-                return self.type_structure
+                    if self.status[step] and max(self.status[step]) < current_day:
+                        return step, TRANSPARENT
+                    elif self.status[step] and max(self.status[step]) == current_day:
+                        return step, SEMI_TRANSPARENT
+                return self.type_structure, TRANSPARENT
         elif current_mode == DRAW_SCTRUCTURE:
-            return self.type_structure
+            return self.type_structure, SEMI_TRANSPARENT
         elif current_mode == TACT:
-            return self.tact
+            return self.tact, SEMI_TRANSPARENT
     
-    def draw_color(self, win,current_color_key,i,j):
+    def draw_color(self, win,current_color_key,transparency_level,i,j):
         #drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
         s = pygame.Surface((PIXEL_SIZE,PIXEL_SIZE)) # the size of the rect
-        s.set_alpha(int(TRANSPARENCY*256)) # alpha level
+        s.set_alpha(int(transparency_level*256)) # alpha level
         s.fill(all_colors[current_color_key]) # this fills the entire surface
         win.blit(s, (j * PIXEL_SIZE,i *
                                     PIXEL_SIZE)) # the top-left coordinates

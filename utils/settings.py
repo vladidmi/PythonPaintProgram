@@ -4,6 +4,7 @@ import datetime
 import holidays
 from pandas.tseries.offsets import CustomBusinessDay
 from PIL import Image
+import pandas as pd
 
 cur_dir = os.getcwd()
 
@@ -68,7 +69,8 @@ BOX_SIZE = 50
 TOOLBAR_HEIGHT = 2 * BOX_SIZE
 
 BG_COLOR = WHITE
-TRANSPARENCY = 0.7
+TRANSPARENT = 0.2
+SEMI_TRANSPARENT = 0.75
 
 pixel_size_increase = 3
 
