@@ -5,12 +5,15 @@ import holidays
 from pandas.tseries.offsets import CustomBusinessDay
 from PIL import Image
 import pandas as pd
+import re
+import numpy as np
 
 cur_dir = os.getcwd()
 
-WIDTH, HEIGHT = 1200, 800
+WIDTH, HEIGHT = 1200, 750
 
-image_path = os.path.join(cur_dir,'utils','imgs','grundriss.jpg') 
+image_path = os.path.join(cur_dir,'utils','imgs','grundriss.jpg')
+pixel_info_path = os.path.join(cur_dir,'utils','imgs','pixel_info.xlsx')
 #resizing the image to fit into rect 1000x700
 image = Image.open(image_path)
 current_image_width, current_image_height = image.size
@@ -60,7 +63,7 @@ BROWN = (165, 42, 42)
 
 FPS = 240
 
-PIXEL_SIZE = 3
+PIXEL_SIZE = 7
 
 ROWS = HEIGHT//PIXEL_SIZE
 COLS = WIDTH//PIXEL_SIZE
@@ -72,7 +75,7 @@ BG_COLOR = WHITE
 TRANSPARENT = 0.2
 SEMI_TRANSPARENT = 0.75
 
-pixel_size_increase = 3
+pixel_size_increase = 2
 
 def get_font(size):
     return pygame.font.SysFont("comicsans", size)

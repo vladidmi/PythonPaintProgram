@@ -3,8 +3,15 @@ from utils import *
 WIN = pygame.display.set_mode((WIDTH, HEIGHT+TOOLBAR_HEIGHT))
 pygame.display.set_caption("Wochenprogramm")
 
-def init_grid(rows, cols):
-    grid = [[Pixel(i,j) for i in range(cols)] for j in range(rows)]
+def init_grid(rows, cols,pixel_history):
+    grid = [[Pixel(i,j) if f'{i}-{j}' not in pixel_history else \
+        Pixel(
+            pixel_x = i,
+            pixel_y = j,
+            type_structure = pixel_history[f'{i}-{j}']['pixel_type_structure'],
+            tact = pixel_history[f'{i}-{j}']['pixel_BA'],
+            status = None
+        ) for i in range(cols)] for j in range(rows)]
     return grid
 
 def draw_grid(win, grid, current_mode):
@@ -44,6 +51,7 @@ def save_pixel_info(grid):
         for j, pixel in enumerate(row):
             if pixel.tact or pixel.type_structure:
                 pixel_info.append({
+                    'pixel_id':f'{pixel.pixel_x}-{pixel.pixel_y}',
                     'pixel_x':pixel.pixel_x,
                     'pixel_y':pixel.pixel_y,
                     'pixel_type_structure':pixel.type_structure,
@@ -52,11 +60,29 @@ def save_pixel_info(grid):
                 })
     df = pd.DataFrame(pixel_info)
     pixel_info_path = os.path.join(cur_dir,'utils','imgs','pixel_info.xlsx') 
-    df.to_excel(pixel_info_path)
+    df.to_excel(pixel_info_path, index=False)
+
+def load_pixel_info(pixel_info_file):
+    get_dates = lambda str_list: [pd.Timestamp(date) for date in re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}',str_list)]
+    df = pd.read_excel(pixel_info_file, index_col=0)
+    df = df.replace({np.nan: None})
+    pixel_dict = df.to_dict('index')
+    for key,pixel_id in pixel_dict.items():
+        for key1,pixel_attribute in pixel_id.items():
+            if type(pixel_attribute)==str and 'Timestamp' in pixel_attribute:
+                pixel_dict[key][key1] = get_dates(pixel_attribute)
+    return pixel_dict
 
 run = True
 clock = pygame.time.Clock()
-grid = init_grid(ROWS, COLS)
+
+try:
+    pixel_history = load_pixel_info(pixel_info_path)
+except FileNotFoundError as e:
+    pixel_history = dict()
+    print('File not found')
+grid = init_grid(ROWS, COLS, pixel_history)
+
 drawing_color = BLACK
 drawing_mode_id = 0
 current_tact = None
