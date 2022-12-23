@@ -38,6 +38,22 @@ def tact_deleted(grid, number_of_tacts):
                 pixel.tact = None
                 pixel.color = None
 
+def save_pixel_info(grid):
+    pixel_info = list()
+    for i, row in enumerate(grid):
+        for j, pixel in enumerate(row):
+            if pixel.tact or pixel.type_structure:
+                pixel_info.append({
+                    'pixel_x':pixel.pixel_x,
+                    'pixel_y':pixel.pixel_y,
+                    'pixel_type_structure':pixel.type_structure,
+                    'pixel_BA':pixel.tact,
+                    **pixel.status,
+                })
+    df = pd.DataFrame(pixel_info)
+    pixel_info_path = os.path.join(cur_dir,'utils','imgs','pixel_info.xlsx') 
+    df.to_excel(pixel_info_path)
+
 run = True
 clock = pygame.time.Clock()
 grid = init_grid(ROWS, COLS)
@@ -66,6 +82,7 @@ while run:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            save_pixel_info(grid)
             run = False
 
         if pygame.mouse.get_pressed()[0]:
