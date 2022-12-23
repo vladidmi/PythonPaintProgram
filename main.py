@@ -4,14 +4,28 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT+TOOLBAR_HEIGHT))
 pygame.display.set_caption("Wochenprogramm")
 
 def init_grid(rows, cols,pixel_history):
-    grid = [[Pixel(i,j) if f'{i}-{j}' not in pixel_history else \
-        Pixel(
-            pixel_x = i,
-            pixel_y = j,
-            type_structure = pixel_history[f'{i}-{j}']['pixel_type_structure'],
-            tact = pixel_history[f'{i}-{j}']['pixel_BA'],
-            status = None
-        ) for i in range(cols)] for j in range(rows)]
+    grid = list()
+    for j in range(rows):
+        grid.append(list())
+        for i in range(cols):
+            if f'{i}-{j}' not in pixel_history:
+                grid[j].append(Pixel(i,j))
+            else:
+                type_structure = pixel_history[f'{i}-{j}']['pixel_type_structure']
+                status = dict()
+                if type_structure:
+                    for step in working_steps[type_structure]:
+                        current_step = pixel_history[f'{i}-{j}'].get(step, None)
+                        if current_step:
+                            status[step] = current_step
+                grid[j].append(
+                    Pixel(
+                        pixel_x = i,
+                        pixel_y = j,
+                        tact = pixel_history[f'{i}-{j}']['pixel_BA'],
+                        type_structure = type_structure,
+                        status = status)
+                        )
     return grid
 
 def draw_grid(win, grid, current_mode):
