@@ -15,9 +15,8 @@ def init_grid(rows, cols,pixel_history):
                 status = dict()
                 if type_structure:
                     for step in working_steps[type_structure]:
-                        current_step = pixel_history[f'{i}-{j}'].get(step, None)
-                        if current_step:
-                            status[step] = current_step
+                        current_step = pixel_history[f'{i}-{j}'].get(step, set())
+                        status[step] = current_step
                 grid[j].append(
                     Pixel(
                         pixel_x = i,
@@ -77,7 +76,7 @@ def save_pixel_info(grid):
     df.to_excel(pixel_info_path, index=False)
 
 def load_pixel_info(pixel_info_file):
-    get_dates = lambda str_list: [pd.Timestamp(date) for date in re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}',str_list)]
+    get_dates = lambda str_list: set(pd.Timestamp(date) for date in re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}',str_list))
     df = pd.read_excel(pixel_info_file, index_col=0)
     df = df.replace({np.nan: None})
     pixel_dict = df.to_dict('index')
@@ -85,6 +84,8 @@ def load_pixel_info(pixel_info_file):
         for key1,pixel_attribute in pixel_id.items():
             if type(pixel_attribute)==str and 'Timestamp' in pixel_attribute:
                 pixel_dict[key][key1] = get_dates(pixel_attribute)
+            elif type(pixel_attribute)==str and 'set()' in pixel_attribute:
+                pixel_dict[key][key1] = set()
     return pixel_dict
 
 run = True
@@ -134,29 +135,25 @@ while run:
 
                         curren_pixel_x = pixel_width+col-pixel_size_increase//2
                         current_pixel_y = pixel_height+row-pixel_size_increase//2
-                        curren_pixel = grid[current_pixel_y][curren_pixel_x]
+                        current_pixel = grid[current_pixel_y][curren_pixel_x]
                         
                         if not (0<=curren_pixel_x<COLS and 0<=current_pixel_y<ROWS):
                             continue
                         elif current_mode == PLAN and \
-                            DRAWING_COLOR_ORDER[DRAWING_COLOR_ORDER.index(
-                                curren_pixel.color
-                                )+1] == drawing_color:
-                            curren_pixel.color = drawing_color
+                            current_status in working_steps.get(current_pixel.type_structure,[]):
                             try:
-                                curren_pixel.status[current_status].append(current_day)
+                                current_pixel.status[current_status].add(current_day)
                             except KeyError as e:
-                                print(curren_pixel.status)
+                                print('Problem with status',current_pixel)
 
                         elif current_mode == DRAW_SCTRUCTURE and current_structure:
-                            curren_pixel.color = drawing_color
-                            curren_pixel.type_structure = current_structure
+                            current_pixel.type_structure = current_structure
 
                             for step in working_steps[current_structure]:
-                                curren_pixel.status[step] = list()
+                                current_pixel.status[step] = set()
 
                         elif current_mode == TACT:
-                            curren_pixel.tact = tact_id
+                            current_pixel.tact = tact_id
             except IndexError:
                 for current_button in DRAWING_MODES[current_mode]:
                     try:

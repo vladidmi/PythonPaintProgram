@@ -13,6 +13,9 @@ class Pixel:
             self.status = status
         self.tact = tact
     
+    def __str__(self):
+        return (f'{self.pixel_x}-{self.pixel_y},{self.type_structure},{self.status}')
+
     def get_color_key(self, current_mode, current_day):
         if current_mode == PLAN:
             if not self.type_structure and not self.tact:
