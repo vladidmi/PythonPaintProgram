@@ -8,26 +8,34 @@ import pandas as pd
 import re
 import numpy as np
 
+
+def resize_image(image_path):
+    # resizing the image to fit into rect 1000x700
+    image = Image.open(image_path)
+    current_image_width, current_image_height = image.size
+    resize_ratio = min(WIDTH / current_image_width, HEIGHT / current_image_height)
+    new_image_width = int(current_image_width * resize_ratio)
+    new_image_height = int(current_image_height * resize_ratio)
+    image_resized = image.resize((new_image_width, new_image_height))
+    resized_image_path = image_path.replace(".jpg", "_resized.jpg")
+    # for testing reasons not saving
+    #    image_resized.save(resized_image_path)
+    return resized_image_path, new_image_width, new_image_height
+
+
 cur_dir = os.getcwd()
 
 WIDTH, HEIGHT = 1200, 750
 
-image_path = os.path.join(cur_dir, "utils", "imgs", "grundriss.jpg")
-pixel_info_path = os.path.join(cur_dir, "utils", "imgs", "pixel_info.xlsx")
-# resizing the image to fit into rect 1000x700
-image = Image.open(image_path)
-current_image_width, current_image_height = image.size
-resize_ratio = min(WIDTH / current_image_width, HEIGHT / current_image_height)
-new_image_width = int(current_image_width * resize_ratio)
-new_image_height = int(current_image_height * resize_ratio)
-image_resized = image.resize((new_image_width, new_image_height))
-resized_image_path = image_path.replace("grundriss.jpg", "grundriss_resized.jpg")
-image_resized.save(resized_image_path)
+path_to_image_folder = os.path.join(cur_dir, "utils", "imgs")
+full_image_path = {
+    f: os.path.join(path_to_image_folder, f)
+    for f in os.listdir(path_to_image_folder)
+    if ".jpg" in f
+}
 
-img = pygame.image.load(resized_image_path)
-img_rect = img.get_rect(
-    topleft=((WIDTH - new_image_width) // 2, (HEIGHT - new_image_height) // 2)
-)
+# should be corrected in the future, as images can be of different sizes
+new_image_width, new_image_height = 1200, 724
 
 pygame.init()
 pygame.font.init()
@@ -66,7 +74,7 @@ DARK_RED = (192, 0, 0)  # Fertig
 GREY = (128, 128, 128)
 BROWN = (165, 42, 42)
 
-FPS = 240
+FPS = 100
 
 PIXEL_SIZE = 7
 

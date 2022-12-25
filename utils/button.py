@@ -56,6 +56,8 @@ CLEAR = "Alles entf."
 BIGGER = "Größer"
 SMALLER = "Kleiner"
 DRAW_MODE = "Modus"
+NEXT_FLOOR = "OG+"
+PREVIOUS_FLOOR = "OG-"
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
@@ -91,6 +93,8 @@ all_colors = {
     BIGGER: WHITE,
     SMALLER: WHITE,
     DRAW_MODE: WHITE,
+    NEXT_FLOOR: WHITE,
+    PREVIOUS_FLOOR: WHITE,
     # Drawing structure
     CONCRETE: BLACK,
     PREFABRICATED_PART: RED,
@@ -152,6 +156,22 @@ common_buttons = {
         color=WHITE,
         text=DRAW_MODE,
         label=DRAW_MODE,
+    ),
+    PREVIOUS_FLOOR: Button(
+        y=button_y,
+        width=BOX_SIZE,
+        height=BOX_SIZE,
+        color=WHITE,
+        text=PREVIOUS_FLOOR,
+        label=PREVIOUS_FLOOR,
+    ),
+    NEXT_FLOOR: Button(
+        y=button_y,
+        width=BOX_SIZE,
+        height=BOX_SIZE,
+        color=WHITE,
+        text=NEXT_FLOOR,
+        label=NEXT_FLOOR,
     ),
 }
 
