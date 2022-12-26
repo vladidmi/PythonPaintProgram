@@ -68,9 +68,9 @@ def tact_deleted(grid, number_of_tacts):
                 pixel.color = None
 
 
-def save_pixel_info(all_grid_info):
-    for current_grid in all_grid_info:
-        grid = all_grid_info[current_grid]
+def save_pixel_info(all_floor_level_info):
+    for temp_floor in all_floor_level_info:
+        grid = temp_floor.grid
         pixel_info = list()
         for i, row in enumerate(grid):
             for j, pixel in enumerate(row):
@@ -86,10 +86,7 @@ def save_pixel_info(all_grid_info):
                         }
                     )
         df = pd.DataFrame(pixel_info)
-        pixel_info_path = os.path.join(
-            cur_dir, "utils", "imgs", current_grid.replace("jpg", "xlsx")
-        )
-        df.to_excel(pixel_info_path, index=False)
+        df.to_excel(temp_floor.full_path_xlsx, index=False)
 
 
 def load_pixel_info(pixel_info_file):
@@ -114,29 +111,30 @@ def load_pixel_info(pixel_info_file):
 run = True
 clock = pygame.time.Clock()
 
-all_grid_info = dict()
+all_floor_level_info = list()
 for image_file in full_image_path:
+    new_floor_level = Floor_level_info(image_file, full_image_path[image_file])
     try:
-        pixel_history = load_pixel_info(
-            full_image_path[image_file].replace("jpg", "xlsx")
-        )
+        pixel_history = load_pixel_info(new_floor_level.full_path_xlsx)
     except FileNotFoundError as e:
         pixel_history = dict()
         print("File not found")
-    all_grid_info[image_file] = init_grid(ROWS, COLS, pixel_history)
+    new_floor_level.grid = init_grid(ROWS, COLS, pixel_history)
+    all_floor_level_info.append(new_floor_level)
 
 drawing_mode_id = 0
 current_tact = None
 current_structure = None
 current_status = None
-current_image_id = 0
+current_floor_id = 0
 
 current_day = pd.Timestamp(datetime.date.today())
 
 while run:
     current_mode = list(DRAWING_MODES)[drawing_mode_id]
-    current_image = full_image_path[list(full_image_path)[current_image_id]]
-    grid = all_grid_info[list(full_image_path)[current_image_id]]
+    current_floor = all_floor_level_info[current_floor_id]
+    current_image = current_floor.full_path_image
+    grid = current_floor.grid
 
     WIN.fill(BG_COLOR)
     clock.tick(FPS)
@@ -144,7 +142,10 @@ while run:
     # Background image
     img = pygame.image.load(current_image)
     img_rect = img.get_rect(
-        topleft=((WIDTH - new_image_width) // 2, (HEIGHT - new_image_height) // 2)
+        topleft=(
+            (WIDTH - current_floor.image_width) // 2,
+            (HEIGHT - current_floor.image_height) // 2,
+        )
     )
     WIN.blit(img, img_rect)
     # Date with day name
@@ -155,7 +156,7 @@ while run:
     WIN.blit(text_surface, (10, 10))
     # Current floor
     text_surface = get_font(22).render(
-        list(full_image_path)[current_image_id], 1, BLACK
+        list(full_image_path)[current_floor_id], 1, BLACK
     )
     WIN.blit(text_surface, (900, 10))
 
@@ -165,7 +166,7 @@ while run:
             or event.type == pygame.KEYDOWN
             and event.key == pygame.K_ESCAPE
         ):
-            save_pixel_info(all_grid_info)
+            save_pixel_info(all_floor_level_info)
             run = False
 
         if pygame.mouse.get_pressed()[0]:
@@ -214,25 +215,30 @@ while run:
                         # should be implemented
                         pass
                     elif button.text == NEXT_FLOOR:
-                        current_image_id = (current_image_id + 1) % len(full_image_path)
+                        current_floor_id = (current_floor_id + 1) % len(full_image_path)
+                        button_sleep()
                     elif button.text == PREVIOUS_FLOOR:
-                        current_image_id = (
-                            current_image_id - 1 + len(full_image_path)
+                        current_floor_id = (
+                            current_floor_id - 1 + len(full_image_path)
                         ) % len(full_image_path)
+                        button_sleep()
                     elif button.text == BIGGER:
                         pixel_size_increase += 1
                     elif button.text == SMALLER:
                         pixel_size_increase = max(1, pixel_size_increase - 1)
                     elif button.text == NEXT_DAY:
                         current_day += 1 * german_business_day
+                        button_sleep()
                     elif button.text == LAST_DAY:
                         current_day -= 1 * german_business_day
+                        button_sleep()
                     elif button.text == DRAW_MODE:
                         drawing_mode_id = (drawing_mode_id + 1) % len(DRAWING_MODES)
                         current_structure = None
                         current_tact = None
                         drawing_color = None
                         current_status = None
+                        button_sleep()
                     elif button.text == tact_add and number_of_tacts < 6:
                         number_of_tacts += 1
                         temp_tact = f"{TACT_PART} {number_of_tacts}"
@@ -249,6 +255,7 @@ while run:
                             **tact_button_options,
                             **tact_buttons,
                         }
+                        button_sleep()
                     elif button.text == tact_delete and number_of_tacts > 2:
                         tact_deleted(grid, number_of_tacts)
                         del tact_buttons[list(tact_buttons)[-1]]
@@ -258,20 +265,17 @@ while run:
                             **tact_buttons,
                         }
                         number_of_tacts -= 1
+                        button_sleep()
                     elif TACT_PART in button.text:
                         tact_id = button.text
-                        drawing_color = all_colors[button.text]
                     elif (
                         current_mode == DRAW_SCTRUCTURE
                         and button.text in draw_structure_buttons
                     ):
                         current_structure = button.text
-                        drawing_color = button.color
                     elif current_mode == PLAN and button.text in plan_buttons:
                         current_status = button.text
-                        drawing_color = button.color
-                    else:
-                        drawing_color = button.color
+
     draw_grid(WIN, grid, current_mode)
     draw_buttons(WIN, current_mode)
     clock.tick()

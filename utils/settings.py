@@ -7,6 +7,11 @@ from PIL import Image
 import pandas as pd
 import re
 import numpy as np
+import time
+
+
+def button_sleep(seconds_to_sleep=0.1):
+    time.sleep(seconds_to_sleep)
 
 
 def resize_image(image_path):
@@ -18,9 +23,23 @@ def resize_image(image_path):
     new_image_height = int(current_image_height * resize_ratio)
     image_resized = image.resize((new_image_width, new_image_height))
     resized_image_path = image_path.replace(".jpg", "_resized.jpg")
-    # for testing reasons not saving
-    #    image_resized.save(resized_image_path)
+    image_resized.save(resized_image_path)
     return resized_image_path, new_image_width, new_image_height
+
+
+class Floor_level_info:
+    def __init__(self, image_name, full_image_name):
+        self.image_name = image_name
+        self.full_path_image = full_image_name
+        self.full_path_xlsx = full_image_name.replace("jpg", "xlsx")
+        self.pixel_history = dict()
+        self.floor_name = image_name.replace(".jpg", "")
+
+        try:
+            self.image = Image.open(self.full_path_image)
+            self.image_width, self.image_height = self.image.size
+        except FileNotFoundError:
+            self.image_width, self.image_height = WIDTH, HEIGHT
 
 
 cur_dir = os.getcwd()
@@ -29,9 +48,9 @@ WIDTH, HEIGHT = 1200, 750
 
 path_to_image_folder = os.path.join(cur_dir, "utils", "imgs")
 full_image_path = {
-    f: os.path.join(path_to_image_folder, f)
-    for f in os.listdir(path_to_image_folder)
-    if ".jpg" in f
+    file: os.path.join(path_to_image_folder, file)
+    for file in os.listdir(path_to_image_folder)
+    if ".jpg" in file
 }
 
 # should be corrected in the future, as images can be of different sizes
