@@ -110,9 +110,64 @@ def save_pixel_info(all_floor_level_info, make_time_plan=False):
             .agg([min, max])
             .reset_index()
         )
+        floor_levels_df_grouped.columns = [
+            "_".join(column) for column in floor_levels_df_grouped.columns
+        ]
+        floor_levels_df_grouped = floor_levels_df_grouped[
+            [
+                column
+                for column in floor_levels_df_grouped.columns
+                if column in ["geschoss_", "pixel_BA_", "pixel_type_structure_"]
+                or "erster_Tag_min" in column
+                or "letzter_Tag_max" in column
+            ]
+        ]
+        floor_levels_melted = floor_levels_df_grouped.melt(
+            id_vars=["geschoss_", "pixel_BA_", "pixel_type_structure_"],
+            var_name="Vorgang",
+            value_name="Datum",
+        ).dropna()
+        floor_levels_melted["Zeilenbezeichnung"] = (
+            floor_levels_melted["geschoss_"]
+            + "_"
+            + +floor_levels_melted["pixel_BA_"]
+            + "_"
+            + +floor_levels_melted["pixel_type_structure_"]
+            + "_"
+            + +floor_levels_melted["Vorgang"].apply(lambda x: x.split("_")[0])
+        )
+        floor_levels_melted = floor_levels_melted[["Zeilenbezeichnung", "Datum"]]
+        floor_levels_cleaned = (
+            floor_levels_melted.groupby("Zeilenbezeichnung")
+            .agg([min, max])
+            .reset_index()
+        )
+        floor_levels_cleaned.columns = ["Zeilenbezeichnung", "Start", "Ende"]
+        floor_levels_cleaned["Vorgang"] = floor_levels_cleaned[
+            "Zeilenbezeichnung"
+        ].apply(lambda x: x.split("_")[-1])
+        floor_levels_cleaned = floor_levels_cleaned[
+            ["Zeilenbezeichnung", "Vorgang", "Start", "Ende"]
+        ]
+        floor_levels_cleaned["Ende"] = floor_levels_cleaned[
+            "Ende"
+        ] + datetime.timedelta(days=1)
 
-        floor_levels_df_grouped.to_excel(
-            os.path.join(path_to_image_folder, "zeitplan.xlsx")
+        # drawing Gantt Chart
+        fig = px.timeline(
+            floor_levels_cleaned,
+            x_start="Start",
+            x_end="Ende",
+            y="Zeilenbezeichnung",
+            color="Vorgang",
+            color_discrete_map=color_map_for_plotly,
+        )
+        fig.update_yaxes(autorange="reversed")
+        fig.write_html(os.path.join(path_to_image_folder, "zeitplan.html"))
+
+        # writng xlsx file
+        floor_levels_cleaned.to_excel(
+            os.path.join(path_to_image_folder, "zeitplan.xlsx"), index=False
         )
 
 

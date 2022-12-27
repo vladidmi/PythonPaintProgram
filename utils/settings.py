@@ -8,6 +8,7 @@ import pandas as pd
 import re
 import numpy as np
 import time
+import plotly.express as px
 
 
 def button_sleep(seconds_to_sleep=0.1):

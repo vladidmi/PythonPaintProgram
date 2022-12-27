@@ -328,3 +328,7 @@ working_steps_flat = set(
     for sublist in [working_steps[key] for key in working_steps]
     for item in sublist
 )
+
+color_map_for_plotly = {
+    step: "rgb" + str(all_colors[step]) for step in working_steps_flat
+}
