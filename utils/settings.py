@@ -32,7 +32,6 @@ class Floor_level_info:
         self.image_name = image_name
         self.full_path_image = full_image_name
         self.full_path_xlsx = full_image_name.replace("jpg", "xlsx")
-        self.pixel_history = dict()
         self.floor_name = image_name.replace(".jpg", "")
 
         try:
@@ -52,9 +51,6 @@ full_image_path = {
     for file in os.listdir(path_to_image_folder)
     if ".jpg" in file
 }
-
-# should be corrected in the future, as images can be of different sizes
-new_image_width, new_image_height = 1200, 724
 
 pygame.init()
 pygame.font.init()

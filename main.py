@@ -68,7 +68,8 @@ def tact_deleted(grid, number_of_tacts):
                 pixel.color = None
 
 
-def save_pixel_info(all_floor_level_info):
+def save_pixel_info(all_floor_level_info, make_time_plan=False):
+    all_floor_levels = list()
     for temp_floor in all_floor_level_info:
         grid = temp_floor.grid
         pixel_info = list()
@@ -88,6 +89,32 @@ def save_pixel_info(all_floor_level_info):
         df = pd.DataFrame(pixel_info)
         df.to_excel(temp_floor.full_path_xlsx, index=False)
 
+        if make_time_plan:
+            df["geschoss"] = temp_floor.floor_name
+            for df_column in df.columns:
+                if df_column in working_steps_flat:
+                    df[f"{df_column}_erster_Tag"] = df[df_column].apply(
+                        return_only_from_set, function_for_set=min
+                    )
+                    df[f"{df_column}_letzter_Tag"] = df[df_column].apply(
+                        return_only_from_set, function_for_set=max
+                    )
+            all_floor_levels.append(df)
+
+    if make_time_plan:
+        all_floor_levels_df = pd.concat(all_floor_levels)
+        floor_levels_df_grouped = (
+            all_floor_levels_df.groupby(
+                ["geschoss", "pixel_BA", "pixel_type_structure"]
+            )
+            .agg([min, max])
+            .reset_index()
+        )
+
+        floor_levels_df_grouped.to_excel(
+            os.path.join(path_to_image_folder, "zeitplan.xlsx")
+        )
+
 
 def load_pixel_info(pixel_info_file):
     def get_dates(str_list):
@@ -106,6 +133,13 @@ def load_pixel_info(pixel_info_file):
             elif type(pixel_attribute) == str and "set()" in pixel_attribute:
                 pixel_dict[key][key1] = set()
     return pixel_dict
+
+
+def return_only_from_set(value, function_for_set):
+    if type(value) == set and value:
+        return function_for_set(value)
+    else:
+        return None
 
 
 run = True
@@ -148,16 +182,16 @@ while run:
         )
     )
     WIN.blit(img, img_rect)
-    # Date with day name
+
+    # Showing date with day name
     today_string = current_day.strftime("%A-%d-%m-%Y")
     for german_week_day in GERMAN_WEEK_DAYS:
         today_string = today_string.replace(*german_week_day)
     text_surface = get_font(22).render(today_string, 1, BLACK)
     WIN.blit(text_surface, (10, 10))
-    # Current floor
-    text_surface = get_font(22).render(
-        list(full_image_path)[current_floor_id], 1, BLACK
-    )
+
+    # Showing current floor name
+    text_surface = get_font(22).render(current_floor.floor_name, 1, BLACK)
     WIN.blit(text_surface, (900, 10))
 
     for event in pygame.event.get():
@@ -166,7 +200,7 @@ while run:
             or event.type == pygame.KEYDOWN
             and event.key == pygame.K_ESCAPE
         ):
-            save_pixel_info(all_floor_level_info)
+            save_pixel_info(all_floor_level_info, make_time_plan=True)
             run = False
 
         if pygame.mouse.get_pressed()[0]:
@@ -236,7 +270,6 @@ while run:
                         drawing_mode_id = (drawing_mode_id + 1) % len(DRAWING_MODES)
                         current_structure = None
                         current_tact = None
-                        drawing_color = None
                         current_status = None
                         button_sleep()
                     elif button.text == tact_add and number_of_tacts < 6:

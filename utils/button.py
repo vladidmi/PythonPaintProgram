@@ -322,3 +322,9 @@ working_steps = {
     PREFABRICATED_PART: [PREFABRICATED_PART_ASSEMBLE, PART_COMPLETE],
     MASONRY: [DO_MASONRY, PART_COMPLETE],
 }
+
+working_steps_flat = set(
+    item
+    for sublist in [working_steps[key] for key in working_steps]
+    for item in sublist
+)

@@ -3,12 +3,9 @@ from .button import *
 
 
 class Pixel:
-    def __init__(
-        self, pixel_x, pixel_y, color=None, type_structure=None, tact=None, status=None
-    ):
+    def __init__(self, pixel_x, pixel_y, type_structure=None, tact=None, status=None):
         self.pixel_x = pixel_x
         self.pixel_y = pixel_y
-        self.color = color
         self.type_structure = type_structure
         if not status:
             self.status = dict()
@@ -29,10 +26,10 @@ class Pixel:
                 return self.type_structure, TRANSPARENT
             else:
                 for step in list(self.status)[::-1]:
-                    if self.status[step] and max(self.status[step]) < current_day:
-                        return step, TRANSPARENT
-                    elif self.status[step] and max(self.status[step]) == current_day:
+                    if self.status[step] and current_day in self.status[step]:
                         return step, SEMI_TRANSPARENT
+                    elif self.status[step] and max(self.status[step]) < current_day:
+                        return step, TRANSPARENT
                 return self.type_structure, TRANSPARENT
         elif current_mode == DRAW_SCTRUCTURE:
             return self.type_structure, SEMI_TRANSPARENT
