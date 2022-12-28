@@ -216,6 +216,7 @@ current_tact = None
 current_structure = None
 current_status = None
 current_floor_id = 0
+erase_mode = False
 
 current_day = pd.Timestamp(datetime.date.today())
 
@@ -289,6 +290,13 @@ while run:
                             for step in working_steps[current_structure]:
                                 current_pixel.status[step] = set()
 
+                        elif current_mode == DRAW_SCTRUCTURE and erase_mode == True:
+                            current_pixel.type_structure = None
+                            current_pixel.status = dict()
+
+                        elif current_mode == PLAN and erase_mode == True:
+                            for step in current_pixel.status:
+                                current_pixel.status[step].discard(current_day)
                         elif current_mode == TACT:
                             current_pixel.tact = tact_id
             except IndexError:
@@ -299,10 +307,11 @@ while run:
                         e
                     if not button.clicked(pos, current_mode):
                         continue
+                    if button.text != ERASE:
+                        erase_mode = False
 
-                    if button.text == CLEAR:
-                        # should be implemented
-                        pass
+                    if button.text == SAVE:
+                        save_pixel_info(all_floor_level_info, make_time_plan=True)
                     elif button.text == NEXT_FLOOR:
                         current_floor_id = (current_floor_id + 1) % len(full_image_path)
                         button_sleep()
@@ -356,11 +365,15 @@ while run:
                         button_sleep()
                     elif TACT_PART in button.text:
                         tact_id = button.text
+                    elif current_mode == TACT and button.text == ERASE:
+                        tact_id = None
                     elif (
                         current_mode == DRAW_SCTRUCTURE
                         and button.text in draw_structure_buttons
                     ):
                         current_structure = button.text
+                    elif button.text == ERASE:
+                        erase_mode = True
                     elif current_mode == PLAN and button.text in plan_buttons:
                         current_status = button.text
 

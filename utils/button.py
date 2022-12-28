@@ -52,7 +52,7 @@ button_y = HEIGHT + BOX_SIZE // 2
 
 # COMMON
 ERASE = "Entf."
-CLEAR = "Alles entf."
+SAVE = "Speichern"
 BIGGER = "Größer"
 SMALLER = "Kleiner"
 DRAW_MODE = "Modus"
@@ -89,7 +89,7 @@ tact_delete = "BA-"
 all_colors = {
     # COMMON
     ERASE: WHITE,
-    CLEAR: WHITE,
+    SAVE: WHITE,
     BIGGER: WHITE,
     SMALLER: WHITE,
     DRAW_MODE: WHITE,
@@ -117,6 +117,14 @@ all_colors = {
 
 # COMMON
 common_buttons = {
+    SAVE: Button(
+        y=button_y,
+        width=BOX_SIZE,
+        height=BOX_SIZE,
+        color=WHITE,
+        text=SAVE,
+        label=SAVE,
+    ),
     ERASE: Button(
         y=button_y,
         width=BOX_SIZE,
@@ -124,14 +132,6 @@ common_buttons = {
         color=WHITE,
         text=ERASE,
         label=ERASE,
-    ),
-    CLEAR: Button(
-        y=button_y,
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=CLEAR,
-        label=CLEAR,
     ),
     BIGGER: Button(
         y=button_y,
