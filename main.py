@@ -1,6 +1,6 @@
 from utils import *
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT + TOOLBAR_HEIGHT))
+WIN = pygame.display.set_mode((WIDTH + TOOLBAR_WIDTH, HEIGHT + TOOLBAR_HEIGHT))
 pygame.display.set_caption(f"Wochenprogramm")
 
 
@@ -45,6 +45,13 @@ def draw_buttons(win, current_mode):
     for i, current_button in enumerate(DRAWING_MODES[current_mode]):
         button = DRAWING_MODES[current_mode][current_button]
         button.x = 10 * (1 + i) + i * BOX_SIZE
+        button.y = HEIGHT + BOX_SIZE // 2
+        button.draw(win)
+
+    for i, current_button in enumerate(common_buttons):
+        button = common_buttons[current_button]
+        button.x = WIDTH + BOX_SIZE // 2
+        button.y = 10 * (1 + i) + i * BOX_SIZE
         button.draw(win)
 
     pygame.display.update()
@@ -100,6 +107,7 @@ def save_pixel_info(all_floor_level_info, make_time_plan=False):
                         return_only_from_set, function_for_set=max
                     )
             all_floor_levels.append(df)
+    print("Files saved successfully")
 
     if make_time_plan:
         all_floor_levels_df = pd.concat(all_floor_levels)
@@ -274,6 +282,9 @@ while run:
                             0 <= curren_pixel_x < COLS and 0 <= current_pixel_y < ROWS
                         ):
                             continue
+                        elif current_mode == PLAN and erase_mode == True:
+                            for step in current_pixel.status:
+                                current_pixel.status[step].discard(current_day)
                         elif (
                             current_mode == PLAN
                             and current_status
@@ -294,24 +305,31 @@ while run:
                             current_pixel.type_structure = None
                             current_pixel.status = dict()
 
-                        elif current_mode == PLAN and erase_mode == True:
-                            for step in current_pixel.status:
-                                current_pixel.status[step].discard(current_day)
                         elif current_mode == TACT:
                             current_pixel.tact = tact_id
             except IndexError:
-                for current_button in DRAWING_MODES[current_mode]:
+                for current_button in {**common_buttons, **DRAWING_MODES[current_mode]}:
                     try:
-                        button = DRAWING_MODES[current_mode][current_button]
+                        button = {**common_buttons, **DRAWING_MODES[current_mode]}[
+                            current_button
+                        ]
                     except KeyError as e:
                         e
                     if not button.clicked(pos, current_mode):
                         continue
+
+                    print(f"Button {button.text} clicked")
+
                     if button.text != ERASE:
                         erase_mode = False
 
                     if button.text == SAVE:
                         save_pixel_info(all_floor_level_info, make_time_plan=True)
+                    elif current_mode == TACT and button.text == ERASE:
+                        tact_id = None
+                    elif button.text == ERASE:
+                        erase_mode = True
+
                     elif button.text == NEXT_FLOOR:
                         current_floor_id = (current_floor_id + 1) % len(full_image_path)
                         button_sleep()
@@ -340,7 +358,7 @@ while run:
                         number_of_tacts += 1
                         temp_tact = f"{TACT_PART} {number_of_tacts}"
                         tact_buttons[temp_tact] = Button(
-                            y=button_y,
+                            y=HEIGHT + BOX_SIZE // 2,
                             width=BOX_SIZE,
                             height=BOX_SIZE,
                             color=all_colors[temp_tact],
@@ -348,7 +366,6 @@ while run:
                             label=temp_tact,
                         )
                         DRAWING_MODES[TACT] = {
-                            **common_buttons,
                             **tact_button_options,
                             **tact_buttons,
                         }
@@ -357,7 +374,6 @@ while run:
                         tact_deleted(grid, number_of_tacts)
                         del tact_buttons[list(tact_buttons)[-1]]
                         DRAWING_MODES[TACT] = {
-                            **common_buttons,
                             **tact_button_options,
                             **tact_buttons,
                         }
@@ -365,15 +381,12 @@ while run:
                         button_sleep()
                     elif TACT_PART in button.text:
                         tact_id = button.text
-                    elif current_mode == TACT and button.text == ERASE:
-                        tact_id = None
                     elif (
                         current_mode == DRAW_SCTRUCTURE
                         and button.text in draw_structure_buttons
                     ):
                         current_structure = button.text
-                    elif button.text == ERASE:
-                        erase_mode = True
+
                     elif current_mode == PLAN and button.text in plan_buttons:
                         current_status = button.text
 

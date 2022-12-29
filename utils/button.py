@@ -38,7 +38,7 @@ class Button:
 
     def clicked(self, pos, current_mode):
         x, y = pos
-        if self.label not in DRAWING_MODES[current_mode]:
+        if self.text not in {**common_buttons, **DRAWING_MODES[current_mode]}:
             return False
         if not (x >= self.x and x <= self.x + self.width):
             return False
@@ -48,10 +48,8 @@ class Button:
         return True
 
 
-button_y = HEIGHT + BOX_SIZE // 2
-
 # COMMON
-ERASE = "Entf."
+ERASE = "Entfernen"
 SAVE = "Speichern"
 BIGGER = "Größer"
 SMALLER = "Kleiner"
@@ -117,24 +115,28 @@ all_colors = {
 
 # COMMON
 common_buttons = {
-    SAVE: Button(
-        y=button_y,
+    DRAW_MODE: Button(
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
-        text=SAVE,
-        label=SAVE,
+        text=DRAW_MODE,
+        label=DRAW_MODE,
     ),
-    ERASE: Button(
-        y=button_y,
+    NEXT_FLOOR: Button(
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
-        text=ERASE,
-        label=ERASE,
+        text=NEXT_FLOOR,
+        label=NEXT_FLOOR,
+    ),
+    PREVIOUS_FLOOR: Button(
+        width=BOX_SIZE,
+        height=BOX_SIZE,
+        color=WHITE,
+        text=PREVIOUS_FLOOR,
+        label=PREVIOUS_FLOOR,
     ),
     BIGGER: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
@@ -142,43 +144,32 @@ common_buttons = {
         label=BIGGER,
     ),
     SMALLER: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
         text=SMALLER,
         label=SMALLER,
     ),
-    DRAW_MODE: Button(
-        y=button_y,
+    SAVE: Button(
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
-        text=DRAW_MODE,
-        label=DRAW_MODE,
-    ),
-    PREVIOUS_FLOOR: Button(
-        y=button_y,
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=PREVIOUS_FLOOR,
-        label=PREVIOUS_FLOOR,
-    ),
-    NEXT_FLOOR: Button(
-        y=button_y,
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=NEXT_FLOOR,
-        label=NEXT_FLOOR,
+        text=SAVE,
+        label=SAVE,
     ),
 }
+
+ERASE_BUTTON = Button(
+    width=BOX_SIZE,
+    height=BOX_SIZE,
+    color=WHITE,
+    text=ERASE,
+    label=ERASE,
+)
 
 # Drawing structure
 draw_structure_buttons = {
     CONCRETE: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[CONCRETE],
@@ -187,7 +178,6 @@ draw_structure_buttons = {
         label=CONCRETE,
     ),
     PREFABRICATED_PART: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[PREFABRICATED_PART],
@@ -196,7 +186,6 @@ draw_structure_buttons = {
         label=PREFABRICATED_PART,
     ),
     MASONRY: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[MASONRY],
@@ -204,12 +193,12 @@ draw_structure_buttons = {
         text_color=WHITE,
         label=MASONRY,
     ),
+    ERASE: ERASE_BUTTON,
 }
 
 # Planning
 plan_buttons_options = {
     LAST_DAY: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
@@ -217,7 +206,6 @@ plan_buttons_options = {
         label=LAST_DAY,
     ),
     NEXT_DAY: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
@@ -228,7 +216,6 @@ plan_buttons_options = {
 
 plan_buttons = {
     FORMWORK: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[FORMWORK],
@@ -236,7 +223,6 @@ plan_buttons = {
         label=FORMWORK,
     ),
     REINFORCE: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[REINFORCE],
@@ -244,7 +230,6 @@ plan_buttons = {
         label=REINFORCE,
     ),
     POUR_CONCRETE: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[POUR_CONCRETE],
@@ -252,7 +237,6 @@ plan_buttons = {
         label=POUR_CONCRETE,
     ),
     PREFABRICATED_PART_ASSEMBLE: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[PREFABRICATED_PART_ASSEMBLE],
@@ -260,7 +244,6 @@ plan_buttons = {
         label=PREFABRICATED_PART_ASSEMBLE,
     ),
     DO_MASONRY: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[DO_MASONRY],
@@ -268,19 +251,18 @@ plan_buttons = {
         label=DO_MASONRY,
     ),
     PART_COMPLETE: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[PART_COMPLETE],
         text=PART_COMPLETE,
         label=PART_COMPLETE,
     ),
+    ERASE: ERASE_BUTTON,
 }
 
 # Tact division
 tact_button_options = {
     tact_add: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
@@ -288,18 +270,17 @@ tact_button_options = {
         label=tact_add,
     ),
     tact_delete: Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=WHITE,
         text=tact_delete,
         label=tact_delete,
     ),
+    ERASE: ERASE_BUTTON,
 }
 tact_button_colors = []
 tact_buttons = {
     f"{TACT_PART} {i+1}": Button(
-        y=button_y,
         width=BOX_SIZE,
         height=BOX_SIZE,
         color=all_colors[f"{TACT_PART} {i+1}"],
@@ -311,9 +292,9 @@ tact_buttons = {
 
 # Modes
 DRAWING_MODES = {
-    DRAW_SCTRUCTURE: {**common_buttons, **draw_structure_buttons},
-    PLAN: {**common_buttons, **plan_buttons_options, **plan_buttons},
-    TACT: {**common_buttons, **tact_button_options, **tact_buttons},
+    DRAW_SCTRUCTURE: {**draw_structure_buttons},
+    PLAN: {**plan_buttons_options, **plan_buttons},
+    TACT: {**tact_button_options, **tact_buttons},
 }
 
 # Working steps for structures
