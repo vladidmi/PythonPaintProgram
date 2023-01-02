@@ -121,3 +121,6 @@ GERMAN_WEEK_DAYS = (
     ("Saturday", "Samstag"),
     ("Sunday", "Sonntag"),
 )
+
+HORIZONTAL = 'horizontal'
+VERTICAL = 'vertical'

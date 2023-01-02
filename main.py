@@ -225,6 +225,9 @@ current_structure = None
 current_status = None
 current_floor_id = 0
 erase_mode = False
+shift_x = None
+shift_y = None
+drawing_direction = None #can be up, down, right, left
 
 current_day = pd.Timestamp(datetime.date.today())
 
@@ -266,9 +269,32 @@ while run:
         ):
             save_pixel_info(all_floor_level_info, make_time_plan=True)
             run = False
+        
+        if event.type == pygame.KEYUP and event.key == pygame.K_LSHIFT:
+            shift_x = None
+            shift_y = None
+            drawing_direction = None
 
         if pygame.mouse.get_pressed()[0]:
             pos = pygame.mouse.get_pos()
+            x,y = pos
+
+            pressed_keys  = pygame.key.get_pressed()
+            if pressed_keys[pygame.K_LSHIFT]:
+                print('LSHIFT pressed')
+                if not shift_x and not shift_y:
+                    shift_x,shift_y = pos
+                if not drawing_direction:
+                    if shift_x < x or shift_x>x:
+                        drawing_direction = HORIZONTAL
+                    elif shift_y <y or shift_y >y:
+                        drawing_direction = VERTICAL
+                if drawing_direction == HORIZONTAL:
+                    y = shift_y
+                elif drawing_direction ==VERTICAL:
+                    x = shift_x
+                pos = x,y
+
             try:
                 row, col = get_row_col_from_pos(pos)
                 for pixel_width in range(pixel_size_increase):
@@ -329,6 +355,7 @@ while run:
                         tact_id = None
                     elif button.text == ERASE:
                         erase_mode = True
+                        current_structure = None
 
                     elif button.text == NEXT_FLOOR:
                         current_floor_id = (current_floor_id + 1) % len(full_image_path)

@@ -42,3 +42,4 @@ class Pixel:
         s.set_alpha(int(transparency_level * 256))  # alpha level
         s.fill(all_colors[current_color_key])  # this fills the entire surface
         win.blit(s, (j * PIXEL_SIZE, i * PIXEL_SIZE))  # the top-left coordinates
+
