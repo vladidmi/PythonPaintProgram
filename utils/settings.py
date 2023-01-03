@@ -3,7 +3,7 @@ import os
 import datetime
 import holidays
 from pandas.tseries.offsets import CustomBusinessDay
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import pandas as pd
 import re
 import numpy as np
@@ -56,6 +56,9 @@ class Floor_level_info:
 
 
 cur_dir = os.getcwd()
+project_font_path = ImageFont.truetype(
+    os.path.join(cur_dir, "utils", "CENTURY.TTF"), 30
+)
 
 WIDTH, HEIGHT = 1200, 750
 

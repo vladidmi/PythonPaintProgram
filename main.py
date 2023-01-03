@@ -62,9 +62,20 @@ def draw_grid_for_print(floor, current_day):
                     fill=(*all_colors[current_color_key], 255 * current_transparency),
                 )
     if active_works_on_floor:
+        today_string = current_day.strftime("%A-%d-%m-%Y")
+        for german_week_day in GERMAN_WEEK_DAYS:
+            today_string = today_string.replace(*german_week_day)
+        draw.text(
+            (10, 10),
+            today_string,
+            font=project_font_path,
+            fill=BLACK,
+        )
+        draw.text((900, 10), floor.floor_name, font=project_font_path, fill=BLACK)
         img.save(
             os.path.join(
-                floor.folder_with_print, floor.floor_name + str(current_day) + ".jpg"
+                floor.folder_with_print,
+                floor.floor_name + "_" + str(current_day) + ".jpg",
             )
         )
 
