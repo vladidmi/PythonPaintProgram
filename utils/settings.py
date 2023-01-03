@@ -3,7 +3,7 @@ import os
 import datetime
 import holidays
 from pandas.tseries.offsets import CustomBusinessDay
-from PIL import Image
+from PIL import Image, ImageDraw
 import pandas as pd
 import re
 import numpy as np
@@ -11,7 +11,7 @@ import time
 import plotly.express as px
 
 
-def button_sleep(seconds_to_sleep=0.1):
+def button_sleep(seconds_to_sleep=0.2):
     time.sleep(seconds_to_sleep)
 
 
@@ -117,6 +117,7 @@ TOOLBAR_HEIGHT = TOOLBAR_WIDTH = 2 * BOX_SIZE
 BG_COLOR = WHITE
 TRANSPARENT = 0.2
 SEMI_TRANSPARENT = 0.75
+NOT_TRANSPARENT = 1
 
 pixel_size_increase = 2
 

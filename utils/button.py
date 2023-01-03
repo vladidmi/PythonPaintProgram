@@ -56,6 +56,7 @@ SMALLER = "Kleiner"
 DRAW_MODE = "Modus"
 NEXT_FLOOR = "OG+"
 PREVIOUS_FLOOR = "OG-"
+PRINT = "Drucken"
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
@@ -157,6 +158,13 @@ common_buttons = {
         color=WHITE,
         text=SAVE,
         label=SAVE,
+    ),
+    PRINT: Button(
+        width=BOX_SIZE,
+        height=BOX_SIZE,
+        color=WHITE,
+        text=PRINT,
+        label=PRINT,
     ),
 }
 

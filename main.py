@@ -40,6 +40,35 @@ def draw_grid(win, grid, current_mode):
                 pixel.draw_color(win, current_color_key, current_transparency, i, j)
 
 
+def draw_grid_for_print(floor, current_day):
+    img = Image.open(floor.full_path_image)
+    active_works_on_floor = False
+    draw = ImageDraw.Draw(img, "RGBA")
+    for i, row in enumerate(floor.grid):
+        for j, pixel in enumerate(row):
+            current_color_key, current_transparency = pixel.get_color_key_for_print(
+                current_day
+            )
+            if current_color_key:
+                active_works_on_floor = True
+                draw.rectangle(
+                    xy=(
+                        PIXEL_SIZE * pixel.pixel_x,
+                        PIXEL_SIZE * pixel.pixel_y,
+                        PIXEL_SIZE * pixel.pixel_x + PIXEL_SIZE,
+                        PIXEL_SIZE * pixel.pixel_y + PIXEL_SIZE,
+                    ),
+                    outline=all_colors[current_color_key],
+                    fill=(*all_colors[current_color_key], 255 * current_transparency),
+                )
+    if active_works_on_floor:
+        img.save(
+            os.path.join(
+                floor.folder_with_print, floor.floor_name + str(current_day) + ".jpg"
+            )
+        )
+
+
 def draw_buttons(win, current_mode):
     for i, current_button in enumerate(DRAWING_MODES[current_mode]):
         button = DRAWING_MODES[current_mode][current_button]
@@ -399,6 +428,24 @@ while run:
                         current_tact = None
                         current_status = None
                         active_tact_for_planing = f"{TACT_PART} 1"
+                        button_sleep()
+                    elif button.text == PRINT:
+                        weekdays_to_print = weekdays_of_current_week(current_day)
+
+                        for floor in all_floor_level_info:
+                            folder_with_floor = floor.full_path_image.replace(
+                                floor.image_name, ""
+                            )
+                            floor.folder_with_print = os.path.join(
+                                folder_with_floor, "output", floor.floor_name
+                            )
+                            try:
+                                os.mkdir(floor.folder_with_print)
+                            except OSError as e:
+                                e
+                            for weekday in weekdays_to_print:
+                                draw_grid_for_print(floor, weekday)
+                        print("all images created")
                         button_sleep()
                     elif button.text == tact_add and number_of_tacts < 6:
                         number_of_tacts += 1
