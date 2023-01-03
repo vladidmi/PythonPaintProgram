@@ -27,7 +27,6 @@ def init_grid(rows, cols, pixel_history):
                         status=status,
                     )
                 )
-    # work in porgress                number_of_tacts = max(2, int(pixel_history[f'{i}-{j}']['pixel_BA'].split()[-1]))
     return grid
 
 
@@ -35,7 +34,7 @@ def draw_grid(win, grid, current_mode):
     for i, row in enumerate(grid):
         for j, pixel in enumerate(row):
             current_color_key, current_transparency = pixel.get_color_key(
-                current_mode, current_day
+                current_mode, current_day, active_tact_for_planing
             )
             if current_color_key:
                 pixel.draw_color(win, current_color_key, current_transparency, i, j)
@@ -47,6 +46,14 @@ def draw_buttons(win, current_mode):
         button.x = 10 * (1 + i) + i * BOX_SIZE
         button.y = HEIGHT + BOX_SIZE // 2
         button.draw(win)
+
+        # Add transparency to not active tacts in plan mode
+        if current_mode == PLAN:
+            if TACT_PART in button.text and button.text != active_tact_for_planing:
+                s = pygame.Surface((BOX_SIZE, BOX_SIZE))  # the size of the rect
+                s.set_alpha(int(SEMI_TRANSPARENT * 256))  # alpha level
+                s.fill(WHITE)  # this fills the entire surface
+                win.blit(s, (button.x, button.y))  # the top-left coordinates
 
     for i, current_button in enumerate(common_buttons):
         button = common_buttons[current_button]
@@ -215,7 +222,7 @@ for image_file in full_image_path:
         pixel_history = load_pixel_info(new_floor_level.full_path_xlsx)
     except FileNotFoundError as e:
         pixel_history = dict()
-        print("File not found")
+        print(f"File {new_floor_level.full_path_xlsx} not found")
     new_floor_level.grid = init_grid(ROWS, COLS, pixel_history)
     all_floor_level_info.append(new_floor_level)
 
@@ -227,7 +234,8 @@ current_floor_id = 0
 erase_mode = False
 shift_x = None
 shift_y = None
-drawing_direction = None #can be up, down, right, left
+drawing_direction = None  # can be horizontal or vertical
+active_tact_for_planing = f"{TACT_PART} 1"
 
 current_day = pd.Timestamp(datetime.date.today())
 
@@ -269,7 +277,7 @@ while run:
         ):
             save_pixel_info(all_floor_level_info, make_time_plan=True)
             run = False
-        
+
         if event.type == pygame.KEYUP and event.key == pygame.K_LSHIFT:
             shift_x = None
             shift_y = None
@@ -277,23 +285,22 @@ while run:
 
         if pygame.mouse.get_pressed()[0]:
             pos = pygame.mouse.get_pos()
-            x,y = pos
+            x, y = pos
 
-            pressed_keys  = pygame.key.get_pressed()
+            pressed_keys = pygame.key.get_pressed()
             if pressed_keys[pygame.K_LSHIFT]:
-                print('LSHIFT pressed')
                 if not shift_x and not shift_y:
-                    shift_x,shift_y = pos
+                    shift_x, shift_y = pos
                 if not drawing_direction:
-                    if shift_x < x or shift_x>x:
+                    if shift_x < x or shift_x > x:
                         drawing_direction = HORIZONTAL
-                    elif shift_y <y or shift_y >y:
+                    elif shift_y < y or shift_y > y:
                         drawing_direction = VERTICAL
                 if drawing_direction == HORIZONTAL:
                     y = shift_y
-                elif drawing_direction ==VERTICAL:
+                elif drawing_direction == VERTICAL:
                     x = shift_x
-                pos = x,y
+                pos = x, y
 
             try:
                 row, col = get_row_col_from_pos(pos)
@@ -308,31 +315,39 @@ while run:
                             0 <= curren_pixel_x < COLS and 0 <= current_pixel_y < ROWS
                         ):
                             continue
-                        elif current_mode == PLAN and erase_mode == True:
-                            for step in current_pixel.status:
-                                current_pixel.status[step].discard(current_day)
-                        elif (
-                            current_mode == PLAN
-                            and current_status
-                            in working_steps.get(current_pixel.type_structure, [])
-                        ):
-                            try:
-                                current_pixel.status[current_status].add(current_day)
-                            except KeyError as e:
-                                print("Problem with status", current_pixel)
 
-                        elif current_mode == DRAW_SCTRUCTURE and current_structure:
-                            current_pixel.type_structure = current_structure
+                        # Draw mode
+                        elif current_mode == DRAW_SCTRUCTURE:
+                            if erase_mode == True:
+                                current_pixel.type_structure = None
+                                current_pixel.status = dict()
+                            elif current_structure:
+                                current_pixel.type_structure = current_structure
+                                for step in working_steps[current_structure]:
+                                    current_pixel.status[step] = set()
 
-                            for step in working_steps[current_structure]:
-                                current_pixel.status[step] = set()
-
-                        elif current_mode == DRAW_SCTRUCTURE and erase_mode == True:
-                            current_pixel.type_structure = None
-                            current_pixel.status = dict()
-
+                        # Tact mode
                         elif current_mode == TACT:
-                            current_pixel.tact = tact_id
+                            if erase_mode == True:
+                                current_pixel.tact = None
+                            else:
+                                current_pixel.tact = tact_id
+
+                        # Plan mode
+                        elif current_mode == PLAN:
+                            if erase_mode == True:
+                                for step in current_pixel.status:
+                                    current_pixel.status[step].discard(current_day)
+                            elif current_status in working_steps.get(
+                                current_pixel.type_structure, []
+                            ):
+                                try:
+                                    current_pixel.status[current_status].add(
+                                        current_day
+                                    )
+                                except KeyError as e:
+                                    print("Problem with status", current_pixel)
+
             except IndexError:
                 for current_button in {**common_buttons, **DRAWING_MODES[current_mode]}:
                     try:
@@ -348,15 +363,10 @@ while run:
 
                     if button.text != ERASE:
                         erase_mode = False
-
                     if button.text == SAVE:
                         save_pixel_info(all_floor_level_info, make_time_plan=True)
-                    elif current_mode == TACT and button.text == ERASE:
-                        tact_id = None
                     elif button.text == ERASE:
                         erase_mode = True
-                        current_structure = None
-
                     elif button.text == NEXT_FLOOR:
                         current_floor_id = (current_floor_id + 1) % len(full_image_path)
                         button_sleep()
@@ -380,6 +390,7 @@ while run:
                         current_structure = None
                         current_tact = None
                         current_status = None
+                        active_tact_for_planing = f"{TACT_PART} 1"
                         button_sleep()
                     elif button.text == tact_add and number_of_tacts < 6:
                         number_of_tacts += 1
@@ -396,6 +407,11 @@ while run:
                             **tact_button_options,
                             **tact_buttons,
                         }
+                        DRAWING_MODES[PLAN] = {
+                            **plan_buttons_options,
+                            **plan_buttons,
+                            **tact_buttons,
+                        }
                         button_sleep()
                     elif button.text == tact_delete and number_of_tacts > 2:
                         tact_deleted(grid, number_of_tacts)
@@ -404,18 +420,24 @@ while run:
                             **tact_button_options,
                             **tact_buttons,
                         }
+                        DRAWING_MODES[PLAN] = {
+                            **plan_buttons_options,
+                            **plan_buttons,
+                            **tact_buttons,
+                        }
                         number_of_tacts -= 1
                         button_sleep()
-                    elif TACT_PART in button.text:
-                        tact_id = button.text
                     elif (
                         current_mode == DRAW_SCTRUCTURE
                         and button.text in draw_structure_buttons
                     ):
                         current_structure = button.text
-
+                    elif current_mode == TACT and TACT_PART in button.text:
+                        tact_id = button.text
                     elif current_mode == PLAN and button.text in plan_buttons:
                         current_status = button.text
+                    elif current_mode == PLAN and button.text in tact_buttons:
+                        active_tact_for_planing = button.text
 
     draw_grid(WIN, grid, current_mode)
     draw_buttons(WIN, current_mode)

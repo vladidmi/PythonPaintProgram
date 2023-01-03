@@ -76,7 +76,7 @@ NEXT_DAY = "Naechster Tag"
 
 # Tact division
 TACT = "BA"
-number_of_tacts = 2
+number_of_tacts = 6
 tact_id = None
 TACT_PART = "BA."
 tact_add = "BA+"
@@ -293,7 +293,7 @@ tact_buttons = {
 # Modes
 DRAWING_MODES = {
     DRAW_SCTRUCTURE: {**draw_structure_buttons},
-    PLAN: {**plan_buttons_options, **plan_buttons},
+    PLAN: {**plan_buttons_options, **plan_buttons, **tact_buttons},
     TACT: {**tact_button_options, **tact_buttons},
 }
 

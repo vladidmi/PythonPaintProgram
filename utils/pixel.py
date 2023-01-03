@@ -16,21 +16,21 @@ class Pixel:
     def __str__(self):
         return f"{self.pixel_x}-{self.pixel_y},{self.type_structure},{self.status}"
 
-    def get_color_key(self, current_mode, current_day):
+    def get_color_key(self, current_mode, current_day, active_tact_for_planing):
         if current_mode == PLAN:
-            if not self.type_structure and not self.tact:
+            if not self.type_structure:
                 return None, None
-            elif not self.type_structure:
-                return self.tact, TRANSPARENT
-            elif not self.status:
+            elif not self.status and self.tact == active_tact_for_planing:
                 return self.type_structure, TRANSPARENT
-            else:
+            elif self.tact == active_tact_for_planing:
                 for step in list(self.status)[::-1]:
                     if self.status[step] and current_day in self.status[step]:
                         return step, SEMI_TRANSPARENT
                     elif self.status[step] and max(self.status[step]) < current_day:
                         return step, TRANSPARENT
                 return self.type_structure, TRANSPARENT
+            else:
+                return None, None
         elif current_mode == DRAW_SCTRUCTURE:
             return self.type_structure, SEMI_TRANSPARENT
         elif current_mode == TACT:
@@ -42,4 +42,3 @@ class Pixel:
         s.set_alpha(int(transparency_level * 256))  # alpha level
         s.fill(all_colors[current_color_key])  # this fills the entire surface
         win.blit(s, (j * PIXEL_SIZE, i * PIXEL_SIZE))  # the top-left coordinates
-
