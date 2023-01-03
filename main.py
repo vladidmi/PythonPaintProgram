@@ -118,6 +118,9 @@ def save_pixel_info(all_floor_level_info, make_time_plan=False):
 
     if make_time_plan:
         all_floor_levels_df = pd.concat(all_floor_levels)
+        all_floor_levels_df["pixel_BA"] = all_floor_levels_df["pixel_BA"].replace(
+            {None: "Kein BA"}
+        )
         floor_levels_df_grouped = (
             all_floor_levels_df.groupby(
                 ["geschoss", "pixel_BA", "pixel_type_structure"]
@@ -176,6 +179,7 @@ def save_pixel_info(all_floor_level_info, make_time_plan=False):
             y="Zeilenbezeichnung",
             color="Vorgang",
             color_discrete_map=color_map_for_plotly,
+            title="Terminplan",
         )
         fig.update_yaxes(autorange="reversed")
         fig.write_html(os.path.join(path_to_image_folder, "zeitplan.html"))
@@ -361,11 +365,15 @@ while run:
 
                     print(f"Button {button.text} clicked")
 
-                    if button.text != ERASE:
+                    if button.text != ERASE and button.text != NO_TACT:
                         erase_mode = False
                     if button.text == SAVE:
                         save_pixel_info(all_floor_level_info, make_time_plan=True)
-                    elif button.text == ERASE:
+                    elif (
+                        button.text == ERASE
+                        or current_mode == TACT
+                        and button.text == NO_TACT
+                    ):
                         erase_mode = True
                     elif button.text == NEXT_FLOOR:
                         current_floor_id = (current_floor_id + 1) % len(full_image_path)
@@ -436,6 +444,8 @@ while run:
                         tact_id = button.text
                     elif current_mode == PLAN and button.text in plan_buttons:
                         current_status = button.text
+                    elif current_mode == PLAN and button.text in NO_TACT:
+                        active_tact_for_planing = None
                     elif current_mode == PLAN and button.text in tact_buttons:
                         active_tact_for_planing = button.text
 

@@ -71,8 +71,8 @@ POUR_CONCRETE = "Betonieren"
 PREFABRICATED_PART_ASSEMBLE = "Fertigteil setzen"
 DO_MASONRY = "Mauern"
 PART_COMPLETE = "Fertig"
-LAST_DAY = "Letzter Tag"
-NEXT_DAY = "Naechster Tag"
+LAST_DAY = "Tag -"
+NEXT_DAY = "Tag +"
 
 # Tact division
 TACT = "BA"
@@ -81,6 +81,7 @@ tact_id = None
 TACT_PART = "BA."
 tact_add = "BA+"
 tact_delete = "BA-"
+NO_TACT = "Kein BA"
 
 
 # Color_dict
@@ -276,18 +277,27 @@ tact_button_options = {
         text=tact_delete,
         label=tact_delete,
     ),
-    ERASE: ERASE_BUTTON,
 }
+
 tact_button_colors = []
 tact_buttons = {
-    f"{TACT_PART} {i+1}": Button(
+    NO_TACT: Button(
         width=BOX_SIZE,
         height=BOX_SIZE,
-        color=all_colors[f"{TACT_PART} {i+1}"],
-        text=f"{TACT_PART} {i+1}",
-        label=f"{TACT_PART} {i+1}",
-    )
-    for i in range(number_of_tacts)
+        color=WHITE,
+        text=NO_TACT,
+        label=NO_TACT,
+    ),
+    **{
+        f"{TACT_PART} {i+1}": Button(
+            width=BOX_SIZE,
+            height=BOX_SIZE,
+            color=all_colors[f"{TACT_PART} {i+1}"],
+            text=f"{TACT_PART} {i+1}",
+            label=f"{TACT_PART} {i+1}",
+        )
+        for i in range(number_of_tacts)
+    },
 }
 
 # Modes
