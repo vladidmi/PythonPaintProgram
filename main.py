@@ -41,9 +41,15 @@ def draw_grid(win, grid, current_mode):
 
 
 def draw_grid_for_print(floor, current_day):
+    blank_image = Image.new(
+        mode="RGB", size=(WIDTH, HEIGHT + TOOLBAR_HEIGHT), color=WHITE
+    )
     img = Image.open(floor.full_path_image)
+    blank_image.paste(img)
+    img = blank_image
     active_works_on_floor = False
     draw = ImageDraw.Draw(img, "RGBA")
+    legend = set()
     for i, row in enumerate(floor.grid):
         for j, pixel in enumerate(row):
             current_color_key, current_transparency = pixel.get_color_key_for_print(
@@ -51,6 +57,7 @@ def draw_grid_for_print(floor, current_day):
             )
             if current_color_key:
                 active_works_on_floor = True
+                legend.add(current_color_key)
                 draw.rectangle(
                     xy=(
                         PIXEL_SIZE * pixel.pixel_x,
@@ -72,6 +79,26 @@ def draw_grid_for_print(floor, current_day):
             fill=BLACK,
         )
         draw.text((900, 10), floor.floor_name, font=project_font_path, fill=BLACK)
+        for i, work_step in enumerate(legend):
+            current_button = plan_buttons[work_step]
+            box_x = 10 * (1 + i) + i * BOX_SIZE
+            box_y = HEIGHT + BOX_SIZE // 2
+            draw.rectangle(
+                xy=(
+                    box_x,
+                    box_y,
+                    box_x + BOX_SIZE,
+                    box_y + BOX_SIZE,
+                ),
+                outline=BLACK,
+                fill=current_button.color,
+            )
+            draw.text(
+                (box_x, box_y + BOX_SIZE // 2),
+                current_button.text,
+                font=project_font_path_small,
+                fill=BLACK,
+            )
         img.save(
             os.path.join(
                 floor.folder_with_print,
@@ -261,6 +288,7 @@ clock = pygame.time.Clock()
 
 all_floor_level_info = list()
 for image_file in full_image_path:
+    resize_image(full_image_path[image_file])
     new_floor_level = Floor_level_info(image_file, full_image_path[image_file])
     try:
         pixel_history = load_pixel_info(new_floor_level.full_path_xlsx)

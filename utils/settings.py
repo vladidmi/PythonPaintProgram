@@ -16,16 +16,17 @@ def button_sleep(seconds_to_sleep=0.2):
 
 
 def resize_image(image_path):
-    # resizing the image to fit into rect 1000x700
+    # resizing the image to fit into the given rectangular
     image = Image.open(image_path)
     current_image_width, current_image_height = image.size
     resize_ratio = min(WIDTH / current_image_width, HEIGHT / current_image_height)
     new_image_width = int(current_image_width * resize_ratio)
     new_image_height = int(current_image_height * resize_ratio)
     image_resized = image.resize((new_image_width, new_image_height))
-    resized_image_path = image_path.replace(".jpg", "_resized.jpg")
-    image_resized.save(resized_image_path)
-    return resized_image_path, new_image_width, new_image_height
+    blank_image = Image.new(mode="RGB", size=(WIDTH, HEIGHT), color=WHITE)
+    offset = ((WIDTH - new_image_width) // 2, (HEIGHT - new_image_height) // 2)
+    blank_image.paste(image_resized, offset)
+    blank_image.save(image_path)
 
 
 def weekdays_of_current_week(current_date):
@@ -58,6 +59,9 @@ class Floor_level_info:
 cur_dir = os.getcwd()
 project_font_path = ImageFont.truetype(
     os.path.join(cur_dir, "utils", "CENTURY.TTF"), 30
+)
+project_font_path_small = ImageFont.truetype(
+    os.path.join(cur_dir, "utils", "CENTURY.TTF"), 12
 )
 
 WIDTH, HEIGHT = 1200, 750

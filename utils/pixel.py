@@ -41,9 +41,7 @@ class Pixel:
             for step in list(self.status)[::-1]:
                 if self.status[step] and pd.Timestamp(weekday) in self.status[step]:
                     return step, NOT_TRANSPARENT
-            return None, None
-        else:
-            return None, None
+        return None, None
 
     def draw_color(self, win, current_color_key, transparency_level, i, j):
         # drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
