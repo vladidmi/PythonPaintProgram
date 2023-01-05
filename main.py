@@ -486,6 +486,9 @@ while run:
                                 draw_grid_for_print(floor, weekday)
                         print("all images created")
                         button_sleep()
+                    elif button.text == COMPARE:
+                        pass
+                        button_sleep()
                     elif button.text == tact_add and number_of_tacts < 6:
                         number_of_tacts += 1
                         temp_tact = f"{TACT_PART} {number_of_tacts}"
