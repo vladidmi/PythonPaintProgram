@@ -132,7 +132,7 @@ def draw_buttons(win, current_mode):
                 or button.text == NO_TACT
                 and active_tact_for_planing == None
             ):
-                hint_font = get_font(20)
+                hint_font = get_font(PROJECT_INFO_TEXT_SIZE)
                 hint_text = hint_font.render(ACITVE_TACT, 1, BLACK)
                 win.blit(hint_text, (button.x, button.y - BOX_SIZE // 2))
 
@@ -348,11 +348,13 @@ while run:
     today_string = current_day.strftime("%A-%d-%m-%Y")
     for german_week_day in GERMAN_WEEK_DAYS:
         today_string = today_string.replace(*german_week_day)
-    text_surface = get_font(22).render(today_string, 1, BLACK)
+    text_surface = get_font(PROJECT_INFO_TEXT_SIZE).render(today_string, 1, BLACK)
     WIN.blit(text_surface, (10, 10))
 
     # Showing current floor name
-    text_surface = get_font(22).render(current_floor.floor_name, 1, BLACK)
+    text_surface = get_font(PROJECT_INFO_TEXT_SIZE).render(
+        current_floor.floor_name, 1, BLACK
+    )
     WIN.blit(text_surface, (900, 10))
 
     for event in pygame.event.get():
