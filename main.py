@@ -34,7 +34,7 @@ def draw_grid(win, grid, current_mode):
     for i, row in enumerate(grid):
         for j, pixel in enumerate(row):
             current_color_key, current_transparency = pixel.get_color_key(
-                current_mode, current_day, active_tact_for_planing
+                current_mode, current_day
             )
             if current_color_key:
                 pixel.draw_color(win, current_color_key, current_transparency, i, j)
