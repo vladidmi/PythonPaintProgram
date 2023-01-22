@@ -20,9 +20,9 @@ class Pixel:
         if current_mode == PLAN:
             if not self.type_structure:
                 return None, None
-            elif not self.status and self.tact == active_tact_for_planing:
+            elif not self.status:
                 return self.type_structure, TRANSPARENT
-            elif self.tact == active_tact_for_planing:
+            elif self.status:
                 for step in list(self.status)[::-1]:
                     if self.status[step] and current_day in self.status[step]:
                         return step, SEMI_TRANSPARENT

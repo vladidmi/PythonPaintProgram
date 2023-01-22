@@ -49,7 +49,7 @@ class Button:
 
 
 # COMMON
-ERASE = "Entfernen"
+ERASE = "Entf."
 SAVE = "Speichern"
 BIGGER = "Größer"
 SMALLER = "Kleiner"
@@ -57,23 +57,25 @@ DRAW_MODE = "Modus"
 NEXT_FLOOR = "OG+"
 PREVIOUS_FLOOR = "OG-"
 PRINT = "Drucken"
+COMPARE = "SOLL-IST"
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
 CONCRETE = "Beton"
-PREFABRICATED_PART = "Feftigteil"
-MASONRY = "Mauer"
+PREFABRICATED_PART = "HFT"
+MASONRY = "MW"
 
 # Planning
 PLAN = "Plan"
-FORMWORK = "Schalen"
-REINFORCE = "Bewehren"
-POUR_CONCRETE = "Betonieren"
-PREFABRICATED_PART_ASSEMBLE = "Fertigteil setzen"
+FORMWORK = "SCH"
+REINFORCE = "BEW"
+POUR_CONCRETE = "BET"
+PREFABRICATED_PART_ASSEMBLE = "HFT setz."
 DO_MASONRY = "Mauern"
 PART_COMPLETE = "Fertig"
 LAST_DAY = "Tag -"
 NEXT_DAY = "Tag +"
+ACITVE_TACT = "  \\/ Ausgew.BA"
 
 # Tact division
 TACT = "BA"
@@ -166,6 +168,13 @@ common_buttons = {
         text=PRINT,
         label=PRINT,
     ),
+    # COMPARE: Button(
+    #     width=BOX_SIZE,
+    #     height=BOX_SIZE,
+    #     color=WHITE,
+    #     text=COMPARE,
+    #     label=COMPARE,
+    # ),
 }
 
 ERASE_BUTTON = Button(
@@ -310,8 +319,8 @@ tact_buttons = {
 
 # Modes
 DRAWING_MODES = {
-    DRAW_SCTRUCTURE: {**draw_structure_buttons},
     PLAN: {**plan_buttons_options, **plan_buttons, **tact_buttons},
+    DRAW_SCTRUCTURE: {**draw_structure_buttons},
     TACT: {**tact_button_options, **tact_buttons},
 }
 

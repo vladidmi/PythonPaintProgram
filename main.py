@@ -116,11 +116,25 @@ def draw_buttons(win, current_mode):
 
         # Add transparency to not active tacts in plan mode
         if current_mode == PLAN:
-            if TACT_PART in button.text and button.text != active_tact_for_planing:
+            if (
+                TACT_PART in button.text
+                and button.text != active_tact_for_planing
+                or button.text == NO_TACT
+                and active_tact_for_planing != None
+            ):
                 s = pygame.Surface((BOX_SIZE, BOX_SIZE))  # the size of the rect
                 s.set_alpha(int(SEMI_TRANSPARENT * 256))  # alpha level
                 s.fill(WHITE)  # this fills the entire surface
                 win.blit(s, (button.x, button.y))  # the top-left coordinates
+
+            if (
+                button.text == active_tact_for_planing
+                or button.text == NO_TACT
+                and active_tact_for_planing == None
+            ):
+                hint_font = get_font(20)
+                hint_text = hint_font.render(ACITVE_TACT, 1, BLACK)
+                win.blit(hint_text, (button.x, button.y - BOX_SIZE))
 
     for i, current_button in enumerate(common_buttons):
         button = common_buttons[current_button]
@@ -414,9 +428,10 @@ while run:
                                 current_pixel.type_structure, []
                             ):
                                 try:
-                                    current_pixel.status[current_status].add(
-                                        current_day
-                                    )
+                                    if active_tact_for_planing == current_pixel.tact:
+                                        current_pixel.status[current_status].add(
+                                            current_day
+                                        )
                                 except KeyError as e:
                                     print("Problem with status", current_pixel)
 
@@ -485,9 +500,6 @@ while run:
                             for weekday in weekdays_to_print:
                                 draw_grid_for_print(floor, weekday)
                         print("all images created")
-                        button_sleep()
-                    elif button.text == COMPARE:
-                        pass
                         button_sleep()
                     elif button.text == tact_add and number_of_tacts < 6:
                         number_of_tacts += 1

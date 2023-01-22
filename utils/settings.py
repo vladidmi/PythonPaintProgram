@@ -57,11 +57,9 @@ class Floor_level_info:
 
 
 cur_dir = os.getcwd()
-project_font_path = ImageFont.truetype(
-    os.path.join(cur_dir, "utils", "CENTURY.TTF"), 30
-)
+project_font_path = ImageFont.truetype(os.path.join(cur_dir, "utils", "arial.ttf"), 30)
 project_font_path_small = ImageFont.truetype(
-    os.path.join(cur_dir, "utils", "CENTURY.TTF"), 12
+    os.path.join(cur_dir, "utils", "arial.ttf"), 12
 )
 
 WIDTH, HEIGHT = 1200, 750
@@ -135,7 +133,7 @@ def get_font(size):
 
 GERMAN_WEEK_DAYS = (
     ("Monday", "Montag"),
-    ("Tuesday", "Diesntag"),
+    ("Tuesday", "Dienstag"),
     ("Wednesday", "Mittwoch"),
     ("Thursday", "Donnerstag"),
     ("Friday", "Freitag"),
