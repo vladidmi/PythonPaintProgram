@@ -26,7 +26,7 @@ class Button:
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
         pygame.draw.rect(win, BLACK, (self.x, self.y, self.width, self.height), 2)
         if self.text:
-            button_font = get_font(10)
+            button_font = get_font(12)
             text_surface = button_font.render(self.text, 1, self.text_color)
             win.blit(
                 text_surface,
@@ -75,7 +75,7 @@ DO_MASONRY = "Mauern"
 PART_COMPLETE = "Fertig"
 LAST_DAY = "Tag -"
 NEXT_DAY = "Tag +"
-ACITVE_TACT = "  \\/ Ausgew.BA"
+ACITVE_TACT = "  \\/ Ausgew.BA"  # hint text for the chosen region
 
 # Tact division
 TACT = "BA"

@@ -108,7 +108,7 @@ DARK_RED = (192, 0, 0)  # Fertig
 GREY = (128, 128, 128)
 BROWN = (165, 42, 42)
 
-FPS = 100
+FPS = 99
 
 PIXEL_SIZE = 7
 
@@ -128,7 +128,7 @@ pixel_size_increase = 2
 
 
 def get_font(size):
-    return pygame.font.SysFont("comicsans", size)
+    return pygame.font.SysFont("arial", size)
 
 
 GERMAN_WEEK_DAYS = (

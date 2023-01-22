@@ -126,7 +126,7 @@ def draw_buttons(win, current_mode):
                 s.set_alpha(int(SEMI_TRANSPARENT * 256))  # alpha level
                 s.fill(WHITE)  # this fills the entire surface
                 win.blit(s, (button.x, button.y))  # the top-left coordinates
-
+            # added hint to see, what region is chosen
             if (
                 button.text == active_tact_for_planing
                 or button.text == NO_TACT
@@ -134,7 +134,7 @@ def draw_buttons(win, current_mode):
             ):
                 hint_font = get_font(20)
                 hint_text = hint_font.render(ACITVE_TACT, 1, BLACK)
-                win.blit(hint_text, (button.x, button.y - BOX_SIZE))
+                win.blit(hint_text, (button.x, button.y - BOX_SIZE // 2))
 
     for i, current_button in enumerate(common_buttons):
         button = common_buttons[current_button]

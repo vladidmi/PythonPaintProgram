@@ -16,7 +16,7 @@ class Pixel:
     def __str__(self):
         return f"{self.pixel_x}-{self.pixel_y},{self.type_structure},{self.status}"
 
-    def get_color_key(self, current_mode, current_day, active_tact_for_planing):
+    def get_color_key(self, current_mode, current_day):
         if current_mode == PLAN:
             if not self.type_structure:
                 return None, None
