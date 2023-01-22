@@ -355,7 +355,7 @@ while run:
     text_surface = get_font(PROJECT_INFO_TEXT_SIZE).render(
         current_floor.floor_name, 1, BLACK
     )
-    WIN.blit(text_surface, (900, 10))
+    WIN.blit(text_surface, (600, 10))
 
     for event in pygame.event.get():
         if (
