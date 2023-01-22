@@ -57,12 +57,27 @@ class Floor_level_info:
 
 
 cur_dir = os.getcwd()
-project_font_path = ImageFont.truetype(os.path.join(cur_dir, "utils", "arial.ttf"), 30)
-project_font_path_small = ImageFont.truetype(
-    os.path.join(cur_dir, "utils", "arial.ttf"), 12
-)
 
 WIDTH, HEIGHT = 1200, 750
+
+FPS = 99
+
+PIXEL_SIZE = 7
+
+ROWS = HEIGHT // PIXEL_SIZE
+COLS = WIDTH // PIXEL_SIZE
+
+BOX_SIZE = 50
+TOOLBAR_HEIGHT = TOOLBAR_WIDTH = 2 * BOX_SIZE
+BUTTON_TEXT_SIZE = 12
+PROJECT_INFO_TEXT_SIZE = 22
+
+project_font_path = ImageFont.truetype(
+    os.path.join(cur_dir, "utils", "arial.ttf"), PROJECT_INFO_TEXT_SIZE
+)
+project_font_path_small = ImageFont.truetype(
+    os.path.join(cur_dir, "utils", "arial.ttf"), BUTTON_TEXT_SIZE
+)
 
 path_to_image_folder = os.path.join(cur_dir, "imgs")
 full_image_path = {
@@ -108,17 +123,6 @@ DARK_RED = (192, 0, 0)  # Fertig
 GREY = (128, 128, 128)
 BROWN = (165, 42, 42)
 
-FPS = 99
-
-PIXEL_SIZE = 7
-
-ROWS = HEIGHT // PIXEL_SIZE
-COLS = WIDTH // PIXEL_SIZE
-
-BOX_SIZE = 50
-TOOLBAR_HEIGHT = TOOLBAR_WIDTH = 2 * BOX_SIZE
-BUTTON_TEXT_SIZE = 12
-PROJECT_INFO_TEXT_SIZE = 22
 
 BG_COLOR = WHITE
 TRANSPARENT = 0.2

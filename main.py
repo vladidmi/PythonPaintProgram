@@ -78,7 +78,7 @@ def draw_grid_for_print(floor, current_day):
             font=project_font_path,
             fill=BLACK,
         )
-        draw.text((900, 10), floor.floor_name, font=project_font_path, fill=BLACK)
+        draw.text((600, 10), floor.floor_name, font=project_font_path, fill=BLACK)
         for i, work_step in enumerate(legend):
             current_button = plan_buttons[work_step]
             box_x = 10 * (1 + i) + i * BOX_SIZE
@@ -94,7 +94,7 @@ def draw_grid_for_print(floor, current_day):
                 fill=current_button.color,
             )
             draw.text(
-                (box_x, box_y + BOX_SIZE // 2),
+                (box_x + BOX_SIZE // 5, box_y + BOX_SIZE // 2),
                 current_button.text,
                 font=project_font_path_small,
                 fill=BLACK,
