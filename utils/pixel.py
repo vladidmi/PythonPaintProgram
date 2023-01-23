@@ -43,7 +43,8 @@ class Pixel:
                     return step, NOT_TRANSPARENT
         return None, None
 
-    def draw_color(self, win, current_color_key, transparency_level, i, j):
+    @staticmethod
+    def draw_color(win, current_color_key, transparency_level, i, j):
         # drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
         s = pygame.Surface((PIXEL_SIZE, PIXEL_SIZE))  # the size of the rect
         s.set_alpha(int(transparency_level * 256))  # alpha level

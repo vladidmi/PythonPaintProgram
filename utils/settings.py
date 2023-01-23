@@ -148,3 +148,4 @@ GERMAN_WEEK_DAYS = (
 
 HORIZONTAL = "horizontal"
 VERTICAL = "vertical"
+CURSOR_SIZE = "Kursorgröße"

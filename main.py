@@ -357,6 +357,23 @@ while run:
     )
     WIN.blit(text_surface, (600, 10))
 
+    # Showing current cursor size
+    cursor_text_size_surface = get_font(PROJECT_INFO_TEXT_SIZE).render(
+        CURSOR_SIZE, 1, BLACK
+    )
+    WIN.blit(cursor_text_size_surface, (WIDTH - BOX_SIZE // 2, HEIGHT - BOX_SIZE // 2))
+
+    # Drawing cursor
+    for pixel_width in range(pixel_size_increase):
+        for pixel_height in range(pixel_size_increase):
+            Pixel.draw_color(
+                win=WIN,
+                current_color_key=CONCRETE,
+                transparency_level=NOT_TRANSPARENT,
+                i=ROWS + pixel_height,
+                j=COLS + pixel_width,
+            )
+
     for event in pygame.event.get():
         if (
             event.type == pygame.QUIT
@@ -411,6 +428,7 @@ while run:
                                 current_pixel.status = dict()
                             elif current_structure:
                                 current_pixel.type_structure = current_structure
+                                current_pixel.status = dict()
                                 for step in working_steps[current_structure]:
                                     current_pixel.status[step] = set()
 
@@ -469,7 +487,7 @@ while run:
                         ) % len(full_image_path)
                         button_sleep()
                     elif button.text == BIGGER:
-                        pixel_size_increase += 1
+                        pixel_size_increase = min(14, pixel_size_increase + 1)
                     elif button.text == SMALLER:
                         pixel_size_increase = max(1, pixel_size_increase - 1)
                     elif button.text == NEXT_DAY:
