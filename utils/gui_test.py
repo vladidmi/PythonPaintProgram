@@ -39,15 +39,17 @@ class Zoom_Advanced(ttk.Frame):
         # Bind events to the Canvas
         self.canvas.bind('<Configure>', self.show_image)  # canvas is resized
         self.canvas.bind('<MouseWheel>', self.wheel)  # with Windows and MacOS, but not Linux
-        self.canvas.bind('<ButtonPress-3>', self.move_from)
-        self.canvas.bind('<B3-Motion>',     self.move_to)
+        self.canvas.bind('<ButtonPress-2>', self.move_from)
+        self.canvas.bind('<B2-Motion>',     self.move_to)
         self.canvas.bind('<Button-1>',   self.draw_rect) 
         self.canvas.bind('<B1-Motion>',   self.draw_rect)
-        self.master.bind('<Key>', self.delete_rect)
+#        self.master.bind('<Key>', self.delete_rect)
+        self.canvas.bind('<Button-3>',   self.delete_rect) 
+        self.canvas.bind('<B3-Motion>',   self.delete_rect)
         
         self.image = Image.open(path)  # open image
         self.width, self.height = self.image.size
-        self.imscale = 1.0  # scale for the canvaas image
+        self.imscale = 1.0  # scale for the canvas image
         self.delta = 1.3  # zoom magnitude
         # Put image into container rectangle and use it to set proper coordinates to the image
         self.container = self.canvas.create_rectangle(0, 0, self.width, self.height, width=0)
@@ -58,6 +60,9 @@ class Zoom_Advanced(ttk.Frame):
         self.y_initial = 0
         self.x_correction = 0
         self.y_correction = 0
+        self.all_rects = set()
+        self.initial_rect = self.canvas.create_rectangle(0, 0, 10, 10, fill='green',tags=f"initial_rect")
+        self.furthest_rect = self.canvas.create_rectangle(self.width-10, self.height-10, self.width, self.height,  fill='green',tags=f"furthest__rect")
         
     def move_from(self, event):
         ''' Remember previous coordinates for scrolling with the mouse '''
@@ -135,14 +140,27 @@ class Zoom_Advanced(ttk.Frame):
         if (bbox[0] < x < bbox[2] and bbox[1] < y < bbox[3] and 
             bbox[0] < x+self.rect_scale*self.box_size < bbox[2] and bbox[1] < y +self.rect_scale*self.box_size< bbox[3]): pass  # Ok! Inside the image
         else: return
-        self.canvas.create_rectangle(x, y, x+self.rect_scale*self.box_size, y+self.rect_scale*self.box_size, fill='black',tags="square")
+        tag_x = int(1000*(x-bbox[0])/(bbox[2]-bbox[0]))
+        tag_y = int(1000*(y-bbox[1])/(bbox[3]-bbox[1]))
+        self.canvas.create_rectangle(x, y, x+self.rect_scale*self.box_size, y+self.rect_scale*self.box_size, fill='black',tags=f"{tag_x}-{tag_y}")
         print('mouse coordinates', event.x,event.y)
         print('mouse canvas coordinates', self.canvas.canvasx(event.x), self.canvas.canvasy(event.y),)
+        self.all_rects.add(f"{x} und {y}")
+        print(self.all_rects)
     
-    def delete_rect(self, event):
-            print(event.char)
-            if event.char =='d':
-                self.canvas.delete('square')
+    def delete_rect(self, event=None):
+        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
+        bbox = self.canvas.bbox(self.container)
+        tag_x = int(1000*(x-bbox[0])/(bbox[2]-bbox[0]))
+        tag_y = int(1000*(y-bbox[1])/(bbox[3]-bbox[1]))
+        print('delete at',f'{tag_x} und {tag_y}')
+        for i in range(5):
+            for j in range(5):
+                self.canvas.delete(f"{tag_x+i}-{tag_y+j}")
+                self.all_rects.discard(f"{tag_x+i}-{tag_y+j}")
+
+        if event.char =='d':
+            self.canvas.delete('square')
         
 path = r"C:\Users\Vladi\Downloads\norway.jpg"  # place path to your image here
 path = r'C:\Users\dmitrenkovla\Desktop\S21\GTP - Bezeichnung Bauaufzüge.jpg'
