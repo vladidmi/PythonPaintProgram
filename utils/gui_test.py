@@ -43,6 +43,7 @@ class Zoom_Advanced(ttk.Frame):
         self.canvas.bind('<B3-Motion>',     self.move_to)
         self.canvas.bind('<Button-1>',   self.draw_rect) 
         self.canvas.bind('<B1-Motion>',   self.draw_rect)
+        self.master.bind('<Key>', self.delete_rect)
         
         self.image = Image.open(path)  # open image
         self.width, self.height = self.image.size
@@ -129,14 +130,22 @@ class Zoom_Advanced(ttk.Frame):
             self.canvas.imagetk = imagetk  # keep an extra reference to prevent garbage-collection
     
     def draw_rect(self, event=None):
-        x, y = event.x+self.x_correction, event.y+self.y_correction
+        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
         bbox = self.canvas.bbox(self.container)
         if (bbox[0] < x < bbox[2] and bbox[1] < y < bbox[3] and 
             bbox[0] < x+self.rect_scale*self.box_size < bbox[2] and bbox[1] < y +self.rect_scale*self.box_size< bbox[3]): pass  # Ok! Inside the image
         else: return
-        self.canvas.create_rectangle(x, y, x+self.rect_scale*self.box_size, y+self.rect_scale*self.box_size, fill='black')
+        self.canvas.create_rectangle(x, y, x+self.rect_scale*self.box_size, y+self.rect_scale*self.box_size, fill='black',tags="square")
+        print('mouse coordinates', event.x,event.y)
+        print('mouse canvas coordinates', self.canvas.canvasx(event.x), self.canvas.canvasy(event.y),)
+    
+    def delete_rect(self, event):
+            print(event.char)
+            if event.char =='d':
+                self.canvas.delete('square')
         
 path = r"C:\Users\Vladi\Downloads\norway.jpg"  # place path to your image here
+path = r'C:\Users\dmitrenkovla\Desktop\S21\GTP - Bezeichnung Bauaufzüge.jpg'
 root = tk.Tk()
 app = Zoom_Advanced(root, path=path)
 root.mainloop()
