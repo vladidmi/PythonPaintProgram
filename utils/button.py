@@ -1,53 +1,6 @@
 from .settings import *
 
 
-class Button:
-    def __init__(
-        self,
-        x=0,
-        y=0,
-        width=50,
-        height=50,
-        color=WHITE,
-        text=None,
-        text_color=BLACK,
-        label=None,
-    ):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.text = text
-        self.text_color = text_color
-        self.label = label
-
-    def draw(self, win):
-        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
-        pygame.draw.rect(win, BLACK, (self.x, self.y, self.width, self.height), 2)
-        if self.text:
-            button_font = get_font(BUTTON_TEXT_SIZE)
-            text_surface = button_font.render(self.text, 1, self.text_color)
-            win.blit(
-                text_surface,
-                (
-                    self.x + self.width / 2 - text_surface.get_width() / 2,
-                    self.y + self.height / 2 - text_surface.get_height() / 2,
-                ),
-            )
-
-    def clicked(self, pos, current_mode):
-        x, y = pos
-        if self.text not in {**common_buttons, **DRAWING_MODES[current_mode]}:
-            return False
-        if not (x >= self.x and x <= self.x + self.width):
-            return False
-        if not (y >= self.y and y <= self.y + self.height):
-            return False
-
-        return True
-
-
 # COMMON
 ERASE = "Entf."
 SAVE = "Speichern"
@@ -57,7 +10,6 @@ DRAW_MODE = "Modus"
 NEXT_FLOOR = "Ebene +"
 PREVIOUS_FLOOR = "Ebene -"
 PRINT = "Drucken"
-COMPARE = "SOLL-IST"
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
@@ -119,200 +71,125 @@ all_colors = {
 
 # COMMON
 common_buttons = {
-    DRAW_MODE: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=DRAW_MODE,
-        label=DRAW_MODE,
-    ),
-    NEXT_FLOOR: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=NEXT_FLOOR,
-        label=NEXT_FLOOR,
-    ),
-    PREVIOUS_FLOOR: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=PREVIOUS_FLOOR,
-        label=PREVIOUS_FLOOR,
-    ),
-    BIGGER: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=BIGGER,
-        label=BIGGER,
-    ),
-    SMALLER: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=SMALLER,
-        label=SMALLER,
-    ),
-    SAVE: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=SAVE,
-        label=SAVE,
-    ),
-    PRINT: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=PRINT,
-        label=PRINT,
-    ),
-    # COMPARE: Button(
-    #     width=BOX_SIZE,
-    #     height=BOX_SIZE,
-    #     color=WHITE,
-    #     text=COMPARE,
-    #     label=COMPARE,
-    # ),
+    DRAW_MODE: {
+        "color": WHITE,
+        "text": DRAW_MODE,
+    },
+    NEXT_FLOOR: {
+        "color": WHITE,
+        "text": NEXT_FLOOR,
+    },
+    PREVIOUS_FLOOR: {
+        "color": WHITE,
+        "text": PREVIOUS_FLOOR,
+    },
+    BIGGER: {
+        "color": WHITE,
+        "text": BIGGER,
+    },
+    SMALLER: {
+        "color": WHITE,
+        "text": SMALLER,
+    },
+    SAVE: {
+        "color": WHITE,
+        "text": SAVE,
+    },
+    PRINT: {
+        "color": WHITE,
+        "text": PRINT,
+    },
 }
 
-ERASE_BUTTON = Button(
-    width=BOX_SIZE,
-    height=BOX_SIZE,
-    color=WHITE,
-    text=ERASE,
-    label=ERASE,
-)
+ERASE_BUTTON = {
+    "color": WHITE,
+    "text": ERASE,
+}
+
 
 # Drawing structure
 draw_structure_buttons = {
-    CONCRETE: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[CONCRETE],
-        text=CONCRETE,
-        text_color=WHITE,
-        label=CONCRETE,
-    ),
-    PREFABRICATED_PART: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[PREFABRICATED_PART],
-        text=PREFABRICATED_PART,
-        text_color=WHITE,
-        label=PREFABRICATED_PART,
-    ),
-    MASONRY: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[MASONRY],
-        text=MASONRY,
-        text_color=WHITE,
-        label=MASONRY,
-    ),
+    CONCRETE: {
+        "color": all_colors[CONCRETE],
+        "text": CONCRETE,
+        "text_color": WHITE,
+    },
+    PREFABRICATED_PART: {
+        "color": all_colors[PREFABRICATED_PART],
+        "text": PREFABRICATED_PART,
+        "text_color": WHITE,
+    },
+    MASONRY: {
+        "color": all_colors[MASONRY],
+        "text": MASONRY,
+        "text_color": WHITE,
+    },
     ERASE: ERASE_BUTTON,
 }
 
 # Planning
 plan_buttons_options = {
-    LAST_DAY: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=LAST_DAY,
-        label=LAST_DAY,
-    ),
-    NEXT_DAY: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=NEXT_DAY,
-        label=NEXT_DAY,
-    ),
+    LAST_DAY: {
+        "color": WHITE,
+        "text": LAST_DAY,
+    },
+    NEXT_DAY: {
+        "color": WHITE,
+        "text": NEXT_DAY,
+    },
 }
 
 plan_buttons = {
-    FORMWORK: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[FORMWORK],
-        text=FORMWORK,
-        label=FORMWORK,
-    ),
-    REINFORCE: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[REINFORCE],
-        text=REINFORCE,
-        label=REINFORCE,
-    ),
-    POUR_CONCRETE: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[POUR_CONCRETE],
-        text=POUR_CONCRETE,
-        label=POUR_CONCRETE,
-    ),
-    PREFABRICATED_PART_ASSEMBLE: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[PREFABRICATED_PART_ASSEMBLE],
-        text=PREFABRICATED_PART_ASSEMBLE,
-        label=PREFABRICATED_PART_ASSEMBLE,
-    ),
-    DO_MASONRY: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[DO_MASONRY],
-        text=DO_MASONRY,
-        label=DO_MASONRY,
-    ),
-    PART_COMPLETE: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=all_colors[PART_COMPLETE],
-        text=PART_COMPLETE,
-        label=PART_COMPLETE,
-    ),
+    FORMWORK: {
+        "color": all_colors[FORMWORK],
+        "text": FORMWORK,
+    },
+    REINFORCE: {
+        "color": all_colors[REINFORCE],
+        "text": REINFORCE,
+    },
+    POUR_CONCRETE: {
+        "color": all_colors[POUR_CONCRETE],
+        "text": POUR_CONCRETE,
+    },
+    PREFABRICATED_PART_ASSEMBLE: {
+        "color": all_colors[PREFABRICATED_PART_ASSEMBLE],
+        "text": PREFABRICATED_PART_ASSEMBLE,
+    },
+    DO_MASONRY: {
+        "color": all_colors[DO_MASONRY],
+        "text": DO_MASONRY,
+    },
+    PART_COMPLETE: {
+        "color": all_colors[PART_COMPLETE],
+        "text": PART_COMPLETE,
+    },
     ERASE: ERASE_BUTTON,
 }
 
 # Tact division
 tact_button_options = {
-    tact_add: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=tact_add,
-        label=tact_add,
-    ),
-    tact_delete: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=tact_delete,
-        label=tact_delete,
-    ),
+    tact_add: {
+        "color": WHITE,
+        "text": tact_add,
+    },
+    tact_delete: {
+        "color": WHITE,
+        "text": tact_delete,
+    },
 }
 
 tact_button_colors = []
 tact_buttons = {
-    NO_TACT: Button(
-        width=BOX_SIZE,
-        height=BOX_SIZE,
-        color=WHITE,
-        text=NO_TACT,
-        label=NO_TACT,
-    ),
+    NO_TACT: {
+        "color": WHITE,
+        "text": NO_TACT,
+    },
     **{
-        f"{TACT_PART} {i+1}": Button(
-            width=BOX_SIZE,
-            height=BOX_SIZE,
-            color=all_colors[f"{TACT_PART} {i+1}"],
-            text=f"{TACT_PART} {i+1}",
-            label=f"{TACT_PART} {i+1}",
-        )
+        f"{TACT_PART} {i+1}": {
+            "color": all_colors[f"{TACT_PART} {i+1}"],
+            "text": f"{TACT_PART} {i+1}",
+        }
         for i in range(number_of_tacts)
     },
 }
