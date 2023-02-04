@@ -1,4 +1,3 @@
-import pygame
 import os
 import datetime
 import holidays
@@ -9,10 +8,6 @@ import re
 import numpy as np
 import time
 import plotly.express as px
-
-
-def button_sleep(seconds_to_sleep=0.2):
-    time.sleep(seconds_to_sleep)
 
 
 def resize_image(image_path):
@@ -60,15 +55,11 @@ cur_dir = os.getcwd()
 
 WIDTH, HEIGHT = 1200, 750
 
-FPS = 99
-
 PIXEL_SIZE = 7
 
 ROWS = HEIGHT // PIXEL_SIZE
 COLS = WIDTH // PIXEL_SIZE
 
-BOX_SIZE = 50
-TOOLBAR_HEIGHT = TOOLBAR_WIDTH = 2 * BOX_SIZE
 BUTTON_TEXT_SIZE = 12
 PROJECT_INFO_TEXT_SIZE = 22
 
@@ -85,9 +76,6 @@ full_image_path = {
     for file in os.listdir(path_to_image_folder)
     if ".jpg" in file
 }
-
-pygame.init()
-pygame.font.init()
 
 weekmask_germany = "Mon Tue Wed Thu Fri"
 german_holidays = [
@@ -109,20 +97,19 @@ german_business_day = CustomBusinessDay(
     holidays=german_holidays, weekmask=weekmask_germany
 )
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)  # Schalen
-LIGHT_BLUE = (0, 176, 240)  # Bewehren
-LIGHT_GREEN = (0, 192, 0)  # Betonieren
-VIOLET = (128, 87, 255)  # Fertigteil setzen
-ORANGE = (255, 192, 0)  # Mauern
-DARK_RED = (192, 0, 0)  # Fertig
-GREY = (128, 128, 128)
-BROWN = (165, 42, 42)
-
+WHITE = "#ffffff"
+BLACK = "#000000"
+RED = "#ff0000"
+BLUE = "#0000ff"
+GREEN = "#00ff00"
+YELLOW = "#ffff00"  # Schalen
+LIGHT_BLUE = "#00b0f0"  # Bewehren
+LIGHT_GREEN = "#00c000"  # Betonieren
+VIOLET = "#8057ff"  # Fertigteil setzen
+ORANGE = "#ffc000"  # Mauern
+DARK_RED = "#c00000"  # Fertig
+GREY = "#808080"
+BROWN = "#a52a2a"
 
 BG_COLOR = WHITE
 TRANSPARENT = 0.2
@@ -130,11 +117,6 @@ SEMI_TRANSPARENT = 0.75
 NOT_TRANSPARENT = 1
 
 pixel_size_increase = 2
-
-
-def get_font(size):
-    return pygame.font.SysFont("arial", size)
-
 
 GERMAN_WEEK_DAYS = (
     ("Monday", "Montag"),
@@ -149,3 +131,99 @@ GERMAN_WEEK_DAYS = (
 HORIZONTAL = "horizontal"
 VERTICAL = "vertical"
 CURSOR_SIZE = "Kursorgröße"
+
+# COMMON
+ERASE = "Entf."
+SAVE = "Speichern"
+BIGGER = "Größer"
+SMALLER = "Kleiner"
+DRAW_MODE = "Modus"
+NEXT_FLOOR = "Ebene +"
+PREVIOUS_FLOOR = "Ebene -"
+PRINT = "Drucken"
+BUTTON_COLOUR = "Button_colour"
+BUTTON_TEXT_COLOUR = "Button_text_colour"
+
+# Drawing structure
+DRAW_SCTRUCTURE = "Draw structure"
+CONCRETE = "Beton"
+PREFABRICATED_PART = "HFT"
+MASONRY = "MW"
+
+# Planning
+PLAN = "Plan"
+FORMWORK = "SCH"
+REINFORCE = "BEW"
+POUR_CONCRETE = "BET"
+PREFABRICATED_PART_ASSEMBLE = "HFT"
+DO_MASONRY = "MW"
+PART_COMPLETE = "Fertig"
+LAST_DAY = "Tag -"
+NEXT_DAY = "Tag +"
+ACITVE_TACT = "  \\/ Ausgew.BA"  # hint text for the chosen region
+
+# Tact division
+TACT = "BA"
+number_of_tacts = 6
+tact_id = None
+TACT_PART = "BA."
+tact_add = "BA+"
+tact_delete = "BA-"
+NO_TACT = "Kein BA"
+
+
+# Color_dict
+all_colors = {
+    # COMMON
+    ERASE: WHITE,
+    SAVE: WHITE,
+    BIGGER: WHITE,
+    SMALLER: WHITE,
+    DRAW_MODE: WHITE,
+    NEXT_FLOOR: WHITE,
+    PREVIOUS_FLOOR: WHITE,
+    PRINT: WHITE,
+    # Drawing structure
+    CONCRETE: BLACK,
+    PREFABRICATED_PART: RED,
+    MASONRY: GREEN,
+    # Planning
+    FORMWORK: YELLOW,
+    REINFORCE: LIGHT_BLUE,
+    POUR_CONCRETE: LIGHT_GREEN,
+    PREFABRICATED_PART_ASSEMBLE: VIOLET,
+    DO_MASONRY: ORANGE,
+    PART_COMPLETE: DARK_RED,
+    NEXT_DAY: WHITE,
+    LAST_DAY: WHITE,
+    # Tact division
+    f"{TACT_PART} 1": BLUE,
+    f"{TACT_PART} 2": ORANGE,
+    f"{TACT_PART} 3": VIOLET,
+    f"{TACT_PART} 4": GREY,
+    f"{TACT_PART} 5": YELLOW,
+    f"{TACT_PART} 6": BROWN,
+    NO_TACT: WHITE,
+}
+
+# Working steps for structures
+working_steps = {
+    CONCRETE: [FORMWORK, REINFORCE, POUR_CONCRETE, PART_COMPLETE],
+    PREFABRICATED_PART: [
+        PREFABRICATED_PART_ASSEMBLE,
+        REINFORCE,
+        POUR_CONCRETE,
+        PART_COMPLETE,
+    ],
+    MASONRY: [DO_MASONRY, PART_COMPLETE],
+}
+
+working_steps_flat = set(
+    item
+    for sublist in [working_steps[key] for key in working_steps]
+    for item in sublist
+)
+
+color_map_for_plotly = {
+    step: "rgb" + str(all_colors[step]) for step in working_steps_flat
+}

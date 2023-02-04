@@ -1,5 +1,4 @@
 from .settings import *
-from .button import *
 
 
 class Pixel:
