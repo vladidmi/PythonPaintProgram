@@ -27,7 +27,7 @@ class AutoScrollbar(ttk.Scrollbar):
 class Zoom_Advanced(ttk.Frame):
     """Advanced zoom of the image"""
 
-    def __init__(self, mainframe, path):
+    def __init__(self, mainframe):
         """Initialize the main Frame"""
         ttk.Frame.__init__(self, master=mainframe)
         # Create canvas and put image on it
@@ -41,16 +41,11 @@ class Zoom_Advanced(ttk.Frame):
         # initial values
         self.drawing_mode_id = -1
         self.current_tact = None
-        self.current_structure = None
+        self.current_structure = CONCRETE
         self.current_status = None
         self.current_floor_id = 0
         self.erase_mode = False
-        self.shift_x = None
-        self.shift_y = None
-        self.drawing_direction = None  # can be horizontal or vertical
         self.active_tact_for_planing = f"{TACT_PART} 1"
-        self.grid = list()
-        self.pixel_history = dict()
         self.all_floor_level_info = list()
 
         self.current_day = pd.Timestamp(datetime.date.today())
@@ -60,10 +55,12 @@ class Zoom_Advanced(ttk.Frame):
             pass
 
         def change_floor(floor_delta):
-            if floor_delta>0:
-                self.current_floor_id = min(floor_delta+self.current_floor_id, len(full_image_path)-1)
-            elif floor_delta<0:
-                self.current_floor_id = max(floor_delta+self.current_floor_id, 0)
+            if floor_delta > 0:
+                self.current_floor_id = min(
+                    floor_delta + self.current_floor_id, len(full_image_path) - 1
+                )
+            elif floor_delta < 0:
+                self.current_floor_id = max(floor_delta + self.current_floor_id, 0)
             self.delete_all_rect()
             current_image = full_image_path[
                 list(full_image_path)[self.current_floor_id]
@@ -78,6 +75,31 @@ class Zoom_Advanced(ttk.Frame):
             for the_frame in self.drawing_mode_frames[self.current_mode]:
                 the_frame.tkraise()
             self.delete_all_rect()
+            if self.current_mode == DRAW_SCTRUCTURE:
+                bbox = self.canvas.bbox(self.container)  # get image area
+                for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
+                    for pixel in grid_row:
+                        if pixel.type_structure:
+                            self.canvas.create_rectangle(
+                                bbox[0]
+                                + pixel.pixel_x * self.rect_scale * self.box_size
+                                - self.rect_scale * self.box_size / 2,
+                                bbox[1]
+                                + pixel.pixel_y * self.rect_scale * self.box_size
+                                - self.rect_scale * self.box_size / 2,
+                                bbox[0]
+                                + pixel.pixel_x * self.rect_scale * self.box_size
+                                + self.rect_scale * self.box_size / 2,
+                                bbox[1]
+                                + pixel.pixel_y * self.rect_scale * self.box_size
+                                + self.rect_scale * self.box_size / 2,
+                                fill=all_colors[pixel.type_structure],
+                                tags=f"{pixel.pixel_x}-{pixel.pixel_y}",
+                            )
+                            self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
+
+        def save_floor_information():
+            self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
 
         # Navigation menu on the right (tact and plan)
         self.right_frame_tact_and_plan = tk.Frame(master=self.master)
@@ -262,7 +284,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=SAVE,
-            command=blank_function,
+            command=save_floor_information,
             bg=all_colors[SAVE],
         )
         self.save_button["font"] = button_font
@@ -638,32 +660,29 @@ class Zoom_Advanced(ttk.Frame):
 
     # Functions for grid
     def init_grid(self, image_file_width, image_file_height, pixel_history):
-
+        grid = list()
         for j in range(image_file_height):
-            self.grid.append(list())
+            grid.append(list())
             for i in range(image_file_width):
-                if f"{i}-{j}" not in self.pixel_history:
-                    self.grid[j].append(Pixel(i, j))
+                if f"{i}-{j}" not in pixel_history:
+                    grid[j].append(Pixel(i, j))
                 else:
-                    type_structure = self.pixel_history[f"{i}-{j}"][
-                        "pixel_type_structure"
-                    ]
+                    type_structure = pixel_history[f"{i}-{j}"]["pixel_type_structure"]
                     status = dict()
                     if type_structure:
                         for step in working_steps[type_structure]:
-                            current_step = self.pixel_history[f"{i}-{j}"].get(
-                                step, set()
-                            )
+                            current_step = pixel_history[f"{i}-{j}"].get(step, set())
                             status[step] = current_step
-                    self.grid[j].append(
+                    grid[j].append(
                         Pixel(
                             pixel_x=i,
                             pixel_y=j,
-                            tact=self.pixel_history[f"{i}-{j}"]["pixel_BA"],
+                            tact=pixel_history[f"{i}-{j}"]["pixel_BA"],
                             type_structure=type_structure,
                             status=status,
                         )
                     )
+        return grid
 
     def draw_grid(self):
         for i, row in enumerate(self.grid):
@@ -675,6 +694,7 @@ class Zoom_Advanced(ttk.Frame):
                     pixel.draw_color(current_color_key, current_transparency, i, j)
 
     def draw_rect(self, event=None):
+        grid = self.all_floor_level_info[self.current_floor_id].grid
         x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
         bbox = self.canvas.bbox(self.container)
         if (
@@ -706,6 +726,11 @@ class Zoom_Advanced(ttk.Frame):
                 tags=f"{tag_x}-{tag_y}",
             )
             self.all_rects.add(f"{tag_x}-{tag_y}")
+        current_pixel = grid[tag_y][tag_x]
+        current_pixel.type_structure = self.current_structure
+        current_pixel.status = dict()
+        for step in working_steps[self.current_structure]:
+            current_pixel.status[step] = set()
 
     def delete_rect(self, event=None):
         x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
@@ -824,10 +849,10 @@ class Zoom_Advanced(ttk.Frame):
                 for df_column in df.columns:
                     if df_column in working_steps_flat:
                         df[f"{df_column}_erster_Tag"] = df[df_column].apply(
-                            return_only_from_set, function_for_set=min
+                            self.return_only_from_set, function_for_set=min
                         )
                         df[f"{df_column}_letzter_Tag"] = df[df_column].apply(
-                            return_only_from_set, function_for_set=max
+                            self.return_only_from_set, function_for_set=max
                         )
                 all_floor_levels.append(df)
         print("Files saved successfully")
@@ -931,14 +956,12 @@ class Zoom_Advanced(ttk.Frame):
             return None
 
 
-path = r"C:\Users\Vladi\Downloads\norway.jpg"  # place path to your image here
-# path = r'C:\Users\dmitrenkovla\Desktop\S21\GTP - Bezeichnung Bauaufzüge.jpg'
 root = tk.Tk()
 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight() - 100
 root.geometry(f"{screen_width}x{screen_height}-1+1")
 
-app = Zoom_Advanced(root, path=path)
+app = Zoom_Advanced(root)
 
 root.mainloop()
