@@ -2,7 +2,15 @@ from .settings import *
 
 
 class Pixel:
-    def __init__(self, pixel_x, pixel_y, type_structure=None, tact=None, status=None):
+    def __init__(
+        self,
+        pixel_x,
+        pixel_y,
+        type_structure=None,
+        tact=None,
+        status=None,
+        tk_rect=None,
+    ):
         self.pixel_x = pixel_x
         self.pixel_y = pixel_y
         self.type_structure = type_structure
@@ -11,6 +19,7 @@ class Pixel:
         else:
             self.status = status
         self.tact = tact
+        self.tk_rect = tk_rect
 
     def __str__(self):
         return f"{self.pixel_x}-{self.pixel_y},{self.type_structure},{self.status}"
@@ -43,9 +52,5 @@ class Pixel:
         return None, None
 
     @staticmethod
-    def draw_color(win, current_color_key, transparency_level, i, j):
-        # drawing with transparency (https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangles-and-polygons-in-pygamepyg)
-        s = pygame.Surface((PIXEL_SIZE, PIXEL_SIZE))  # the size of the rect
-        s.set_alpha(int(transparency_level * 256))  # alpha level
-        s.fill(all_colors[current_color_key])  # this fills the entire surface
-        win.blit(s, (j * PIXEL_SIZE, i * PIXEL_SIZE))  # the top-left coordinates
+    def draw_color(current_color_key, transparency_level, i, j):
+        pass

@@ -53,12 +53,6 @@ class Floor_level_info:
 
 cur_dir = os.getcwd()
 
-WIDTH, HEIGHT = 1200, 750
-
-PIXEL_SIZE = 7
-
-ROWS = HEIGHT // PIXEL_SIZE
-COLS = WIDTH // PIXEL_SIZE
 
 BUTTON_TEXT_SIZE = 12
 PROJECT_INFO_TEXT_SIZE = 22

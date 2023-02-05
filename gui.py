@@ -49,6 +49,9 @@ class Zoom_Advanced(ttk.Frame):
         self.shift_y = None
         self.drawing_direction = None  # can be horizontal or vertical
         self.active_tact_for_planing = f"{TACT_PART} 1"
+        self.grid = list()
+        self.pixel_history = dict()
+        self.all_floor_level_info = list()
 
         self.current_day = pd.Timestamp(datetime.date.today())
 
@@ -56,13 +59,25 @@ class Zoom_Advanced(ttk.Frame):
         def blank_function():
             pass
 
+        def change_floor(floor_delta):
+            if floor_delta>0:
+                self.current_floor_id = min(floor_delta+self.current_floor_id, len(full_image_path)-1)
+            elif floor_delta<0:
+                self.current_floor_id = max(floor_delta+self.current_floor_id, 0)
+            self.delete_all_rect()
+            current_image = full_image_path[
+                list(full_image_path)[self.current_floor_id]
+            ]
+            self.draw_image(current_image)
+
         def change_mode():
             self.drawing_mode_id = (self.drawing_mode_id + 1) % len(
                 self.drawing_mode_frames
             )
-            current_mode = list(self.drawing_mode_frames)[self.drawing_mode_id]
-            for the_frame in self.drawing_mode_frames[current_mode]:
+            self.current_mode = list(self.drawing_mode_frames)[self.drawing_mode_id]
+            for the_frame in self.drawing_mode_frames[self.current_mode]:
                 the_frame.tkraise()
+            self.delete_all_rect()
 
         # Navigation menu on the right (tact and plan)
         self.right_frame_tact_and_plan = tk.Frame(master=self.master)
@@ -73,7 +88,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=NEXT_FLOOR,
-            command=blank_function,
+            command=lambda: change_floor(1),
             bg=all_colors[NEXT_FLOOR],
         )
         self.next_floor_tact_and_plan["font"] = button_font
@@ -86,7 +101,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PREVIOUS_FLOOR,
-            command=blank_function,
+            command=lambda: change_floor(-1),
             bg=all_colors[PREVIOUS_FLOOR],
         )
         self.previous_floor_tact_and_plan["font"] = button_font
@@ -185,7 +200,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=NEXT_FLOOR,
-            command=blank_function,
+            command=lambda: change_floor(1),
             bg=all_colors[NEXT_FLOOR],
         )
         self.next_floor_draw["font"] = button_font
@@ -196,7 +211,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PREVIOUS_FLOOR,
-            command=blank_function,
+            command=lambda: change_floor(-1),
             bg=all_colors[PREVIOUS_FLOOR],
         )
         self.previous_floor_draw["font"] = button_font
@@ -474,23 +489,25 @@ class Zoom_Advanced(ttk.Frame):
         self.canvas.bind("<Button-3>", self.delete_rect)
         self.canvas.bind("<B3-Motion>", self.delete_rect)
 
-        self.image = Image.open(path)  # open image
-        self.width, self.height = self.image.size
-        self.imscale = 1.0  # scale for the canvas image
-        self.delta = 1.3  # zoom magnitude
-        # Put image into container rectangle and use it to set proper coordinates to the image
-        self.container = self.canvas.create_rectangle(
-            0, 0, self.width, self.height, width=0
-        )
-        self.show_image()
-        self.rect_scale = 1
-        self.box_size = 5
-        self.x_initial = 0
-        self.y_initial = 0
-        self.x_correction = 0
-        self.y_correction = 0
+        for image_file in full_image_path:
+            new_floor_level = Floor_level_info(image_file, full_image_path[image_file])
+            image = Image.open(full_image_path[image_file])  # open image
+            image_file_width, image_file_height = image.size
+            try:
+                pixel_history = self.load_pixel_info(new_floor_level.full_path_xlsx)
+            except FileNotFoundError as e:
+                pixel_history = dict()
+                print(f"File {new_floor_level.full_path_xlsx} not found")
+            new_floor_level.grid = self.init_grid(
+                image_file_width, image_file_height, pixel_history
+            )
+            self.all_floor_level_info.append(new_floor_level)
+
+        current_image = full_image_path[list(full_image_path)[self.current_floor_id]]
+        self.draw_image(current_image)
         self.all_rects = set()
         change_mode()
+        self.current_mode = list(self.drawing_mode_frames)[self.drawing_mode_id]
 
     def move_from(self, event):
         """Remember previous coordinates for scrolling with the mouse"""
@@ -590,6 +607,73 @@ class Zoom_Advanced(ttk.Frame):
                 imagetk  # keep an extra reference to prevent garbage-collection
             )
 
+    # Drawing Image
+    def draw_image(self, image_path):
+        self.image = Image.open(image_path)  # open image
+        self.width, self.height = self.image.size
+        self.imscale = 1.0  # scale for the canvas image
+        self.delta = 1.3  # zoom magnitude
+        # Put image into container rectangle and use it to set proper coordinates to the image
+        self.container = self.canvas.create_rectangle(
+            0, 0, self.width, self.height, width=0
+        )
+        self.show_image()
+        self.rect_scale = 1
+        self.bbox = self.canvas.bbox(self.container)
+        self.image_width_in_pixels = int(
+            1000
+            * (self.bbox[2] - self.bbox[0])
+            / (max((self.bbox[2] - self.bbox[0]), (self.bbox[3] - self.bbox[1])))
+        )
+        self.image_height_in_pixels = int(
+            1000
+            * (self.bbox[3] - self.bbox[1])
+            / (max((self.bbox[2] - self.bbox[0]), (self.bbox[3] - self.bbox[1])))
+        )
+        self.box_size = (self.bbox[2] - self.bbox[0]) / self.image_width_in_pixels
+        self.x_initial = 0
+        self.y_initial = 0
+        self.x_correction = 0
+        self.y_correction = 0
+
+    # Functions for grid
+    def init_grid(self, image_file_width, image_file_height, pixel_history):
+
+        for j in range(image_file_height):
+            self.grid.append(list())
+            for i in range(image_file_width):
+                if f"{i}-{j}" not in self.pixel_history:
+                    self.grid[j].append(Pixel(i, j))
+                else:
+                    type_structure = self.pixel_history[f"{i}-{j}"][
+                        "pixel_type_structure"
+                    ]
+                    status = dict()
+                    if type_structure:
+                        for step in working_steps[type_structure]:
+                            current_step = self.pixel_history[f"{i}-{j}"].get(
+                                step, set()
+                            )
+                            status[step] = current_step
+                    self.grid[j].append(
+                        Pixel(
+                            pixel_x=i,
+                            pixel_y=j,
+                            tact=self.pixel_history[f"{i}-{j}"]["pixel_BA"],
+                            type_structure=type_structure,
+                            status=status,
+                        )
+                    )
+
+    def draw_grid(self):
+        for i, row in enumerate(self.grid):
+            for j, pixel in enumerate(row):
+                current_color_key, current_transparency = pixel.get_color_key(
+                    self.current_mode, self.current_day
+                )
+                if current_color_key:
+                    pixel.draw_color(current_color_key, current_transparency, i, j)
+
     def draw_rect(self, event=None):
         x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
         bbox = self.canvas.bbox(self.container)
@@ -602,23 +686,32 @@ class Zoom_Advanced(ttk.Frame):
             pass  # Ok! Inside the image
         else:
             return
-        tag_x = int(1000 * (x - bbox[0]) / (bbox[2] - bbox[0]))
-        tag_y = int(1000 * (y - bbox[1]) / (bbox[3] - bbox[1]))
-        self.canvas.create_rectangle(
-            x - self.rect_scale * self.box_size / 2,
-            y - self.rect_scale * self.box_size / 2,
-            x + self.rect_scale * self.box_size / 2,
-            y + self.rect_scale * self.box_size / 2,
-            fill="black",
-            tags=f"{tag_x}-{tag_y}",
-        )
-        self.all_rects.add(f"{tag_x}-{tag_y}")
+        tag_x = int(self.image_width_in_pixels * (x - bbox[0]) / (bbox[2] - bbox[0]))
+        tag_y = int(self.image_height_in_pixels * (y - bbox[1]) / (bbox[3] - bbox[1]))
+        if f"{tag_x}-{tag_y}" not in self.all_rects:
+            self.canvas.create_rectangle(
+                bbox[0]
+                + tag_x * self.rect_scale * self.box_size
+                - self.rect_scale * self.box_size / 2,
+                bbox[1]
+                + tag_y * self.rect_scale * self.box_size
+                - self.rect_scale * self.box_size / 2,
+                bbox[0]
+                + tag_x * self.rect_scale * self.box_size
+                + self.rect_scale * self.box_size / 2,
+                bbox[1]
+                + tag_y * self.rect_scale * self.box_size
+                + self.rect_scale * self.box_size / 2,
+                fill="black",
+                tags=f"{tag_x}-{tag_y}",
+            )
+            self.all_rects.add(f"{tag_x}-{tag_y}")
 
     def delete_rect(self, event=None):
         x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
         bbox = self.canvas.bbox(self.container)
-        tag_x = int(1000 * (x - bbox[0]) / (bbox[2] - bbox[0]))
-        tag_y = int(1000 * (y - bbox[1]) / (bbox[3] - bbox[1]))
+        tag_x = int(self.image_width_in_pixels * (x - bbox[0]) / (bbox[2] - bbox[0]))
+        tag_y = int(self.image_height_in_pixels * (y - bbox[1]) / (bbox[3] - bbox[1]))
         for i in range(5):
             for j in range(5):
                 self.canvas.delete(f"{tag_x+i}-{tag_y+j}")
@@ -626,6 +719,216 @@ class Zoom_Advanced(ttk.Frame):
 
         if event.char == "d":
             self.canvas.delete("square")
+
+    def delete_all_rect(self):
+        for rect in self.all_rects:
+            self.canvas.delete(rect)
+
+        self.all_rects = set()
+
+    def draw_grid_for_print(self, floor, current_day):
+        img = Image.open(floor.full_path_image)
+        WIDTH, HEIGHT = img.size
+        TOOLBAR_HEIGHT = 100
+        BOX_SIZE = 50
+        blank_image = Image.new(
+            mode="RGB", size=(WIDTH, HEIGHT + TOOLBAR_HEIGHT), color=WHITE
+        )
+
+        blank_image.paste(img)
+        img = blank_image
+        active_works_on_floor = False
+        draw = ImageDraw.Draw(img, "RGBA")
+        legend = set()
+        for i, row in enumerate(floor.grid):
+            for j, pixel in enumerate(row):
+                current_color_key, current_transparency = pixel.get_color_key_for_print(
+                    current_day
+                )
+                if current_color_key:
+                    active_works_on_floor = True
+                    legend.add(current_color_key)
+                    draw.rectangle(
+                        xy=(
+                            self.box_size * pixel.pixel_x,
+                            self.box_size * pixel.pixel_y,
+                            self.box_size * pixel.pixel_x + self.box_size,
+                            self.box_size * pixel.pixel_y + self.box_size,
+                        ),
+                        outline=all_colors[current_color_key],
+                        fill=(
+                            *all_colors[current_color_key],
+                            255 * current_transparency,
+                        ),
+                    )
+        if active_works_on_floor:
+            today_string = current_day.strftime("%A-%d-%m-%Y")
+            for german_week_day in GERMAN_WEEK_DAYS:
+                today_string = today_string.replace(*german_week_day)
+            draw.text(
+                (10, 10),
+                today_string,
+                font=project_font_path,
+                fill=BLACK,
+            )
+            draw.text((600, 10), floor.floor_name, font=project_font_path, fill=BLACK)
+            for i, work_step in enumerate(legend):
+                box_x = 10 * (1 + i) + i * BOX_SIZE
+                box_y = HEIGHT + BOX_SIZE // 2
+                draw.rectangle(
+                    xy=(
+                        box_x,
+                        box_y,
+                        box_x + BOX_SIZE,
+                        box_y + BOX_SIZE,
+                    ),
+                    outline=BLACK,
+                    fill=all_colors[legend],
+                )
+                draw.text(
+                    (box_x + BOX_SIZE // 5, box_y + BOX_SIZE // 2),
+                    legend,
+                    font=project_font_path_small,
+                    fill=BLACK,
+                )
+            img.save(
+                os.path.join(
+                    floor.folder_with_print,
+                    floor.floor_name + "_" + str(current_day) + ".jpg",
+                )
+            )
+
+    def save_pixel_info(self, all_floor_level_info, make_time_plan=False):
+        all_floor_levels = list()
+        for temp_floor in all_floor_level_info:
+            grid = temp_floor.grid
+            pixel_info = list()
+            for i, row in enumerate(grid):
+                for j, pixel in enumerate(row):
+                    if pixel.tact or pixel.type_structure:
+                        pixel_info.append(
+                            {
+                                "pixel_id": f"{pixel.pixel_x}-{pixel.pixel_y}",
+                                "pixel_x": pixel.pixel_x,
+                                "pixel_y": pixel.pixel_y,
+                                "pixel_type_structure": pixel.type_structure,
+                                "pixel_BA": pixel.tact,
+                                **pixel.status,
+                            }
+                        )
+            df = pd.DataFrame(pixel_info)
+            df.to_excel(temp_floor.full_path_xlsx, index=False)
+
+            if make_time_plan:
+                df["geschoss"] = temp_floor.floor_name
+                for df_column in df.columns:
+                    if df_column in working_steps_flat:
+                        df[f"{df_column}_erster_Tag"] = df[df_column].apply(
+                            return_only_from_set, function_for_set=min
+                        )
+                        df[f"{df_column}_letzter_Tag"] = df[df_column].apply(
+                            return_only_from_set, function_for_set=max
+                        )
+                all_floor_levels.append(df)
+        print("Files saved successfully")
+
+        if make_time_plan:
+            all_floor_levels_df = pd.concat(all_floor_levels)
+            all_floor_levels_df["pixel_BA"] = all_floor_levels_df["pixel_BA"].replace(
+                {None: "Kein BA"}
+            )
+            floor_levels_df_grouped = (
+                all_floor_levels_df.groupby(
+                    ["geschoss", "pixel_BA", "pixel_type_structure"]
+                )
+                .agg([min, max])
+                .reset_index()
+            )
+            floor_levels_df_grouped.columns = [
+                "_".join(column) for column in floor_levels_df_grouped.columns
+            ]
+            floor_levels_df_grouped = floor_levels_df_grouped[
+                [
+                    column
+                    for column in floor_levels_df_grouped.columns
+                    if column in ["geschoss_", "pixel_BA_", "pixel_type_structure_"]
+                    or "erster_Tag_min" in column
+                    or "letzter_Tag_max" in column
+                ]
+            ]
+            floor_levels_melted = floor_levels_df_grouped.melt(
+                id_vars=["geschoss_", "pixel_BA_", "pixel_type_structure_"],
+                var_name="Vorgang",
+                value_name="Datum",
+            ).dropna()
+            floor_levels_melted["Zeilenbezeichnung"] = (
+                floor_levels_melted["geschoss_"]
+                + "_"
+                + +floor_levels_melted["pixel_BA_"]
+                + "_"
+                + +floor_levels_melted["pixel_type_structure_"]
+                + "_"
+                + +floor_levels_melted["Vorgang"].apply(lambda x: x.split("_")[0])
+            )
+            floor_levels_melted = floor_levels_melted[["Zeilenbezeichnung", "Datum"]]
+            floor_levels_cleaned = (
+                floor_levels_melted.groupby("Zeilenbezeichnung")
+                .agg([min, max])
+                .reset_index()
+            )
+            floor_levels_cleaned.columns = ["Zeilenbezeichnung", "Start", "Ende"]
+            floor_levels_cleaned["Vorgang"] = floor_levels_cleaned[
+                "Zeilenbezeichnung"
+            ].apply(lambda x: x.split("_")[-1])
+            floor_levels_cleaned = floor_levels_cleaned[
+                ["Zeilenbezeichnung", "Vorgang", "Start", "Ende"]
+            ]
+            floor_levels_cleaned["Ende"] = floor_levels_cleaned[
+                "Ende"
+            ] + datetime.timedelta(days=1)
+
+            # drawing Gantt Chart
+            fig = px.timeline(
+                floor_levels_cleaned,
+                x_start="Start",
+                x_end="Ende",
+                y="Zeilenbezeichnung",
+                color="Vorgang",
+                color_discrete_map=color_map_for_plotly,
+                title="Terminplan",
+            )
+            fig.update_yaxes(autorange="reversed")
+            fig.write_html(os.path.join(path_to_image_folder, "zeitplan.html"))
+
+            # writng xlsx file
+            floor_levels_cleaned.to_excel(
+                os.path.join(path_to_image_folder, "zeitplan.xlsx"), index=False
+            )
+
+    def load_pixel_info(self, pixel_info_file):
+        def get_dates(str_list):
+            return set(
+                pd.Timestamp(date)
+                for date in re.findall(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", str_list)
+            )
+
+        df = pd.read_excel(pixel_info_file, index_col=0)
+        df = df.replace({np.nan: None})
+        pixel_dict = df.to_dict("index")
+        for key, pixel_id in pixel_dict.items():
+            for key1, pixel_attribute in pixel_id.items():
+                if type(pixel_attribute) == str and "Timestamp" in pixel_attribute:
+                    pixel_dict[key][key1] = get_dates(pixel_attribute)
+                elif type(pixel_attribute) == str and "set()" in pixel_attribute:
+                    pixel_dict[key][key1] = set()
+        return pixel_dict
+
+    def return_only_from_set(self, value, function_for_set):
+        # returns max or min from given set
+        if type(value) == set and value:
+            return function_for_set(value)
+        else:
+            return None
 
 
 path = r"C:\Users\Vladi\Downloads\norway.jpg"  # place path to your image here
