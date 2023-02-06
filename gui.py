@@ -49,10 +49,34 @@ class Zoom_Advanced(ttk.Frame):
         self.all_floor_level_info = list()
 
         self.current_day = pd.Timestamp(datetime.date.today())
+        self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
+        for german_week_day in GERMAN_WEEK_DAYS:
+            self.today_string = self.today_string.replace(*german_week_day)
+
+        for image_file in full_image_path:
+            new_floor_level = Floor_level_info(image_file, full_image_path[image_file])
+            image = Image.open(full_image_path[image_file])  # open image
+            image_file_width, image_file_height = image.size
+            try:
+                pixel_history = self.load_pixel_info(new_floor_level.full_path_xlsx)
+            except FileNotFoundError as e:
+                pixel_history = dict()
+                print(f"File {new_floor_level.full_path_xlsx} not found")
+            new_floor_level.grid = self.init_grid(
+                image_file_width, image_file_height, pixel_history
+            )
+            self.all_floor_level_info.append(new_floor_level)
 
         # Functions for buttons
         def blank_function():
             pass
+
+        def change_day(day_delta):
+            self.current_day += day_delta * german_business_day
+            self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
+            for german_week_day in GERMAN_WEEK_DAYS:
+                self.today_string = self.today_string.replace(*german_week_day)
+            self.current_day_text.config(text=self.today_string)
 
         def change_floor(floor_delta):
             if floor_delta > 0:
@@ -66,6 +90,9 @@ class Zoom_Advanced(ttk.Frame):
                 list(full_image_path)[self.current_floor_id]
             ]
             self.draw_image(current_image)
+            self.current_floor_text.config(
+                text=self.all_floor_level_info[self.current_floor_id].floor_name
+            )
 
         def change_mode():
             self.drawing_mode_id = (self.drawing_mode_id + 1) % len(
@@ -304,12 +331,32 @@ class Zoom_Advanced(ttk.Frame):
         # Placing all the buttons on main frame (tact, plan and draw)
         self.left_frame.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
 
+        # Information text on the bottom (current day and file name)
+        self.current_day_info = tk.Frame(master=self.master)
+        self.current_day_text = tk.Label(
+            self.current_day_info,
+            text=self.today_string,
+            font=("Arial", BUTTON_TEXT_SIZE),
+        )
+        self.current_day_text.grid(row=0, column=0, sticky="w", padx=5)
+        self.current_day_info.grid(row=1, column=0, sticky="nswe", padx=2, pady=2)
+
+        # Information text on the bottom (floor name)
+        self.current_floor_info = tk.Frame(master=self.master)
+        self.current_floor_text = tk.Label(
+            self.current_floor_info,
+            text=self.all_floor_level_info[self.current_floor_id].floor_name,
+            font=("Arial", BUTTON_TEXT_SIZE),
+        )
+        self.current_floor_text.grid(row=0, column=0, sticky="e", padx=5)
+        self.current_floor_info.grid(row=1, column=1, sticky="nswe", padx=2, pady=2)
+
         # Navigation menu on the bottom (tact)
         self.bottom_frame_tact = tk.Frame(master=self.master)
 
         # Placing all the buttons on main frame (tact)
         self.bottom_frame_tact.grid(
-            row=1, column=0, sticky="nswe", padx=10, pady=10, columnspan=3
+            row=2, column=0, sticky="nswe", padx=10, pady=10, columnspan=3
         )
 
         # Navigation menu on the bottom (plan)
@@ -321,7 +368,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=LAST_DAY,
-            command=blank_function,
+            command=lambda: change_day(-1),
             bg=all_colors[LAST_DAY],
         )
         self.last_date["font"] = button_font
@@ -332,7 +379,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=NEXT_DAY,
-            command=blank_function,
+            command=lambda: change_day(1),
             bg=all_colors[NEXT_DAY],
         )
         self.next_date["font"] = button_font
@@ -419,7 +466,7 @@ class Zoom_Advanced(ttk.Frame):
 
         # Placing all the buttons on main frame (plan)
         self.bottom_frame_plan.grid(
-            row=1, column=0, sticky="nswe", padx=10, pady=10, columnspan=3
+            row=2, column=0, sticky="nswe", padx=10, pady=10, columnspan=3
         )
 
         # Navigation menu on the bottom (draw)
@@ -474,7 +521,7 @@ class Zoom_Advanced(ttk.Frame):
 
         # Placing all the buttons on main frame (draw)
         self.bottom_frame_draw.grid(
-            row=1, column=0, sticky="nswe", padx=10, pady=10, columnspan=3
+            row=2, column=0, sticky="nswe", padx=10, pady=10, columnspan=3
         )
 
         self.drawing_mode_frames = {
@@ -510,20 +557,6 @@ class Zoom_Advanced(ttk.Frame):
         #        self.master.bind('<Key>', self.delete_rect)
         self.canvas.bind("<Button-3>", self.delete_rect)
         self.canvas.bind("<B3-Motion>", self.delete_rect)
-
-        for image_file in full_image_path:
-            new_floor_level = Floor_level_info(image_file, full_image_path[image_file])
-            image = Image.open(full_image_path[image_file])  # open image
-            image_file_width, image_file_height = image.size
-            try:
-                pixel_history = self.load_pixel_info(new_floor_level.full_path_xlsx)
-            except FileNotFoundError as e:
-                pixel_history = dict()
-                print(f"File {new_floor_level.full_path_xlsx} not found")
-            new_floor_level.grid = self.init_grid(
-                image_file_width, image_file_height, pixel_history
-            )
-            self.all_floor_level_info.append(new_floor_level)
 
         current_image = full_image_path[list(full_image_path)[self.current_floor_id]]
         self.draw_image(current_image)
