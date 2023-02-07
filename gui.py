@@ -71,10 +71,10 @@ class Zoom_Advanced(ttk.Frame):
         # Functions for buttons       
         def change_cursor_size(cursor_size_delta):
             if cursor_size_delta>0:
-                self.cursor_size = min(15,self.cursor_size+2)
+                self.cursor_size = min(15,self.cursor_size+pixel_size_increase)
             else:
-                self.cursor_size = max(1,self.cursor_size-2)
-            self.cursor_size_text.config(text = f"Zeigergröße: {self.cursor_size}")
+                self.cursor_size = max(1,self.cursor_size-pixel_size_increase)
+            self.cursor_size_text.config(text = f"{CURSOR_SIZE}: {self.cursor_size}")
 
         def change_tact(new_tact):
             self.current_tact = new_tact
@@ -144,7 +144,7 @@ class Zoom_Advanced(ttk.Frame):
             self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
 
         def print_week_planning():
-            self.draw_grid_for_print( self.all_floor_level_info[self.current_floor_id], self.current_day)
+            self.draw_grid_for_print(self.all_floor_level_info[self.current_floor_id], self.current_day)
 
         def erase_mode_activate():
             self.erase_mode = True
@@ -308,7 +308,7 @@ class Zoom_Advanced(ttk.Frame):
         # Information text on the bottom (cursor size)
         self.cursor_size_text = tk.Label(
             self.left_frame,
-            text=f'Zeigergröße: {self.cursor_size}',
+            text=f'{CURSOR_SIZE}: {self.cursor_size}',
             font=("Arial", BUTTON_TEXT_SIZE),
         )
         self.cursor_size_text.grid(row=1, column=0, sticky="nswe", padx=5)
@@ -784,7 +784,8 @@ class Zoom_Advanced(ttk.Frame):
                 bbox[1]
                 + tag_y * self.rect_scale * self.box_size
                 + self.rect_scale * self.box_size / 2,
-                fill="black",
+                fill=all_colors[self.current_structure],
+                outline='',
                 tags=f"{tag_x}-{tag_y}",
             )
             self.all_rects.add(f"{tag_x}-{tag_y}")
