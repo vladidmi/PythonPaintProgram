@@ -44,11 +44,8 @@ class Floor_level_info:
         self.full_path_xlsx = full_image_name.replace("jpg", "xlsx")
         self.floor_name = image_name.replace(".jpg", "")
 
-        try:
-            self.image = Image.open(self.full_path_image)
-            self.image_width, self.image_height = self.image.size
-        except FileNotFoundError:
-            self.image_width, self.image_height = WIDTH, HEIGHT
+        self.image = Image.open(self.full_path_image)
+        self.image_width, self.image_height = self.image.size
 
 
 cur_dir = os.getcwd()

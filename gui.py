@@ -31,9 +31,9 @@ class Zoom_Advanced(ttk.Frame):
         """Initialize the main Frame"""
         ttk.Frame.__init__(self, master=mainframe)
         # Create canvas and put image on it
-        self.canvas = tk.Canvas(self.master, highlightthickness=0)
-        self.canvas.grid(row=0, column=1, sticky="nswe")
-        self.canvas.update()  # wait till canvas is created
+        self.tk_canvas = tk.Canvas(self.master, highlightthickness=0)
+        self.tk_canvas.grid(row=0, column=1, sticky="nswe")
+        self.tk_canvas.update()  # wait till canvas is created
 
         # define font
         button_font = tk_font.Font(size=PROJECT_INFO_TEXT_SIZE)
@@ -68,23 +68,26 @@ class Zoom_Advanced(ttk.Frame):
             )
             self.all_floor_level_info.append(new_floor_level)
 
-        # Functions for buttons       
+        # Functions for buttons
         def change_cursor_size(cursor_size_delta):
-            if cursor_size_delta>0:
-                self.cursor_size = min(15,self.cursor_size+pixel_size_increase)
+            if cursor_size_delta > 0:
+                self.cursor_size = min(55, self.cursor_size + pixel_size_increase)
             else:
-                self.cursor_size = max(1,self.cursor_size-pixel_size_increase)
-            self.cursor_size_text.config(text = f"{CURSOR_SIZE}: {self.cursor_size}")
+                self.cursor_size = max(1, self.cursor_size - pixel_size_increase)
+            self.cursor_size_text.config(text=f"{CURSOR_SIZE}: {self.cursor_size}")
 
         def change_tact(new_tact):
             self.current_tact = new_tact
             self.active_tact_for_planing = new_tact
-        
+            self.erase_mode = False
+
         def change_status(new_status):
             self.current_status = new_status
+            self.erase_mode = False
 
         def change_draw_structure(new_structure):
             self.current_structure = new_structure
+            self.erase_mode = False
 
         def change_day(day_delta):
             self.current_day += day_delta * german_business_day
@@ -108,6 +111,10 @@ class Zoom_Advanced(ttk.Frame):
             self.current_floor_text.config(
                 text=self.all_floor_level_info[self.current_floor_id].floor_name
             )
+            self.erase_mode = False
+            self.current_tact = None
+            self.current_structure = None
+            self.current_status = None
 
         def change_mode():
             self.drawing_mode_id = (self.drawing_mode_id + 1) % len(
@@ -117,34 +124,46 @@ class Zoom_Advanced(ttk.Frame):
             for the_frame in self.drawing_mode_frames[self.current_mode]:
                 the_frame.tkraise()
             self.delete_all_rect()
-            if self.current_mode == DRAW_SCTRUCTURE:
-                bbox = self.canvas.bbox(self.container)  # get image area
-                for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
-                    for pixel in grid_row:
-                        if pixel.type_structure:
-                            self.canvas.create_rectangle(
-                                bbox[0]
-                                + pixel.pixel_x * self.rect_scale * self.box_size
-                                - self.rect_scale * self.box_size / 2,
-                                bbox[1]
-                                + pixel.pixel_y * self.rect_scale * self.box_size
-                                - self.rect_scale * self.box_size / 2,
-                                bbox[0]
-                                + pixel.pixel_x * self.rect_scale * self.box_size
-                                + self.rect_scale * self.box_size / 2,
-                                bbox[1]
-                                + pixel.pixel_y * self.rect_scale * self.box_size
-                                + self.rect_scale * self.box_size / 2,
-                                fill=all_colors[pixel.type_structure],
-                                tags=f"{pixel.pixel_x}-{pixel.pixel_y}",
-                            )
-                            self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
+            bbox = self.tk_canvas.bbox(self.container)  # get image area
+            for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
+                for pixel in grid_row:
+                    current_fill = None
+                    if self.current_mode == DRAW_SCTRUCTURE and pixel.type_structure:
+                        current_fill = all_colors[pixel.type_structure]
+                    elif self.current_mode == TACT and pixel.tact:
+                        current_fill = all_colors[pixel.tact]
+
+                    if current_fill:
+                        self.tk_canvas.create_rectangle(
+                            bbox[0]
+                            + pixel.pixel_x * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + pixel.pixel_y * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[0]
+                            + pixel.pixel_x * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + pixel.pixel_y * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            fill=current_fill,
+                            outline="",
+                            tags=f"{pixel.pixel_x}-{pixel.pixel_y}",
+                        )
+                        self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
+            self.erase_mode = False
+            self.current_tact = None
+            self.current_structure = None
+            self.current_status = None
 
         def save_floor_information():
             self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
 
         def print_week_planning():
-            self.draw_grid_for_print(self.all_floor_level_info[self.current_floor_id], self.current_day)
+            self.draw_grid_for_print(
+                self.all_floor_level_info[self.current_floor_id], self.current_day
+            )
 
         def erase_mode_activate():
             self.erase_mode = True
@@ -184,7 +203,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 1",
-            command=lambda : change_tact(f"{TACT_PART} 1"),
+            command=lambda: change_tact(f"{TACT_PART} 1"),
             bg=all_colors[f"{TACT_PART} 1"],
         )
         self.tact_1_tact_and_plan["font"] = button_font
@@ -195,7 +214,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 2",
-            command=lambda : change_tact(f"{TACT_PART} 2"),
+            command=lambda: change_tact(f"{TACT_PART} 2"),
             bg=all_colors[f"{TACT_PART} 2"],
         )
         self.tact_2_tact_and_plan["font"] = button_font
@@ -206,7 +225,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 3",
-            command=lambda : change_tact(f"{TACT_PART} 3"),
+            command=lambda: change_tact(f"{TACT_PART} 3"),
             bg=all_colors[f"{TACT_PART} 3"],
         )
         self.tact_3_tact_and_plan["font"] = button_font
@@ -217,7 +236,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 4",
-            command=lambda : change_tact(f"{TACT_PART} 4"),
+            command=lambda: change_tact(f"{TACT_PART} 4"),
             bg=all_colors[f"{TACT_PART} 4"],
         )
         self.tact_4_tact_and_plan["font"] = button_font
@@ -228,7 +247,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 5",
-            command=lambda : change_tact(f"{TACT_PART} 5"),
+            command=lambda: change_tact(f"{TACT_PART} 5"),
             bg=all_colors[f"{TACT_PART} 5"],
         )
         self.tact_5_tact_and_plan["font"] = button_font
@@ -239,7 +258,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 6",
-            command=lambda : change_tact(f"{TACT_PART} 6"),
+            command=lambda: change_tact(f"{TACT_PART} 6"),
             bg=all_colors[f"{TACT_PART} 6"],
         )
         self.tact_6_tact_and_plan["font"] = button_font
@@ -250,7 +269,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=NO_TACT,
-            command=lambda : change_tact(None),
+            command=erase_mode_activate,
             bg=all_colors[NO_TACT],
         )
         self.no_tact_tact_and_plan["font"] = button_font
@@ -308,7 +327,7 @@ class Zoom_Advanced(ttk.Frame):
         # Information text on the bottom (cursor size)
         self.cursor_size_text = tk.Label(
             self.left_frame,
-            text=f'{CURSOR_SIZE}: {self.cursor_size}',
+            text=f"{CURSOR_SIZE}: {self.cursor_size}",
             font=("Arial", BUTTON_TEXT_SIZE),
         )
         self.cursor_size_text.grid(row=1, column=0, sticky="nswe", padx=5)
@@ -318,7 +337,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=BIGGER,
-            command=lambda : change_cursor_size(1),
+            command=lambda: change_cursor_size(1),
             bg=all_colors[BIGGER],
         )
         self.cursor_bigger["font"] = button_font
@@ -329,7 +348,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=SMALLER,
-            command=lambda : change_cursor_size(-1),
+            command=lambda: change_cursor_size(-1),
             bg=all_colors[SMALLER],
         )
         self.cursor_smaller["font"] = button_font
@@ -419,7 +438,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=FORMWORK,
-            command=lambda : change_status(FORMWORK),
+            command=lambda: change_status(FORMWORK),
             bg=all_colors[FORMWORK],
         )
         self.formwork["font"] = button_font
@@ -430,7 +449,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=REINFORCE,
-            command=lambda : change_status(REINFORCE),
+            command=lambda: change_status(REINFORCE),
             bg=all_colors[REINFORCE],
         )
         self.reinforce["font"] = button_font
@@ -441,7 +460,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=POUR_CONCRETE,
-            command=lambda : change_status(POUR_CONCRETE),
+            command=lambda: change_status(POUR_CONCRETE),
             bg=all_colors[POUR_CONCRETE],
         )
         self.pour_concrete["font"] = button_font
@@ -452,7 +471,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PREFABRICATED_PART_ASSEMBLE,
-            command=lambda : change_status(PREFABRICATED_PART_ASSEMBLE),
+            command=lambda: change_status(PREFABRICATED_PART_ASSEMBLE),
             bg=all_colors[PREFABRICATED_PART_ASSEMBLE],
         )
         self.prefabricated_part_assembly["font"] = button_font
@@ -465,7 +484,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=DO_MASONRY,
-            command=lambda : change_status(DO_MASONRY),
+            command=lambda: change_status(DO_MASONRY),
             bg=all_colors[DO_MASONRY],
         )
         self.do_masonry["font"] = button_font
@@ -476,7 +495,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PART_COMPLETE,
-            command=lambda : change_status(PART_COMPLETE),
+            command=lambda: change_status(PART_COMPLETE),
             bg=all_colors[PART_COMPLETE],
         )
         self.part_complete["font"] = button_font
@@ -506,7 +525,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=CONCRETE,
-            command=lambda : change_draw_structure(CONCRETE),
+            command=lambda: change_draw_structure(CONCRETE),
             bg=all_colors[CONCRETE],
             fg=WHITE,
         )
@@ -518,7 +537,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PREFABRICATED_PART,
-            command=lambda : change_draw_structure(PREFABRICATED_PART),
+            command=lambda: change_draw_structure(PREFABRICATED_PART),
             bg=all_colors[PREFABRICATED_PART],
             fg=WHITE,
         )
@@ -530,7 +549,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=MASONRY,
-            command=lambda : change_draw_structure(MASONRY),
+            command=lambda: change_draw_structure(MASONRY),
             bg=all_colors[MASONRY],
             fg=WHITE,
         )
@@ -575,17 +594,16 @@ class Zoom_Advanced(ttk.Frame):
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(1, weight=1)
         # Bind events to the Canvas
-        self.canvas.bind("<Configure>", self.show_image)  # canvas is resized
-        self.canvas.bind(
+        self.tk_canvas.bind("<Configure>", self.show_image)  # canvas is resized
+        self.tk_canvas.bind(
             "<MouseWheel>", self.wheel
         )  # with Windows and MacOS, but not Linux
-        self.canvas.bind("<ButtonPress-2>", self.move_from)
-        self.canvas.bind("<B2-Motion>", self.move_to)
-        self.canvas.bind("<Button-1>", self.draw_rect)
-        self.canvas.bind("<B1-Motion>", self.draw_rect)
-        #        self.master.bind('<Key>', self.delete_rect)
-        self.canvas.bind("<Button-3>", self.delete_rect)
-        self.canvas.bind("<B3-Motion>", self.delete_rect)
+        self.tk_canvas.bind("<ButtonPress-2>", self.move_from)
+        self.tk_canvas.bind("<B2-Motion>", self.move_to)
+        self.tk_canvas.bind("<Button-1>", self.draw_rect)
+        self.tk_canvas.bind("<B1-Motion>", self.draw_rect)
+        self.tk_canvas.bind("<Button-3>", self.delete_rect)
+        self.tk_canvas.bind("<B3-Motion>", self.delete_rect)
 
         current_image = full_image_path[list(full_image_path)[self.current_floor_id]]
         self.draw_image(current_image)
@@ -595,22 +613,22 @@ class Zoom_Advanced(ttk.Frame):
 
     def move_from(self, event):
         """Remember previous coordinates for scrolling with the mouse"""
-        self.canvas.scan_mark(event.x, event.y)
+        self.tk_canvas.scan_mark(event.x, event.y)
         self.x_initial = event.x
         self.y_initial = event.y
 
     def move_to(self, event):
         """Drag (move) canvas to the new position"""
-        self.canvas.scan_dragto(event.x, event.y, gain=1)
+        self.tk_canvas.scan_dragto(event.x, event.y, gain=1)
         self.show_image()  # redraw the image
         self.x_correction = (event.x - self.x_initial) * self.rect_scale
         self.y_correction = (event.x - self.x_initial) * self.rect_scale
 
     def wheel(self, event):
         """Zoom with mouse wheel"""
-        x = self.canvas.canvasx(event.x)
-        y = self.canvas.canvasy(event.y)
-        bbox = self.canvas.bbox(self.container)  # get image area
+        x = self.tk_canvas.canvasx(event.x)
+        y = self.tk_canvas.canvasy(event.y)
+        bbox = self.tk_canvas.bbox(self.container)  # get image area
         if bbox[0] < x < bbox[2] and bbox[1] < y < bbox[3]:
             pass  # Ok! Inside the image
         else:
@@ -625,25 +643,25 @@ class Zoom_Advanced(ttk.Frame):
             scale /= self.delta
             self.rect_scale /= self.delta
         if event.num == 4 or event.delta == 120:  # scroll up
-            i = min(self.canvas.winfo_width(), self.canvas.winfo_height())
+            i = min(self.tk_canvas.winfo_width(), self.tk_canvas.winfo_height())
             if i < self.imscale:
                 return  # 1 pixel is bigger than the visible area
             self.imscale *= self.delta
             scale *= self.delta
             self.rect_scale *= self.delta
-        self.canvas.scale("all", x, y, scale, scale)  # rescale all canvas objects
+        self.tk_canvas.scale("all", x, y, scale, scale)  # rescale all canvas objects
         self.show_image()
 
     def show_image(self, event=None):
         """Show image on the Canvas"""
-        bbox1 = self.canvas.bbox(self.container)  # get image area
+        bbox1 = self.tk_canvas.bbox(self.container)  # get image area
         # Remove 1 pixel shift at the sides of the bbox1
         bbox1 = (bbox1[0] + 1, bbox1[1] + 1, bbox1[2] - 1, bbox1[3] - 1)
         bbox2 = (
-            self.canvas.canvasx(0),  # get visible area of the canvas
-            self.canvas.canvasy(0),
-            self.canvas.canvasx(self.canvas.winfo_width()),
-            self.canvas.canvasy(self.canvas.winfo_height()),
+            self.tk_canvas.canvasx(0),  # get visible area of the canvas
+            self.tk_canvas.canvasy(0),
+            self.tk_canvas.canvasx(self.tk_canvas.winfo_width()),
+            self.tk_canvas.canvasy(self.tk_canvas.winfo_height()),
         )
         bbox = [
             min(bbox1[0], bbox2[0]),
@@ -661,7 +679,7 @@ class Zoom_Advanced(ttk.Frame):
         ):  # whole image in the visible area
             bbox[1] = bbox1[1]
             bbox[3] = bbox1[3]
-        self.canvas.configure(scrollregion=bbox)  # set scroll region
+        self.tk_canvas.configure(scrollregion=bbox)  # set scroll region
         x1 = max(
             bbox2[0] - bbox1[0], 0
         )  # get coordinates (x1,y1,x2,y2) of the image tile
@@ -680,14 +698,14 @@ class Zoom_Advanced(ttk.Frame):
                 (int(x1 / self.imscale), int(y1 / self.imscale), x, y)
             )
             imagetk = ImageTk.PhotoImage(image.resize((int(x2 - x1), int(y2 - y1))))
-            imageid = self.canvas.create_image(
+            imageid = self.tk_canvas.create_image(
                 max(bbox2[0], bbox1[0]),
                 max(bbox2[1], bbox1[1]),
                 anchor="nw",
                 image=imagetk,
             )
-            self.canvas.lower(imageid)  # set image into background
-            self.canvas.imagetk = (
+            self.tk_canvas.lower(imageid)  # set image into background
+            self.tk_canvas.imagetk = (
                 imagetk  # keep an extra reference to prevent garbage-collection
             )
 
@@ -698,12 +716,12 @@ class Zoom_Advanced(ttk.Frame):
         self.imscale = 1.0  # scale for the canvas image
         self.delta = 1.3  # zoom magnitude
         # Put image into container rectangle and use it to set proper coordinates to the image
-        self.container = self.canvas.create_rectangle(
+        self.container = self.tk_canvas.create_rectangle(
             0, 0, self.width, self.height, width=0
         )
         self.show_image()
         self.rect_scale = 1
-        self.bbox = self.canvas.bbox(self.container)
+        self.bbox = self.tk_canvas.bbox(self.container)
         self.image_width_in_pixels = int(
             1000
             * (self.bbox[2] - self.bbox[0])
@@ -757,8 +775,8 @@ class Zoom_Advanced(ttk.Frame):
 
     def draw_rect(self, event=None):
         grid = self.all_floor_level_info[self.current_floor_id].grid
-        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-        bbox = self.canvas.bbox(self.container)
+        x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)
+        bbox = self.tk_canvas.bbox(self.container)
         if (
             bbox[0] < x - self.rect_scale * self.box_size / 2 < bbox[2]
             and bbox[1] < y - self.rect_scale * self.box_size / 2 < bbox[3]
@@ -770,47 +788,138 @@ class Zoom_Advanced(ttk.Frame):
             return
         tag_x = int(self.image_width_in_pixels * (x - bbox[0]) / (bbox[2] - bbox[0]))
         tag_y = int(self.image_height_in_pixels * (y - bbox[1]) / (bbox[3] - bbox[1]))
-        if f"{tag_x}-{tag_y}" not in self.all_rects:
-            self.canvas.create_rectangle(
-                bbox[0]
-                + tag_x * self.rect_scale * self.box_size
-                - self.rect_scale * self.box_size / 2,
-                bbox[1]
-                + tag_y * self.rect_scale * self.box_size
-                - self.rect_scale * self.box_size / 2,
-                bbox[0]
-                + tag_x * self.rect_scale * self.box_size
-                + self.rect_scale * self.box_size / 2,
-                bbox[1]
-                + tag_y * self.rect_scale * self.box_size
-                + self.rect_scale * self.box_size / 2,
-                fill=all_colors[self.current_structure],
-                outline='',
-                tags=f"{tag_x}-{tag_y}",
-            )
-            self.all_rects.add(f"{tag_x}-{tag_y}")
-        current_pixel = grid[tag_y][tag_x]
-        current_pixel.type_structure = self.current_structure
-        current_pixel.status = dict()
-        for step in working_steps[self.current_structure]:
-            current_pixel.status[step] = set()
+
+        for i in range(self.cursor_size):
+            for j in range(self.cursor_size):
+                new_x = tag_x - self.cursor_size // 2 + i
+                new_y = tag_y - self.cursor_size // 2 + j
+                if (
+                    new_x < 0
+                    or new_y < 0
+                    or new_x > len(grid[0]) - 1
+                    or new_y > len(grid) - 1
+                ):
+                    continue
+                current_pixel = grid[new_y][new_x]
+
+                # Draw structure mode
+                if self.current_mode == DRAW_SCTRUCTURE:
+                    if self.erase_mode == True:
+                        current_pixel.type_structure = None
+                        current_pixel.status = dict()
+                        self.tk_canvas.delete(f"{new_x}-{new_y}")
+                        self.all_rects.discard(f"{new_x}-{new_y}")
+                        return
+
+                    if (
+                        current_pixel.type_structure != self.current_structure
+                        and self.current_structure != None
+                    ):
+                        self.tk_canvas.delete(f"{new_x}-{new_y}")
+                        current_pixel.type_structure = self.current_structure
+                        current_pixel.status = dict()
+                        for step in working_steps[self.current_structure]:
+                            current_pixel.status[step] = set()
+
+                        self.tk_canvas.create_rectangle(
+                            bbox[0]
+                            + new_x * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + new_y * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[0]
+                            + new_x * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + new_y * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            fill=all_colors[self.current_structure],
+                            outline="",
+                            tags=f"{new_x}-{new_y}",
+                        )
+                        self.all_rects.add(f"{new_x}-{new_y}")
+
+                # Tact mode
+                elif self.current_mode == TACT:
+                    if self.erase_mode == True:
+                        current_pixel.tact = None
+                        self.tk_canvas.delete(f"{new_x}-{new_y}")
+                        self.all_rects.discard(f"{new_x}-{new_y}")
+                        return
+
+                    elif (
+                        current_pixel.tact != self.current_tact
+                        and self.current_tact != None
+                    ):
+                        self.tk_canvas.delete(f"{new_x}-{new_y}")
+                        current_pixel.tact = self.current_tact
+                        self.tk_canvas.create_rectangle(
+                            bbox[0]
+                            + new_x * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + new_y * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[0]
+                            + new_x * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + new_y * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            fill=all_colors[self.current_tact],
+                            outline="",
+                            tags=f"{new_x}-{new_y}",
+                        )
+                        self.all_rects.add(f"{new_x}-{new_y}")
+
+                elif self.current_mode == PLAN:
+                    if self.erase_mode == True:
+                        for step in current_pixel.status:
+                            current_pixel.status[step].discard(current_day)
+                        self.tk_canvas.delete(f"{new_x}-{new_y}")
+                        self.all_rects.discard(f"{new_x}-{new_y}")
+                        return
+
+                    elif (
+                        self.current_status
+                        in working_steps.get(current_pixel.type_structure, [])
+                        and self.active_tact_for_planing == current_pixel.tact
+                    ):
+                        self.tk_canvas.delete(f"{new_x}-{new_y}")
+                        current_pixel.status[self.current_status].add(self.current_day)
+                        self.tk_canvas.create_rectangle(
+                            bbox[0]
+                            + new_x * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + new_y * self.rect_scale * self.box_size
+                            - self.rect_scale * self.box_size / 2,
+                            bbox[0]
+                            + new_x * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            bbox[1]
+                            + new_y * self.rect_scale * self.box_size
+                            + self.rect_scale * self.box_size / 2,
+                            fill=all_colors[self.current_status],
+                            outline="",
+                            tags=f"{new_x}-{new_y}",
+                        )
+                        self.all_rects.add(f"{new_x}-{new_y}")
 
     def delete_rect(self, event=None):
-        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-        bbox = self.canvas.bbox(self.container)
+        x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)
+        bbox = self.tk_canvas.bbox(self.container)
         tag_x = int(self.image_width_in_pixels * (x - bbox[0]) / (bbox[2] - bbox[0]))
         tag_y = int(self.image_height_in_pixels * (y - bbox[1]) / (bbox[3] - bbox[1]))
         for i in range(5):
             for j in range(5):
-                self.canvas.delete(f"{tag_x+i}-{tag_y+j}")
+                self.tk_canvas.delete(f"{tag_x+i}-{tag_y+j}")
                 self.all_rects.discard(f"{tag_x+i}-{tag_y+j}")
-
-        if event.char == "d":
-            self.canvas.delete("square")
 
     def delete_all_rect(self):
         for rect in self.all_rects:
-            self.canvas.delete(rect)
+            self.tk_canvas.delete(rect)
 
         self.all_rects = set()
 
