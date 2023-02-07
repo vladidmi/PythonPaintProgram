@@ -41,12 +41,13 @@ class Zoom_Advanced(ttk.Frame):
         # initial values
         self.drawing_mode_id = -1
         self.current_tact = None
-        self.current_structure = CONCRETE
+        self.current_structure = None
         self.current_status = None
         self.current_floor_id = 0
         self.erase_mode = False
         self.active_tact_for_planing = f"{TACT_PART} 1"
         self.all_floor_level_info = list()
+        self.cursor_size = 1
 
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
@@ -70,6 +71,21 @@ class Zoom_Advanced(ttk.Frame):
         # Functions for buttons
         def blank_function():
             pass
+        
+        def change_cursor_size(cursor_size_delta):
+            if cursor_size_delta>0:
+                self.cursor_size = min(15,self.cursor_size+2)
+            else:
+                self.cursor_size = max(1,self.cursor_size-2)
+            self.cursor_size_text.config(text = f"Zeigergröße: {self.cursor_size}")
+
+        def change_tact(new_tact):
+            self.current_tact = new_tact
+            self.active_tact_for_planing = new_tact
+            
+
+        def change_draw_structure(new_structure):
+            self.current_structure = new_structure
 
         def change_day(day_delta):
             self.current_day += day_delta * german_business_day
@@ -163,7 +179,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 1",
-            command=blank_function,
+            command=lambda : change_tact(f"{TACT_PART} 1"),
             bg=all_colors[f"{TACT_PART} 1"],
         )
         self.tact_1_tact_and_plan["font"] = button_font
@@ -174,7 +190,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 2",
-            command=blank_function,
+            command=lambda : change_tact(f"{TACT_PART} 2"),
             bg=all_colors[f"{TACT_PART} 2"],
         )
         self.tact_2_tact_and_plan["font"] = button_font
@@ -185,7 +201,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 3",
-            command=blank_function,
+            command=lambda : change_tact(f"{TACT_PART} 3"),
             bg=all_colors[f"{TACT_PART} 3"],
         )
         self.tact_3_tact_and_plan["font"] = button_font
@@ -196,7 +212,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 4",
-            command=blank_function,
+            command=lambda : change_tact(f"{TACT_PART} 4"),
             bg=all_colors[f"{TACT_PART} 4"],
         )
         self.tact_4_tact_and_plan["font"] = button_font
@@ -207,7 +223,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 5",
-            command=blank_function,
+            command=lambda : change_tact(f"{TACT_PART} 5"),
             bg=all_colors[f"{TACT_PART} 5"],
         )
         self.tact_5_tact_and_plan["font"] = button_font
@@ -218,7 +234,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=f"{TACT_PART} 6",
-            command=blank_function,
+            command=lambda : change_tact(f"{TACT_PART} 6"),
             bg=all_colors[f"{TACT_PART} 6"],
         )
         self.tact_6_tact_and_plan["font"] = button_font
@@ -229,7 +245,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=NO_TACT,
-            command=blank_function,
+            command=lambda : change_tact(None),
             bg=all_colors[NO_TACT],
         )
         self.no_tact_tact_and_plan["font"] = button_font
@@ -284,27 +300,35 @@ class Zoom_Advanced(ttk.Frame):
         self.draw_mode["font"] = button_font
         self.draw_mode.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
 
+        # Information text on the bottom (cursor size)
+        self.cursor_size_text = tk.Label(
+            self.left_frame,
+            text=f'Zeigergröße: {self.cursor_size}',
+            font=("Arial", BUTTON_TEXT_SIZE),
+        )
+        self.cursor_size_text.grid(row=1, column=0, sticky="nswe", padx=5)
+
         self.cursor_bigger = tk.Button(
             master=self.left_frame,
             padx=3,
             pady=3,
             text=BIGGER,
-            command=blank_function,
+            command=lambda : change_cursor_size(1),
             bg=all_colors[BIGGER],
         )
         self.cursor_bigger["font"] = button_font
-        self.cursor_bigger.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
+        self.cursor_bigger.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
 
         self.cursor_smaller = tk.Button(
             master=self.left_frame,
             padx=3,
             pady=3,
             text=SMALLER,
-            command=blank_function,
+            command=lambda : change_cursor_size(-1),
             bg=all_colors[SMALLER],
         )
         self.cursor_smaller["font"] = button_font
-        self.cursor_smaller.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
+        self.cursor_smaller.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
 
         self.save_button = tk.Button(
             master=self.left_frame,
@@ -315,7 +339,7 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[SAVE],
         )
         self.save_button["font"] = button_font
-        self.save_button.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
+        self.save_button.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
 
         self.print_button = tk.Button(
             master=self.left_frame,
@@ -326,7 +350,7 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[PRINT],
         )
         self.print_button["font"] = button_font
-        self.print_button.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
+        self.print_button.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
 
         # Placing all the buttons on main frame (tact, plan and draw)
         self.left_frame.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
@@ -477,7 +501,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=CONCRETE,
-            command=blank_function,
+            command=lambda : change_draw_structure(CONCRETE),
             bg=all_colors[CONCRETE],
             fg=WHITE,
         )
@@ -489,7 +513,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PREFABRICATED_PART,
-            command=blank_function,
+            command=lambda : change_draw_structure(PREFABRICATED_PART),
             bg=all_colors[PREFABRICATED_PART],
             fg=WHITE,
         )
@@ -501,7 +525,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=MASONRY,
-            command=blank_function,
+            command=lambda : change_draw_structure(MASONRY),
             bg=all_colors[MASONRY],
             fg=WHITE,
         )
