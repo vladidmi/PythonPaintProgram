@@ -68,10 +68,7 @@ class Zoom_Advanced(ttk.Frame):
             )
             self.all_floor_level_info.append(new_floor_level)
 
-        # Functions for buttons
-        def blank_function():
-            pass
-        
+        # Functions for buttons       
         def change_cursor_size(cursor_size_delta):
             if cursor_size_delta>0:
                 self.cursor_size = min(15,self.cursor_size+2)
@@ -82,7 +79,9 @@ class Zoom_Advanced(ttk.Frame):
         def change_tact(new_tact):
             self.current_tact = new_tact
             self.active_tact_for_planing = new_tact
-            
+        
+        def change_status(new_status):
+            self.current_status = new_status
 
         def change_draw_structure(new_structure):
             self.current_structure = new_structure
@@ -143,6 +142,12 @@ class Zoom_Advanced(ttk.Frame):
 
         def save_floor_information():
             self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
+
+        def print_week_planning():
+            self.draw_grid_for_print( self.all_floor_level_info[self.current_floor_id], self.current_day)
+
+        def erase_mode_activate():
+            self.erase_mode = True
 
         # Navigation menu on the right (tact and plan)
         self.right_frame_tact_and_plan = tk.Frame(master=self.master)
@@ -346,7 +351,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PRINT,
-            command=blank_function,
+            command=print_week_planning,
             bg=all_colors[PRINT],
         )
         self.print_button["font"] = button_font
@@ -414,7 +419,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=FORMWORK,
-            command=blank_function,
+            command=lambda : change_status(FORMWORK),
             bg=all_colors[FORMWORK],
         )
         self.formwork["font"] = button_font
@@ -425,7 +430,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=REINFORCE,
-            command=blank_function,
+            command=lambda : change_status(REINFORCE),
             bg=all_colors[REINFORCE],
         )
         self.reinforce["font"] = button_font
@@ -436,7 +441,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=POUR_CONCRETE,
-            command=blank_function,
+            command=lambda : change_status(POUR_CONCRETE),
             bg=all_colors[POUR_CONCRETE],
         )
         self.pour_concrete["font"] = button_font
@@ -447,7 +452,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PREFABRICATED_PART_ASSEMBLE,
-            command=blank_function,
+            command=lambda : change_status(PREFABRICATED_PART_ASSEMBLE),
             bg=all_colors[PREFABRICATED_PART_ASSEMBLE],
         )
         self.prefabricated_part_assembly["font"] = button_font
@@ -460,7 +465,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=DO_MASONRY,
-            command=blank_function,
+            command=lambda : change_status(DO_MASONRY),
             bg=all_colors[DO_MASONRY],
         )
         self.do_masonry["font"] = button_font
@@ -471,7 +476,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=PART_COMPLETE,
-            command=blank_function,
+            command=lambda : change_status(PART_COMPLETE),
             bg=all_colors[PART_COMPLETE],
         )
         self.part_complete["font"] = button_font
@@ -482,7 +487,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=ERASE,
-            command=blank_function,
+            command=erase_mode_activate,
             bg=all_colors[ERASE],
         )
         self.erase_plan["font"] = button_font
@@ -537,7 +542,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=ERASE,
-            command=blank_function,
+            command=erase_mode_activate,
             bg=all_colors[ERASE],
         )
         self.erase_draw["font"] = button_font
