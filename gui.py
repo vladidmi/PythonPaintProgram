@@ -44,11 +44,12 @@ class Zoom_Advanced(ttk.Frame):
         self.current_structure = None
         self.current_status = None
         self.current_floor_id = 0
+        self.current_mode = PLAN
         self.erase_mode = False
         self.active_tact_for_planing = f"{TACT_PART} 1"
         self.all_floor_level_info = list()
         self.cursor_size = 1
-
+    
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
         for german_week_day in GERMAN_WEEK_DAYS:
@@ -67,6 +68,10 @@ class Zoom_Advanced(ttk.Frame):
                 image_file_width, image_file_height, pixel_history
             )
             self.all_floor_level_info.append(new_floor_level)
+
+        self.current_image = full_image_path[
+                list(full_image_path)[self.current_floor_id]
+            ]
 
         # Functions for buttons
         def change_cursor_size(cursor_size_delta):
@@ -95,6 +100,7 @@ class Zoom_Advanced(ttk.Frame):
             for german_week_day in GERMAN_WEEK_DAYS:
                 self.today_string = self.today_string.replace(*german_week_day)
             self.current_day_text.config(text=self.today_string)
+            self.show_image()
 
         def change_floor(floor_delta):
             if floor_delta > 0:
@@ -104,13 +110,14 @@ class Zoom_Advanced(ttk.Frame):
             elif floor_delta < 0:
                 self.current_floor_id = max(floor_delta + self.current_floor_id, 0)
             self.delete_all_rect()
-            current_image = full_image_path[
+            self.current_image = full_image_path[
                 list(full_image_path)[self.current_floor_id]
             ]
-            self.draw_image(current_image)
+            self.draw_image(self.current_image)
             self.current_floor_text.config(
                 text=self.all_floor_level_info[self.current_floor_id].floor_name
             )
+            self.draw_grid()
             self.erase_mode = False
             self.current_tact = None
             self.current_structure = None
@@ -124,34 +131,8 @@ class Zoom_Advanced(ttk.Frame):
             for the_frame in self.drawing_mode_frames[self.current_mode]:
                 the_frame.tkraise()
             self.delete_all_rect()
-            bbox = self.tk_canvas.bbox(self.container)  # get image area
-            for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
-                for pixel in grid_row:
-                    current_fill = None
-                    if self.current_mode == DRAW_SCTRUCTURE and pixel.type_structure:
-                        current_fill = all_colors[pixel.type_structure]
-                    elif self.current_mode == TACT and pixel.tact:
-                        current_fill = all_colors[pixel.tact]
-
-                    if current_fill:
-                        self.tk_canvas.create_rectangle(
-                            bbox[0]
-                            + pixel.pixel_x * self.rect_scale * self.box_size
-                            - self.rect_scale * self.box_size / 2,
-                            bbox[1]
-                            + pixel.pixel_y * self.rect_scale * self.box_size
-                            - self.rect_scale * self.box_size / 2,
-                            bbox[0]
-                            + pixel.pixel_x * self.rect_scale * self.box_size
-                            + self.rect_scale * self.box_size / 2,
-                            bbox[1]
-                            + pixel.pixel_y * self.rect_scale * self.box_size
-                            + self.rect_scale * self.box_size / 2,
-                            fill=current_fill,
-                            outline="",
-                            tags=f"{pixel.pixel_x}-{pixel.pixel_y}",
-                        )
-                        self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
+            self.show_image()
+            self.draw_grid()
             self.erase_mode = False
             self.current_tact = None
             self.current_structure = None
@@ -161,9 +142,22 @@ class Zoom_Advanced(ttk.Frame):
             self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
 
         def print_week_planning():
-            self.draw_grid_for_print(
-                self.all_floor_level_info[self.current_floor_id], self.current_day
-            )
+            weekdays_to_print = weekdays_of_current_week(self.current_day)
+
+            for floor in self.all_floor_level_info:
+                folder_with_floor = floor.full_path_image.replace(
+                    floor.image_name, ""
+                )
+                floor.folder_with_print = os.path.join(
+                    folder_with_floor, "output", floor.floor_name
+                )
+                try:
+                    os.mkdir(floor.folder_with_print)
+                except OSError as e:
+                    e
+                for weekday in weekdays_to_print:
+                    self.draw_grid_for_print(floor, weekday)
+            print("all images created")
 
         def erase_mode_activate():
             self.erase_mode = True
@@ -605,8 +599,7 @@ class Zoom_Advanced(ttk.Frame):
         self.tk_canvas.bind("<Button-3>", self.delete_rect)
         self.tk_canvas.bind("<B3-Motion>", self.delete_rect)
 
-        current_image = full_image_path[list(full_image_path)[self.current_floor_id]]
-        self.draw_image(current_image)
+        self.draw_image(self.current_image)
         self.all_rects = set()
         change_mode()
         self.current_mode = list(self.drawing_mode_frames)[self.drawing_mode_id]
@@ -694,6 +687,8 @@ class Zoom_Advanced(ttk.Frame):
                 int(x2 / self.imscale), self.width
             )  # sometimes it is larger on 1 pixel...
             y = min(int(y2 / self.imscale), self.height)  # ...and sometimes not
+            if self.current_mode == PLAN:
+                self.image = self.image = self.drawn_previous_status_for_plan(self.all_floor_level_info[self.current_floor_id], self.current_day)
             image = self.image.crop(
                 (int(x1 / self.imscale), int(y1 / self.imscale), x, y)
             )
@@ -713,6 +708,17 @@ class Zoom_Advanced(ttk.Frame):
     def draw_image(self, image_path):
         self.image = Image.open(image_path)  # open image
         self.width, self.height = self.image.size
+        self.image_width_in_pixels = int(
+            1000
+            * self.width
+            / (max(self.width, self.height))
+        )
+        self.image_height_in_pixels = int(
+            1000
+            * self.height
+            / (max(self.width, self.height))
+        )
+        self.box_size = self.width / self.image_width_in_pixels
         self.imscale = 1.0  # scale for the canvas image
         self.delta = 1.3  # zoom magnitude
         # Put image into container rectangle and use it to set proper coordinates to the image
@@ -722,17 +728,6 @@ class Zoom_Advanced(ttk.Frame):
         self.show_image()
         self.rect_scale = 1
         self.bbox = self.tk_canvas.bbox(self.container)
-        self.image_width_in_pixels = int(
-            1000
-            * (self.bbox[2] - self.bbox[0])
-            / (max((self.bbox[2] - self.bbox[0]), (self.bbox[3] - self.bbox[1])))
-        )
-        self.image_height_in_pixels = int(
-            1000
-            * (self.bbox[3] - self.bbox[1])
-            / (max((self.bbox[2] - self.bbox[0]), (self.bbox[3] - self.bbox[1])))
-        )
-        self.box_size = (self.bbox[2] - self.bbox[0]) / self.image_width_in_pixels
         self.x_initial = 0
         self.y_initial = 0
         self.x_correction = 0
@@ -765,13 +760,45 @@ class Zoom_Advanced(ttk.Frame):
         return grid
 
     def draw_grid(self):
-        for i, row in enumerate(self.grid):
-            for j, pixel in enumerate(row):
-                current_color_key, current_transparency = pixel.get_color_key(
-                    self.current_mode, self.current_day
-                )
-                if current_color_key:
-                    pixel.draw_color(current_color_key, current_transparency, i, j)
+        bbox = self.tk_canvas.bbox(self.container)  # get image area
+        for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
+            for pixel in grid_row:
+                current_fill = None
+                if self.current_mode == DRAW_SCTRUCTURE and pixel.type_structure:
+                    current_fill = all_colors[pixel.type_structure]
+                elif self.current_mode == TACT and pixel.tact:
+                    current_fill = all_colors[pixel.tact]
+                elif self.current_mode == PLAN and pixel.type_structure:
+                    if not pixel.status:
+                        current_fill = all_colors[pixel.type_structure]
+                    else:
+                        for step in list(pixel.status)[::-1]:
+                            if pixel.status[step] and self.current_day in pixel.status[step]:
+                                current_fill =all_colors[step]
+                                break
+                            elif pixel.status[step] and max(pixel.status[step]) < self.current_day:
+                                current_fill =all_colors[step]
+                                break
+
+                if current_fill:
+                    self.tk_canvas.create_rectangle(
+                        bbox[0]
+                        + pixel.pixel_x * self.rect_scale * self.box_size
+                        - self.rect_scale * self.box_size / 2,
+                        bbox[1]
+                        + pixel.pixel_y * self.rect_scale * self.box_size
+                        - self.rect_scale * self.box_size / 2,
+                        bbox[0]
+                        + pixel.pixel_x * self.rect_scale * self.box_size
+                        + self.rect_scale * self.box_size / 2,
+                        bbox[1]
+                        + pixel.pixel_y * self.rect_scale * self.box_size
+                        + self.rect_scale * self.box_size / 2,
+                        fill=current_fill,
+                        outline="",
+                        tags=f"{pixel.pixel_x}-{pixel.pixel_y}",
+                    )
+                    self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
 
     def draw_rect(self, event=None):
         grid = self.all_floor_level_info[self.current_floor_id].grid
@@ -873,10 +900,10 @@ class Zoom_Advanced(ttk.Frame):
                         )
                         self.all_rects.add(f"{new_x}-{new_y}")
 
-                elif self.current_mode == PLAN:
+                elif self.current_mode == PLAN:                 
                     if self.erase_mode == True:
                         for step in current_pixel.status:
-                            current_pixel.status[step].discard(current_day)
+                            current_pixel.status[step].discard(self.current_day)
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
                         self.all_rects.discard(f"{new_x}-{new_y}")
                         return
@@ -923,6 +950,34 @@ class Zoom_Advanced(ttk.Frame):
 
         self.all_rects = set()
 
+    def drawn_previous_status_for_plan(self,floor,current_day):
+        img = Image.open(floor.full_path_image)
+        draw = ImageDraw.Draw(img, "RGBA")
+        for i, row in enumerate(floor.grid):
+            for j, pixel in enumerate(row):
+                current_color_key, current_transparency = pixel.get_color_key_for_print(
+                    current_day
+                )
+                if current_color_key:
+                    current_r = int(all_colors[current_color_key][-6:-4],base=16)
+                    current_g = int(all_colors[current_color_key][-4:-2],base=16)
+                    current_b = int(all_colors[current_color_key][-2:],base=16)
+                    draw.rectangle(
+                        xy=(
+                            self.box_size * pixel.pixel_x,
+                            self.box_size * pixel.pixel_y,
+                            self.box_size * pixel.pixel_x + self.box_size,
+                            self.box_size * pixel.pixel_y + self.box_size,
+                        ),
+                        outline=all_colors[current_color_key],
+                        fill=(
+                            current_r,current_g,current_b,
+                            255 * current_transparency,
+                        ),
+                    )
+        return img
+
+
     def draw_grid_for_print(self, floor, current_day):
         img = Image.open(floor.full_path_image)
         WIDTH, HEIGHT = img.size
@@ -943,6 +998,9 @@ class Zoom_Advanced(ttk.Frame):
                     current_day
                 )
                 if current_color_key:
+                    current_r = int(all_colors[current_color_key][-6:-4],base=16)
+                    current_g = int(all_colors[current_color_key][-4:-2],base=16)
+                    current_b = int(all_colors[current_color_key][-2:],base=16)
                     active_works_on_floor = True
                     legend.add(current_color_key)
                     draw.rectangle(
@@ -954,7 +1012,7 @@ class Zoom_Advanced(ttk.Frame):
                         ),
                         outline=all_colors[current_color_key],
                         fill=(
-                            *all_colors[current_color_key],
+                            current_r,current_g,current_b,
                             255 * current_transparency,
                         ),
                     )
@@ -980,11 +1038,11 @@ class Zoom_Advanced(ttk.Frame):
                         box_y + BOX_SIZE,
                     ),
                     outline=BLACK,
-                    fill=all_colors[legend],
+                    fill=all_colors[work_step],
                 )
                 draw.text(
                     (box_x + BOX_SIZE // 5, box_y + BOX_SIZE // 2),
-                    legend,
+                    work_step,
                     font=project_font_path_small,
                     fill=BLACK,
                 )
