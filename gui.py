@@ -47,6 +47,7 @@ class Zoom_Advanced(ttk.Frame):
         self.current_mode = PLAN
         self.erase_mode = False
         self.status_images = list()
+        self.temp_status_images = list()
         self.active_tact_for_planing = f"{TACT_PART} 1"
         self.all_floor_level_info = list()
         self.cursor_size = 1
@@ -372,6 +373,19 @@ class Zoom_Advanced(ttk.Frame):
         self.print_button["font"] = button_font
         self.print_button.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
 
+        self.test_button = tk.Button(
+            master=self.left_frame,
+            padx=3,
+            pady=3,
+            text="TEST_DRAW",
+            command=lambda: self.create_transparent_rect_image(
+                100, 100, 300, 300, fill=all_colors[FORMWORK], alpha=TRANSPARENT
+            ),
+            bg=all_colors[PRINT],
+        )
+        self.test_button["font"] = button_font
+        self.test_button.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
+
         # Placing all the buttons on main frame (tact, plan and draw)
         self.left_frame.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
 
@@ -606,11 +620,6 @@ class Zoom_Advanced(ttk.Frame):
         change_mode()
         self.current_mode = list(self.drawing_mode_frames)[self.drawing_mode_id]
 
-        # this works, but not when the grid is drawn
-        # self.create_transparent_rect_image(
-        #     x1=0, y1=0, x2=300, y2=300, fill="green", alpha=0.5
-        # )
-
     def move_from(self, event):
         """Remember previous coordinates for scrolling with the mouse"""
         self.tk_canvas.scan_mark(event.x, event.y)
@@ -650,6 +659,9 @@ class Zoom_Advanced(ttk.Frame):
             scale *= self.delta
             self.rect_scale *= self.delta
         self.tk_canvas.scale("all", x, y, scale, scale)  # rescale all canvas objects
+        for child_widget in self.tk_canvas.find_withtag("transparent_rect"):
+            print(child_widget)
+            # self.tk_canvas.itemconfigure(child_widget, image=)
         self.show_image()
 
     def show_image(self, event=None):
@@ -694,10 +706,6 @@ class Zoom_Advanced(ttk.Frame):
                 int(x2 / self.imscale), self.width
             )  # sometimes it is larger on 1 pixel...
             y = min(int(y2 / self.imscale), self.height)  # ...and sometimes not
-            if self.current_mode == PLAN:
-                self.image = self.image = self.drawn_previous_status_for_plan(
-                    self.all_floor_level_info[self.current_floor_id], self.current_day
-                )
             image = self.image.crop(
                 (int(x1 / self.imscale), int(y1 / self.imscale), x, y)
             )
@@ -766,8 +774,11 @@ class Zoom_Advanced(ttk.Frame):
 
     def draw_grid(self):
         bbox = self.tk_canvas.bbox(self.container)  # get image area
+        print(self.current_mode)
         for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
             for pixel in grid_row:
+                if pixel.type_structure:
+                    print(pixel.type_structure)
                 current_fill = None
                 if self.current_mode == DRAW_SCTRUCTURE and pixel.type_structure:
                     current_fill = all_colors[pixel.type_structure]
@@ -1011,35 +1022,6 @@ class Zoom_Advanced(ttk.Frame):
 
         self.all_rects = set()
 
-    def drawn_previous_status_for_plan(self, floor, current_day):
-        img = Image.open(floor.full_path_image)
-        draw = ImageDraw.Draw(img, "RGBA")
-        for i, row in enumerate(floor.grid):
-            for j, pixel in enumerate(row):
-                current_color_key, current_transparency = pixel.get_color_key_for_print(
-                    current_day
-                )
-                if current_color_key:
-                    current_r = int(all_colors[current_color_key][-6:-4], base=16)
-                    current_g = int(all_colors[current_color_key][-4:-2], base=16)
-                    current_b = int(all_colors[current_color_key][-2:], base=16)
-                    draw.rectangle(
-                        xy=(
-                            self.box_size * pixel.pixel_x,
-                            self.box_size * pixel.pixel_y,
-                            self.box_size * pixel.pixel_x + self.box_size,
-                            self.box_size * pixel.pixel_y + self.box_size,
-                        ),
-                        outline=all_colors[current_color_key],
-                        fill=(
-                            current_r,
-                            current_g,
-                            current_b,
-                            255 * current_transparency,
-                        ),
-                    )
-        return img
-
     def draw_grid_for_print(self, floor, current_day):
         img = Image.open(floor.full_path_image)
         WIDTH, HEIGHT = img.size
@@ -1060,9 +1042,9 @@ class Zoom_Advanced(ttk.Frame):
                     current_day
                 )
                 if current_color_key:
-                    current_r = int(all_colors[current_color_key][-6:-4], base=16)
-                    current_g = int(all_colors[current_color_key][-4:-2], base=16)
-                    current_b = int(all_colors[current_color_key][-2:], base=16)
+                    current_r, current_g, current_b = hex_colour_to_rgb(
+                        all_colors[current_color_key]
+                    )
                     active_works_on_floor = True
                     legend.add(current_color_key)
                     draw.rectangle(
@@ -1255,11 +1237,22 @@ class Zoom_Advanced(ttk.Frame):
             fill = kwargs.pop("fill")
             fill = root.winfo_rgb(fill) + (alpha,)
             image = Image.new("RGBA", (int(x2 - x1), int(y2 - y1)), fill)
-            self.status_images.append(ImageTk.PhotoImage(image))
-            self.tk_canvas.create_image(
-                x1, y1, image=self.status_images[-1], anchor="nw"
+            self.status_images.append(
+                {
+                    PHOTO_IMAGE: ImageTk.PhotoImage(image),
+                    PHOTO_IMAGE_WIDTH: int(x2 - x1),
+                    PHOTO_IMAGE_HEIGHT: int(y2 - y1),
+                    PHOTO_IMAGE_FILL: fill,
+                }
             )
-            print(f"image created at {x1} {y1}")
+            self.tk_canvas.create_image(
+                x1,
+                y1,
+                image=self.status_images[-1][PHOTO_IMAGE],
+                anchor="nw",
+                tags="transparent_rect",
+            )
+            print(f"image created at {x1} {y1} {x2} {y2} and fill {fill}")
         else:
             print("not working")
 

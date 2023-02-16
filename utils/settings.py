@@ -10,6 +10,13 @@ import time
 import plotly.express as px
 
 
+def hex_colour_to_rgb(hex_colour):
+    current_r = int(str(hex_colour[-6:-4]), base=16)
+    current_g = int(str(hex_colour[-4:-2]), base=16)
+    current_b = int(str(hex_colour[-2:]), base=16)
+    return (current_r, current_g, current_b)
+
+
 def resize_image(image_path):
     # resizing the image to fit into the given rectangular
     image = Image.open(image_path)
@@ -106,6 +113,11 @@ BG_COLOR = WHITE
 TRANSPARENT = 0.2
 SEMI_TRANSPARENT = 0.75
 NOT_TRANSPARENT = 1
+
+PHOTO_IMAGE = "photo_image"
+PHOTO_IMAGE_WIDTH = "photo_image_width"
+PHOTO_IMAGE_HEIGHT = "photo_image_height"
+PHOTO_IMAGE_FILL = "photo_image_fill"
 
 pixel_size_increase = 2
 
