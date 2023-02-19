@@ -46,8 +46,6 @@ class Zoom_Advanced(ttk.Frame):
         self.current_floor_id = 0
         self.current_mode = PLAN
         self.erase_mode = False
-        self.status_images = list()
-        self.temp_status_images = list()
         self.active_tact_for_planing = f"{TACT_PART} 1"
         self.all_floor_level_info = list()
         self.cursor_size = 1
@@ -84,9 +82,12 @@ class Zoom_Advanced(ttk.Frame):
             self.cursor_size_text.config(text=f"{CURSOR_SIZE}: {self.cursor_size}")
 
         def change_tact(new_tact):
-            self.current_tact = new_tact
-            self.active_tact_for_planing = new_tact
-            self.erase_mode = False
+            if self.current_mode == TACT and new_tact == None:
+                self.erase_mode = True
+            else:
+                self.current_tact = new_tact
+                self.active_tact_for_planing = new_tact
+                self.erase_mode = False
 
         def change_status(new_status):
             self.current_status = new_status
@@ -102,8 +103,13 @@ class Zoom_Advanced(ttk.Frame):
             for german_week_day in GERMAN_WEEK_DAYS:
                 self.today_string = self.today_string.replace(*german_week_day)
             self.current_day_text.config(text=self.today_string)
-            self.status_images = list()
             self.delete_all_rect()
+            self.draw_grid_for_plan(
+                self.all_floor_level_info[self.current_floor_id],
+                self.current_day,
+                self.current_mode,
+            )
+            self.draw_image(path_to_temp_image)
             self.draw_grid()
 
         def change_floor(floor_delta):
@@ -117,16 +123,20 @@ class Zoom_Advanced(ttk.Frame):
             self.current_image = full_image_path[
                 list(full_image_path)[self.current_floor_id]
             ]
-            self.draw_image(self.current_image)
             self.current_floor_text.config(
                 text=self.all_floor_level_info[self.current_floor_id].floor_name
             )
+            self.draw_grid_for_plan(
+                self.all_floor_level_info[self.current_floor_id],
+                self.current_day,
+                self.current_mode,
+            )
+            self.draw_image(path_to_temp_image)
             self.draw_grid()
             self.erase_mode = False
             self.current_tact = None
             self.current_structure = None
             self.current_status = None
-            self.status_images = list()
 
         def change_mode():
             self.drawing_mode_id = (self.drawing_mode_id + 1) % len(
@@ -136,12 +146,17 @@ class Zoom_Advanced(ttk.Frame):
             for the_frame in self.drawing_mode_frames[self.current_mode]:
                 the_frame.tkraise()
             self.delete_all_rect()
+            self.draw_grid_for_plan(
+                self.all_floor_level_info[self.current_floor_id],
+                self.current_day,
+                self.current_mode,
+            )
+            self.draw_image(path_to_temp_image)
             self.draw_grid()
             self.erase_mode = False
             self.current_tact = None
             self.current_structure = None
             self.current_status = None
-            self.status_images = list()
 
         def save_floor_information():
             self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
@@ -266,7 +281,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=NO_TACT,
-            command=erase_mode_activate,
+            command=lambda: change_tact(None),
             bg=all_colors[NO_TACT],
         )
         self.no_tact_tact_and_plan["font"] = button_font
@@ -377,11 +392,13 @@ class Zoom_Advanced(ttk.Frame):
             master=self.left_frame,
             padx=3,
             pady=3,
-            text="TEST_DRAW",
-            command=lambda: self.create_transparent_rect_image(
-                100, 100, 300, 300, fill=all_colors[FORMWORK], alpha=TRANSPARENT
+            text="TEST_PRINT",
+            command=lambda: self.draw_grid_for_plan(
+                self.all_floor_level_info[self.current_floor_id],
+                self.current_day,
+                self.current_mode,
             ),
-            bg=all_colors[PRINT],
+            bg=WHITE,
         )
         self.test_button["font"] = button_font
         self.test_button.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
@@ -659,9 +676,6 @@ class Zoom_Advanced(ttk.Frame):
             scale *= self.delta
             self.rect_scale *= self.delta
         self.tk_canvas.scale("all", x, y, scale, scale)  # rescale all canvas objects
-        for child_widget in self.tk_canvas.find_withtag("transparent_rect"):
-            print(child_widget)
-            # self.tk_canvas.itemconfigure(child_widget, image=)
         self.show_image()
 
     def show_image(self, event=None):
@@ -777,81 +791,19 @@ class Zoom_Advanced(ttk.Frame):
         print(self.current_mode)
         for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
             for pixel in grid_row:
-                if pixel.type_structure:
-                    print(pixel.type_structure)
                 current_fill = None
                 if self.current_mode == DRAW_SCTRUCTURE and pixel.type_structure:
                     current_fill = all_colors[pixel.type_structure]
                 elif self.current_mode == TACT and pixel.tact:
                     current_fill = all_colors[pixel.tact]
-                elif self.current_mode == TACT and pixel.type_structure:
-                    current_fill = all_colors[pixel.type_structure]
-                    self.create_transparent_rect_image(
-                        bbox[0]
-                        + pixel.pixel_x * self.rect_scale * self.box_size
-                        - self.rect_scale * self.box_size / 2,
-                        bbox[1]
-                        + pixel.pixel_y * self.rect_scale * self.box_size
-                        - self.rect_scale * self.box_size / 2,
-                        bbox[0]
-                        + pixel.pixel_x * self.rect_scale * self.box_size
-                        + self.rect_scale * self.box_size / 2,
-                        bbox[1]
-                        + pixel.pixel_y * self.rect_scale * self.box_size
-                        + self.rect_scale * self.box_size / 2,
-                        fill=current_fill,
-                        alpha=TRANSPARENT,
-                    )
-                    continue
                 elif self.current_mode == PLAN and pixel.type_structure:
-                    if not pixel.status:
-                        current_fill = all_colors[pixel.type_structure]
-                        self.create_transparent_rect_image(
-                            bbox[0]
-                            + pixel.pixel_x * self.rect_scale * self.box_size
-                            - self.rect_scale * self.box_size / 2,
-                            bbox[1]
-                            + pixel.pixel_y * self.rect_scale * self.box_size
-                            - self.rect_scale * self.box_size / 2,
-                            bbox[0]
-                            + pixel.pixel_x * self.rect_scale * self.box_size
-                            + self.rect_scale * self.box_size / 2,
-                            bbox[1]
-                            + pixel.pixel_y * self.rect_scale * self.box_size
-                            + self.rect_scale * self.box_size / 2,
-                            fill=current_fill,
-                            alpha=TRANSPARENT,
-                        )
-                        continue
-                    else:
-                        for step in list(pixel.status)[::-1]:
-                            if (
-                                pixel.status[step]
-                                and self.current_day in pixel.status[step]
-                            ):
-                                current_fill = all_colors[step]
-                            elif (
-                                pixel.status[step]
-                                and max(pixel.status[step]) < self.current_day
-                            ):
-                                current_fill = all_colors[step]
-                                self.create_transparent_rect_image(
-                                    bbox[0]
-                                    + pixel.pixel_x * self.rect_scale * self.box_size
-                                    - self.rect_scale * self.box_size / 2,
-                                    bbox[1]
-                                    + pixel.pixel_y * self.rect_scale * self.box_size
-                                    - self.rect_scale * self.box_size / 2,
-                                    bbox[0]
-                                    + pixel.pixel_x * self.rect_scale * self.box_size
-                                    + self.rect_scale * self.box_size / 2,
-                                    bbox[1]
-                                    + pixel.pixel_y * self.rect_scale * self.box_size
-                                    + self.rect_scale * self.box_size / 2,
-                                    fill=current_fill,
-                                    alpha=TRANSPARENT,
-                                )
-                                continue
+                    for step in list(pixel.status)[::-1]:
+                        if (
+                            pixel.status[step]
+                            and self.current_day in pixel.status[step]
+                        ):
+                            current_fill = all_colors[step]
+
                 if current_fill:
                     self.tk_canvas.create_rectangle(
                         bbox[0]
@@ -978,6 +930,13 @@ class Zoom_Advanced(ttk.Frame):
                             current_pixel.status[step].discard(self.current_day)
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
                         self.all_rects.discard(f"{new_x}-{new_y}")
+                        if (
+                            current_pixel.type_structure == CONCRETE
+                            and self.current_status == POUR_CONCRETE
+                        ):
+                            current_pixel.status[PART_COMPLETE].discard(
+                                self.current_day + 1 * german_business_day
+                            )
                         return
 
                     elif (
@@ -1005,22 +964,86 @@ class Zoom_Advanced(ttk.Frame):
                             tags=f"{new_x}-{new_y}",
                         )
                         self.all_rects.add(f"{new_x}-{new_y}")
+                        if (
+                            current_pixel.type_structure == CONCRETE
+                            and self.current_status == POUR_CONCRETE
+                        ):
+                            current_pixel.status[PART_COMPLETE].add(
+                                self.current_day + 1 * german_business_day
+                            )
 
     def delete_rect(self, event=None):
         x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)
         bbox = self.tk_canvas.bbox(self.container)
         tag_x = int(self.image_width_in_pixels * (x - bbox[0]) / (bbox[2] - bbox[0]))
         tag_y = int(self.image_height_in_pixels * (y - bbox[1]) / (bbox[3] - bbox[1]))
-        for i in range(5):
-            for j in range(5):
-                self.tk_canvas.delete(f"{tag_x+i}-{tag_y+j}")
-                self.all_rects.discard(f"{tag_x+i}-{tag_y+j}")
+        grid = self.all_floor_level_info[self.current_floor_id].grid
+        for i in range(self.cursor_size):
+            for j in range(self.cursor_size):
+                new_x = tag_x - self.cursor_size // 2 + i
+                new_y = tag_y - self.cursor_size // 2 + j
+                if (
+                    new_x < 0
+                    or new_y < 0
+                    or new_x > len(grid[0]) - 1
+                    or new_y > len(grid) - 1
+                ):
+                    return
+                current_pixel = grid[new_y][new_x]
+                self.tk_canvas.delete(f"{new_x}-{new_y}")
+                self.all_rects.discard(f"{new_x}-{new_y}")
+                if self.current_mode == DRAW_SCTRUCTURE:
+                    current_pixel.type_structure = None
+                    current_pixel.status = dict()
+                elif self.current_mode == TACT:
+                    current_pixel.tact = None
+                elif self.current_mode == PLAN:
+                    for step in current_pixel.status:
+                        current_pixel.status[step].discard(self.current_day)
+
+                    if (
+                        current_pixel.type_structure == CONCRETE
+                        and self.current_status == POUR_CONCRETE
+                    ):
+                        current_pixel.status[PART_COMPLETE].discard(
+                            self.current_day + 1 * german_business_day
+                        )
 
     def delete_all_rect(self):
         for rect in self.all_rects:
             self.tk_canvas.delete(rect)
 
         self.all_rects = set()
+
+    def draw_grid_for_plan(self, floor, current_day, current_mode):
+        img = Image.open(floor.full_path_image)
+        draw = ImageDraw.Draw(img, "RGBA")
+
+        for i, row in enumerate(floor.grid):
+            for j, pixel in enumerate(row):
+                current_color_key, current_transparency = pixel.get_color_key_for_plan(
+                    current_mode, current_day
+                )
+                if current_color_key:
+                    current_r, current_g, current_b = hex_colour_to_rgb(
+                        all_colors[current_color_key]
+                    )
+                    draw.rectangle(
+                        xy=(
+                            self.box_size * pixel.pixel_x,
+                            self.box_size * pixel.pixel_y,
+                            self.box_size * pixel.pixel_x + self.box_size,
+                            self.box_size * pixel.pixel_y + self.box_size,
+                        ),
+                        outline=all_colors[current_color_key],
+                        fill=(
+                            current_r,
+                            current_g,
+                            current_b,
+                            int(255 * current_transparency),
+                        ),
+                    )
+        img.save(os.path.join(path_to_temp_image))
 
     def draw_grid_for_print(self, floor, current_day):
         img = Image.open(floor.full_path_image)
@@ -1230,31 +1253,6 @@ class Zoom_Advanced(ttk.Frame):
             return function_for_set(value)
         else:
             return None
-
-    def create_transparent_rect_image(self, x1, y1, x2, y2, **kwargs):
-        if "alpha" in kwargs:
-            alpha = int(kwargs.pop("alpha") * 255)
-            fill = kwargs.pop("fill")
-            fill = root.winfo_rgb(fill) + (alpha,)
-            image = Image.new("RGBA", (int(x2 - x1), int(y2 - y1)), fill)
-            self.status_images.append(
-                {
-                    PHOTO_IMAGE: ImageTk.PhotoImage(image),
-                    PHOTO_IMAGE_WIDTH: int(x2 - x1),
-                    PHOTO_IMAGE_HEIGHT: int(y2 - y1),
-                    PHOTO_IMAGE_FILL: fill,
-                }
-            )
-            self.tk_canvas.create_image(
-                x1,
-                y1,
-                image=self.status_images[-1][PHOTO_IMAGE],
-                anchor="nw",
-                tags="transparent_rect",
-            )
-            print(f"image created at {x1} {y1} {x2} {y2} and fill {fill}")
-        else:
-            print("not working")
 
 
 root = tk.Tk()

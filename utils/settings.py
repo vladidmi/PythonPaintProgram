@@ -69,6 +69,7 @@ project_font_path_small = ImageFont.truetype(
 )
 
 path_to_image_folder = os.path.join(cur_dir, "imgs")
+path_to_temp_image = os.path.join(cur_dir, "utils", "temp.jpg")
 full_image_path = {
     file: os.path.join(path_to_image_folder, file)
     for file in os.listdir(path_to_image_folder)
