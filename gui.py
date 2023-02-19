@@ -49,6 +49,9 @@ class Zoom_Advanced(ttk.Frame):
         self.active_tact_for_planing = f"{TACT_PART} 1"
         self.all_floor_level_info = list()
         self.cursor_size = 1
+        self.draw_text_on_canvas = False
+        self.text_x = 0
+        self.text_y = 0
 
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
@@ -179,6 +182,9 @@ class Zoom_Advanced(ttk.Frame):
 
         def erase_mode_activate():
             self.erase_mode = True
+
+        def add_text():
+            self.draw_text_on_canvas = True
 
         # Navigation menu on the right (tact and plan)
         self.right_frame_tact_and_plan = tk.Frame(master=self.master)
@@ -388,20 +394,18 @@ class Zoom_Advanced(ttk.Frame):
         self.print_button["font"] = button_font
         self.print_button.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.test_button = tk.Button(
+        self.draw_text_on_canvas_button = tk.Button(
             master=self.left_frame,
             padx=3,
             pady=3,
-            text="TEST_PRINT",
-            command=lambda: self.draw_grid_for_plan(
-                self.all_floor_level_info[self.current_floor_id],
-                self.current_day,
-                self.current_mode,
-            ),
+            text=DRAW_TEXT_ON_CANVAS,
+            command=add_text,
             bg=WHITE,
         )
-        self.test_button["font"] = button_font
-        self.test_button.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
+        self.draw_text_on_canvas_button["font"] = button_font
+        self.draw_text_on_canvas_button.grid(
+            row=6, column=0, sticky="nswe", padx=5, pady=5
+        )
 
         # Placing all the buttons on main frame (tact, plan and draw)
         self.left_frame.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
@@ -840,6 +844,21 @@ class Zoom_Advanced(ttk.Frame):
         tag_x = int(self.image_width_in_pixels * (x - bbox[0]) / (bbox[2] - bbox[0]))
         tag_y = int(self.image_height_in_pixels * (y - bbox[1]) / (bbox[3] - bbox[1]))
 
+        if self.draw_text_on_canvas:
+            self.text_x = x
+            self.text_y = y
+            self.entry = tk.Entry(self.tk_canvas)
+            self.entry.focus_set()
+            self.entry.bind("<Return>", self.show_text)
+            self.tk_canvas.create_window(
+                event.x,
+                event.y,
+                window=self.entry,
+                tags="entry",
+            )
+            self.draw_text_on_canvas = False
+            return
+
         for i in range(self.cursor_size):
             for j in range(self.cursor_size):
                 new_x = tag_x - self.cursor_size // 2 + i
@@ -1253,6 +1272,13 @@ class Zoom_Advanced(ttk.Frame):
             return function_for_set(value)
         else:
             return None
+
+    def show_text(self, event):
+        text = self.entry.get()
+        self.tk_canvas.delete("entry")
+        self.entry = None
+        #        x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)
+        self.tk_canvas.create_text(self.text_x, self.text_y, text=text)
 
 
 root = tk.Tk()

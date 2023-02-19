@@ -147,6 +147,7 @@ PREVIOUS_FLOOR = "Ebene -"
 PRINT = "Drucken"
 BUTTON_COLOUR = "Button_colour"
 BUTTON_TEXT_COLOUR = "Button_text_colour"
+DRAW_TEXT_ON_CANVAS = "Text einf."
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
@@ -164,7 +165,6 @@ DO_MASONRY = "MW"
 PART_COMPLETE = "Fertig"
 LAST_DAY = "Tag -"
 NEXT_DAY = "Tag +"
-ACITVE_TACT = "  \\/ Ausgew.BA"  # hint text for the chosen region
 
 # Tact division
 TACT = "BA"
