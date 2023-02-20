@@ -152,8 +152,8 @@ DRAW_TEXT_ON_CANVAS = "Text einf."
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
 CONCRETE = "STB"
-PREFABRICATED_PART = "HFT"
-MASONRY = "MW"
+PREFABRICATED_PART = "HFT " #with space, as the name should be different from DO_MASONRY
+MASONRY = "MW " #with space, as the name should be different from PREFABRICATED_PART_ASSEMBLE
 
 # Planning
 PLAN = "Plan"
