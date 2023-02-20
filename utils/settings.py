@@ -111,7 +111,7 @@ GREY = "#808080"
 BROWN = "#a52a2a"
 
 BG_COLOR = WHITE
-TRANSPARENT = 0.2
+TRANSPARENT = 0.4
 SEMI_TRANSPARENT = 0.75
 NOT_TRANSPARENT = 1
 
@@ -152,8 +152,10 @@ DRAW_TEXT_ON_CANVAS = "Text einf."
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
 CONCRETE = "STB"
-PREFABRICATED_PART = "HFT " #with space, as the name should be different from DO_MASONRY
-MASONRY = "MW " #with space, as the name should be different from PREFABRICATED_PART_ASSEMBLE
+PREFABRICATED_PART = (
+    "HFT "  # with space, as the name should be different from DO_MASONRY
+)
+MASONRY = "MW "  # with space, as the name should be different from PREFABRICATED_PART_ASSEMBLE
 
 # Planning
 PLAN = "Plan"
@@ -229,5 +231,6 @@ working_steps_flat = set(
 )
 
 color_map_for_plotly = {
-    step: "rgb" + str(hex_colour_to_rgb(all_colors[step])) for step in working_steps_flat
+    step: "rgb" + str(hex_colour_to_rgb(all_colors[step]))
+    for step in working_steps_flat
 }

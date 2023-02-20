@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.font as tk_font
 from tkinter import ttk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 
 from utils import *
 
@@ -162,7 +162,7 @@ class Zoom_Advanced(ttk.Frame):
             self.current_status = None
 
         def save_floor_information():
-            self.save_pixel_info(self.all_floor_level_info, make_time_plan=True)
+            self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
 
         def print_week_planning():
             weekdays_to_print = weekdays_of_current_week(self.current_day)
@@ -1049,12 +1049,13 @@ class Zoom_Advanced(ttk.Frame):
                     )
                     draw.rectangle(
                         xy=(
-                            self.box_size * pixel.pixel_x,
-                            self.box_size * pixel.pixel_y,
-                            self.box_size * pixel.pixel_x + self.box_size,
-                            self.box_size * pixel.pixel_y + self.box_size,
+                            self.box_size * (pixel.pixel_x - 1.5),
+                            self.box_size * (pixel.pixel_y - 1.5),
+                            self.box_size * (pixel.pixel_x - 1.5) + self.box_size,
+                            self.box_size * (pixel.pixel_y - 1.5) + self.box_size,
                         ),
-                        outline=all_colors[current_color_key],
+                        outline=None,
+                        #                        width=0,
                         fill=(
                             current_r,
                             current_g,
@@ -1091,17 +1092,17 @@ class Zoom_Advanced(ttk.Frame):
                     legend.add(current_color_key)
                     draw.rectangle(
                         xy=(
-                            self.box_size * pixel.pixel_x,
-                            self.box_size * pixel.pixel_y,
-                            self.box_size * pixel.pixel_x + self.box_size,
-                            self.box_size * pixel.pixel_y + self.box_size,
+                            self.box_size * (pixel.pixel_x - 1.5),
+                            self.box_size * (pixel.pixel_y - 1.5),
+                            self.box_size * (pixel.pixel_x - 1.5) + self.box_size,
+                            self.box_size * (pixel.pixel_y - 1.5) + self.box_size,
                         ),
                         outline=all_colors[current_color_key],
                         fill=(
                             current_r,
                             current_g,
                             current_b,
-                            255 * current_transparency,
+                            int(255 * current_transparency),
                         ),
                     )
         if active_works_on_floor:
@@ -1141,7 +1142,7 @@ class Zoom_Advanced(ttk.Frame):
                 )
             )
 
-    def save_pixel_info(self, all_floor_level_info, make_time_plan=True):
+    def save_pixel_info(self, all_floor_level_info, make_time_plan=False):
         all_floor_levels = list()
         for temp_floor in all_floor_level_info:
             grid = temp_floor.grid
