@@ -151,7 +151,7 @@ DRAW_TEXT_ON_CANVAS = "Text einf."
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
-CONCRETE = "Beton"
+CONCRETE = "STB"
 PREFABRICATED_PART = "HFT"
 MASONRY = "MW"
 
@@ -229,5 +229,5 @@ working_steps_flat = set(
 )
 
 color_map_for_plotly = {
-    step: "rgb" + str(all_colors[step]) for step in working_steps_flat
+    step: "rgb" + str(hex_colour_to_rgb(all_colors[step])) for step in working_steps_flat
 }
