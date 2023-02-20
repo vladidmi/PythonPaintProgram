@@ -162,7 +162,7 @@ class Zoom_Advanced(ttk.Frame):
             self.current_status = None
 
         def save_floor_information():
-            self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
+            self.save_pixel_info(self.all_floor_level_info, make_time_plan=True)
 
         def print_week_planning():
             weekdays_to_print = weekdays_of_current_week(self.current_day)
@@ -1141,7 +1141,7 @@ class Zoom_Advanced(ttk.Frame):
                 )
             )
 
-    def save_pixel_info(self, all_floor_level_info, make_time_plan=False):
+    def save_pixel_info(self, all_floor_level_info, make_time_plan=True):
         all_floor_levels = list()
         for temp_floor in all_floor_level_info:
             grid = temp_floor.grid
