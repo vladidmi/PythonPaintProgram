@@ -165,7 +165,7 @@ class Zoom_Advanced(ttk.Frame):
             self.current_status = None
 
         def save_floor_information():
-            self.save_pixel_info(self.all_floor_level_info, make_time_plan=False)
+            self.save_pixel_info(self.all_floor_level_info, make_time_plan=True)
 
         def print_week_planning():
             weekdays_to_print = weekdays_of_current_week(self.current_day)
@@ -900,8 +900,8 @@ class Zoom_Advanced(ttk.Frame):
             self.entry.focus_set()
             self.entry.bind("<Return>", self.show_text)
             self.tk_canvas.create_window(
-                event.x,
-                event.y,
+                self.text_x,
+                self.text_y,
                 window=self.entry,
                 tags="entry",
             )
@@ -998,10 +998,7 @@ class Zoom_Advanced(ttk.Frame):
                             current_pixel.status[step].discard(self.current_day)
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
                         self.all_rects.discard(f"{new_x}-{new_y}")
-                        if (
-                            current_pixel.type_structure == CONCRETE
-                            and self.current_status == POUR_CONCRETE
-                        ):
+                        if self.current_status == POUR_CONCRETE and (current_pixel.type_structure==CONCRETE or current_pixel.type_structure==PREFABRICATED_PART):
                             current_pixel.status[PART_COMPLETE].discard(
                                 self.current_day + 1 * german_business_day
                             )
@@ -1032,10 +1029,7 @@ class Zoom_Advanced(ttk.Frame):
                             tags=f"{new_x}-{new_y}",
                         )
                         self.all_rects.add(f"{new_x}-{new_y}")
-                        if (
-                            current_pixel.type_structure == CONCRETE
-                            and self.current_status == POUR_CONCRETE
-                        ):
+                        if self.current_status == POUR_CONCRETE and (current_pixel.type_structure==CONCRETE or current_pixel.type_structure==PREFABRICATED_PART):
                             current_pixel.status[PART_COMPLETE].add(
                                 self.current_day + 1 * german_business_day
                             )
@@ -1069,10 +1063,7 @@ class Zoom_Advanced(ttk.Frame):
                     for step in current_pixel.status:
                         current_pixel.status[step].discard(self.current_day)
 
-                    if (
-                        current_pixel.type_structure == CONCRETE
-                        and self.current_status == POUR_CONCRETE
-                    ):
+                    if self.current_status == POUR_CONCRETE and (current_pixel.type_structure==CONCRETE or current_pixel.type_structure==PREFABRICATED_PART):
                         current_pixel.status[PART_COMPLETE].discard(
                             self.current_day + 1 * german_business_day
                         )
@@ -1191,7 +1182,7 @@ class Zoom_Advanced(ttk.Frame):
                 )
             )
 
-    def save_pixel_info(self, all_floor_level_info, make_time_plan=False):
+    def save_pixel_info(self, all_floor_level_info, make_time_plan=True):
         all_floor_levels = list()
         for temp_floor in all_floor_level_info:
             grid = temp_floor.grid
