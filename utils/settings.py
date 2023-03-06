@@ -109,6 +109,7 @@ ORANGE = "#ffc000"  # Mauern
 DARK_RED = "#c00000"  # Fertig
 GREY = "#808080"
 BROWN = "#a52a2a"
+PINK = "#ffc0cb"
 
 BG_COLOR = WHITE
 TRANSPARENT = 0.4
@@ -147,15 +148,14 @@ PREVIOUS_FLOOR = "Ebene -"
 PRINT = "Drucken"
 BUTTON_COLOUR = "Button_colour"
 BUTTON_TEXT_COLOUR = "Button_text_colour"
-DRAW_TEXT_ON_CANVAS = "Text einf."
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
 CONCRETE = "STB"
 PREFABRICATED_PART = (
-    "HFT "  # with space, as the name should be different from DO_MASONRY
+    "HFT."  # with point, as the name should be different from DO_MASONRY
 )
-MASONRY = "MW "  # with space, as the name should be different from PREFABRICATED_PART_ASSEMBLE
+MASONRY = "MW."  # with point, as the name should be different from PREFABRICATED_PART_ASSEMBLE
 
 # Planning
 PLAN = "Plan"
@@ -167,6 +167,9 @@ DO_MASONRY = "MW"
 PART_COMPLETE = "Fertig"
 LAST_DAY = "Tag -"
 NEXT_DAY = "Tag +"
+DRAW_TEXT_ON_CANVAS = "Text einf."
+DELETE_TEXT_ON_CANVAS = "Text lösch."
+NEW_EVENT = "Neue Leistung"
 
 # Tact division
 TACT = "BA"
@@ -202,13 +205,14 @@ all_colors = {
     PART_COMPLETE: DARK_RED,
     NEXT_DAY: WHITE,
     LAST_DAY: WHITE,
+    NEW_EVENT: BROWN,
     # Tact division
     f"{TACT_PART} 1": BLUE,
     f"{TACT_PART} 2": ORANGE,
     f"{TACT_PART} 3": VIOLET,
     f"{TACT_PART} 4": GREY,
     f"{TACT_PART} 5": YELLOW,
-    f"{TACT_PART} 6": BROWN,
+    f"{TACT_PART} 6": PINK,
     NO_TACT: WHITE,
 }
 

@@ -52,6 +52,9 @@ class Zoom_Advanced(ttk.Frame):
         self.draw_text_on_canvas = False
         self.text_x = 0
         self.text_y = 0
+        self.shift_x = None
+        self.shift_y = None
+        self.drawing_direction = None
 
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
@@ -394,19 +397,6 @@ class Zoom_Advanced(ttk.Frame):
         self.print_button["font"] = button_font
         self.print_button.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.draw_text_on_canvas_button = tk.Button(
-            master=self.left_frame,
-            padx=3,
-            pady=3,
-            text=DRAW_TEXT_ON_CANVAS,
-            command=add_text,
-            bg=WHITE,
-        )
-        self.draw_text_on_canvas_button["font"] = button_font
-        self.draw_text_on_canvas_button.grid(
-            row=6, column=0, sticky="nswe", padx=5, pady=5
-        )
-
         # Placing all the buttons on main frame (tact, plan and draw)
         self.left_frame.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
 
@@ -543,6 +533,43 @@ class Zoom_Advanced(ttk.Frame):
         self.erase_plan["font"] = button_font
         self.erase_plan.grid(row=0, column=8, sticky="nswe", padx=5, pady=5)
 
+        self.draw_text_on_canvas_button = tk.Button(
+            master=self.bottom_frame_plan,
+            padx=3,
+            pady=3,
+            text=DRAW_TEXT_ON_CANVAS,
+            command=add_text,
+            bg=WHITE,
+        )
+        self.draw_text_on_canvas_button["font"] = button_font
+        self.draw_text_on_canvas_button.grid(
+            row=0, column=9, sticky="nswe", padx=5, pady=5
+        )
+
+        self.delete_text_on_canvas_button = tk.Button(
+            master=self.bottom_frame_plan,
+            padx=3,
+            pady=3,
+            text=DELETE_TEXT_ON_CANVAS,
+            command=add_text,
+            bg=WHITE,
+        )
+        self.delete_text_on_canvas_button["font"] = button_font
+        self.delete_text_on_canvas_button.grid(
+            row=0, column=10, sticky="nswe", padx=5, pady=5
+        )
+
+        self.new_event_button = tk.Button(
+            master=self.bottom_frame_plan,
+            padx=3,
+            pady=3,
+            text=NEW_EVENT,
+            command=add_text,
+            bg=all_colors[NEW_EVENT],
+        )
+        self.new_event_button["font"] = button_font
+        self.new_event_button.grid(row=0, column=11, sticky="nswe", padx=5, pady=5)
+
         # Placing all the buttons on main frame (plan)
         self.bottom_frame_plan.grid(
             row=2, column=0, sticky="nswe", padx=10, pady=10, columnspan=3
@@ -633,8 +660,13 @@ class Zoom_Advanced(ttk.Frame):
         self.tk_canvas.bind("<B2-Motion>", self.move_to)
         self.tk_canvas.bind("<Button-1>", self.draw_rect)
         self.tk_canvas.bind("<B1-Motion>", self.draw_rect)
+        self.tk_canvas.bind(
+            "<Shift-B1-Motion>",
+            lambda event: self.draw_rect(event, shift_dir=True),
+        )
         self.tk_canvas.bind("<Button-3>", self.delete_rect)
         self.tk_canvas.bind("<B3-Motion>", self.delete_rect)
+        #        self.tk_canvas.bind("<B3-Motion-Shift>", self.delete_rect_hor_or_vert)
 
         self.draw_image(self.current_image)
         self.all_rects = set()
@@ -828,9 +860,26 @@ class Zoom_Advanced(ttk.Frame):
                     )
                     self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
 
-    def draw_rect(self, event=None):
+    def draw_rect(self, event=None, shift_dir=False):
         grid = self.all_floor_level_info[self.current_floor_id].grid
         x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)
+        if shift_dir:
+            if not self.shift_x and not self.shift_y:
+                self.shift_x, self.shift_y = x, y
+            if not self.drawing_direction:
+                if self.shift_x < x or self.shift_x > x:
+                    self.drawing_direction = HORIZONTAL
+                elif self.shift_y < y or self.shift_y > y:
+                    self.drawing_direction = VERTICAL
+            if self.drawing_direction == HORIZONTAL:
+                y = self.shift_y
+            elif self.drawing_direction == VERTICAL:
+                x = self.shift_x
+        else:
+            self.shift_x = None
+            self.shift_y = None
+            self.drawing_direction = None
+
         bbox = self.tk_canvas.bbox(self.container)
         if (
             bbox[0] < x - self.rect_scale * self.box_size / 2 < bbox[2]
