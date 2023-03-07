@@ -55,6 +55,7 @@ class Zoom_Advanced(ttk.Frame):
         self.shift_x = None
         self.shift_y = None
         self.drawing_direction = None
+        self.comments = list()
 
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
@@ -110,6 +111,7 @@ class Zoom_Advanced(ttk.Frame):
                 self.today_string = self.today_string.replace(*german_week_day)
             self.current_day_text.config(text=self.today_string)
             self.delete_all_rect()
+            self.delete_all_comments()
             self.draw_grid_for_plan(
                 self.all_floor_level_info[self.current_floor_id],
                 self.current_day,
@@ -126,6 +128,7 @@ class Zoom_Advanced(ttk.Frame):
             elif floor_delta < 0:
                 self.current_floor_id = max(floor_delta + self.current_floor_id, 0)
             self.delete_all_rect()
+            self.delete_all_comments()
             self.current_image = full_image_path[
                 list(full_image_path)[self.current_floor_id]
             ]
@@ -143,6 +146,7 @@ class Zoom_Advanced(ttk.Frame):
             self.current_tact = None
             self.current_structure = None
             self.current_status = None
+            print(self.comments)
 
         def change_mode():
             self.drawing_mode_id = (self.drawing_mode_id + 1) % len(
@@ -152,6 +156,7 @@ class Zoom_Advanced(ttk.Frame):
             for the_frame in self.drawing_mode_frames[self.current_mode]:
                 the_frame.tkraise()
             self.delete_all_rect()
+            self.delete_all_comments()
             self.draw_grid_for_plan(
                 self.all_floor_level_info[self.current_floor_id],
                 self.current_day,
@@ -859,6 +864,18 @@ class Zoom_Advanced(ttk.Frame):
                         tags=f"{pixel.pixel_x}-{pixel.pixel_y}",
                     )
                     self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
+        if self.current_mode == PLAN:
+            for comment in self.comments:
+                if (
+                    self.current_day == comment["comment_day"]
+                    and self.current_floor_id == comment["comment_floor_id"]
+                ):
+                    self.tk_canvas.create_text(
+                        comment["x"],
+                        comment["y"],
+                        text=comment["comment"],
+                        tag=comment["comment_tag"],
+                    )
 
     def draw_rect(self, event=None, shift_dir=False):
         grid = self.all_floor_level_info[self.current_floor_id].grid
@@ -897,6 +914,7 @@ class Zoom_Advanced(ttk.Frame):
             self.text_x = x
             self.text_y = y
             self.entry = tk.Entry(self.tk_canvas)
+            self.entry.pack()
             self.entry.focus_set()
             self.entry.bind("<Return>", self.show_text)
             self.tk_canvas.create_window(
@@ -998,7 +1016,10 @@ class Zoom_Advanced(ttk.Frame):
                             current_pixel.status[step].discard(self.current_day)
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
                         self.all_rects.discard(f"{new_x}-{new_y}")
-                        if self.current_status == POUR_CONCRETE and (current_pixel.type_structure==CONCRETE or current_pixel.type_structure==PREFABRICATED_PART):
+                        if self.current_status == POUR_CONCRETE and (
+                            current_pixel.type_structure == CONCRETE
+                            or current_pixel.type_structure == PREFABRICATED_PART
+                        ):
                             current_pixel.status[PART_COMPLETE].discard(
                                 self.current_day + 1 * german_business_day
                             )
@@ -1029,7 +1050,10 @@ class Zoom_Advanced(ttk.Frame):
                             tags=f"{new_x}-{new_y}",
                         )
                         self.all_rects.add(f"{new_x}-{new_y}")
-                        if self.current_status == POUR_CONCRETE and (current_pixel.type_structure==CONCRETE or current_pixel.type_structure==PREFABRICATED_PART):
+                        if self.current_status == POUR_CONCRETE and (
+                            current_pixel.type_structure == CONCRETE
+                            or current_pixel.type_structure == PREFABRICATED_PART
+                        ):
                             current_pixel.status[PART_COMPLETE].add(
                                 self.current_day + 1 * german_business_day
                             )
@@ -1063,7 +1087,10 @@ class Zoom_Advanced(ttk.Frame):
                     for step in current_pixel.status:
                         current_pixel.status[step].discard(self.current_day)
 
-                    if self.current_status == POUR_CONCRETE and (current_pixel.type_structure==CONCRETE or current_pixel.type_structure==PREFABRICATED_PART):
+                    if self.current_status == POUR_CONCRETE and (
+                        current_pixel.type_structure == CONCRETE
+                        or current_pixel.type_structure == PREFABRICATED_PART
+                    ):
                         current_pixel.status[PART_COMPLETE].discard(
                             self.current_day + 1 * german_business_day
                         )
@@ -1073,6 +1100,10 @@ class Zoom_Advanced(ttk.Frame):
             self.tk_canvas.delete(rect)
 
         self.all_rects = set()
+
+    def delete_all_comments(self):
+        for comment in self.comments:
+            self.tk_canvas.delete(comment["comment_tag"])
 
     def draw_grid_for_plan(self, floor, current_day, current_mode):
         img = Image.open(floor.full_path_image)
@@ -1318,8 +1349,18 @@ class Zoom_Advanced(ttk.Frame):
         text = self.entry.get()
         self.tk_canvas.delete("entry")
         self.entry = None
-        #        x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)
-        self.tk_canvas.create_text(self.text_x, self.text_y, text=text)
+        temp_tag = f"{self.text_x}-{self.text_y}-text"
+        self.tk_canvas.create_text(self.text_x, self.text_y, text=text, tag=temp_tag)
+        self.comments.append(
+            {
+                "x": self.text_x,
+                "y": self.text_y,
+                "comment": text,
+                "comment_day": self.current_day,
+                "comment_floor_id": self.current_floor_id,
+                "comment_tag": temp_tag,
+            }
+        )
 
 
 root = tk.Tk()
