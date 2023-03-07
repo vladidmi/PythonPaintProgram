@@ -569,7 +569,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=NEW_EVENT,
-            command=add_text,
+            command=lambda: change_status(NEW_EVENT),
             bg=all_colors[NEW_EVENT],
         )
         self.new_event_button["font"] = button_font
@@ -816,6 +816,12 @@ class Zoom_Advanced(ttk.Frame):
                         for step in working_steps[type_structure]:
                             current_step = pixel_history[f"{i}-{j}"].get(step, set())
                             status[step] = current_step
+                    if (
+                        NEW_EVENT in pixel_history[f"{i}-{j}"]
+                        and pixel_history[f"{i}-{j}"][NEW_EVENT]
+                    ):
+                        status[NEW_EVENT] = pixel_history[f"{i}-{j}"][NEW_EVENT]
+                        print(status)
                     grid[j].append(
                         Pixel(
                             pixel_x=i,
@@ -825,6 +831,7 @@ class Zoom_Advanced(ttk.Frame):
                             status=status,
                         )
                     )
+
         return grid
 
     def draw_grid(self):
@@ -837,6 +844,12 @@ class Zoom_Advanced(ttk.Frame):
                     current_fill = all_colors[pixel.type_structure]
                 elif self.current_mode == TACT and pixel.tact:
                     current_fill = all_colors[pixel.tact]
+                elif (
+                    self.current_mode == PLAN
+                    and NEW_EVENT in pixel.status
+                    and self.current_day in pixel.status[NEW_EVENT]
+                ):
+                    current_fill = all_colors[NEW_EVENT]
                 elif self.current_mode == PLAN and pixel.type_structure:
                     for step in list(pixel.status)[::-1]:
                         if (
@@ -1010,6 +1023,7 @@ class Zoom_Advanced(ttk.Frame):
                         )
                         self.all_rects.add(f"{new_x}-{new_y}")
 
+                # Plan mode
                 elif self.current_mode == PLAN:
                     if self.erase_mode == True:
                         for step in current_pixel.status:
@@ -1029,8 +1043,11 @@ class Zoom_Advanced(ttk.Frame):
                         self.current_status
                         in working_steps.get(current_pixel.type_structure, [])
                         and self.active_tact_for_planing == current_pixel.tact
-                    ):
+                    ) or self.current_status == NEW_EVENT:
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
+                        if self.current_status not in current_pixel.status:
+                            current_pixel.status[self.current_status] = set()
+
                         current_pixel.status[self.current_status].add(self.current_day)
                         self.tk_canvas.create_rectangle(
                             bbox[0]
@@ -1220,7 +1237,7 @@ class Zoom_Advanced(ttk.Frame):
             pixel_info = list()
             for i, row in enumerate(grid):
                 for j, pixel in enumerate(row):
-                    if pixel.tact or pixel.type_structure:
+                    if pixel.tact or pixel.type_structure or pixel.status:
                         pixel_info.append(
                             {
                                 "pixel_id": f"{pixel.pixel_x}-{pixel.pixel_y}",

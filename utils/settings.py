@@ -205,14 +205,14 @@ all_colors = {
     PART_COMPLETE: DARK_RED,
     NEXT_DAY: WHITE,
     LAST_DAY: WHITE,
-    NEW_EVENT: BROWN,
+    NEW_EVENT: PINK,
     # Tact division
     f"{TACT_PART} 1": BLUE,
     f"{TACT_PART} 2": ORANGE,
     f"{TACT_PART} 3": VIOLET,
     f"{TACT_PART} 4": GREY,
     f"{TACT_PART} 5": YELLOW,
-    f"{TACT_PART} 6": PINK,
+    f"{TACT_PART} 6": BROWN,
     NO_TACT: WHITE,
 }
 
@@ -226,6 +226,7 @@ working_steps = {
         PART_COMPLETE,
     ],
     MASONRY: [DO_MASONRY, PART_COMPLETE],
+    NEW_EVENT: [NEW_EVENT],
 }
 
 working_steps_flat = set(
