@@ -781,10 +781,10 @@ class Zoom_Advanced(ttk.Frame):
         self.image = Image.open(image_path)  # open image
         self.width, self.height = self.image.size
         self.image_width_in_pixels = int(
-            1000 * self.width / (max(self.width, self.height))
+            MAX_GRID_SIZE * self.width / (max(self.width, self.height))
         )
         self.image_height_in_pixels = int(
-            1000 * self.height / (max(self.width, self.height))
+            MAX_GRID_SIZE * self.height / (max(self.width, self.height))
         )
         self.box_size = self.width / self.image_width_in_pixels
         self.imscale = 1.0  # scale for the canvas image
@@ -884,8 +884,12 @@ class Zoom_Advanced(ttk.Frame):
                     and self.current_floor_id == comment["comment_floor_id"]
                 ):
                     self.tk_canvas.create_text(
-                        comment["x"],
-                        comment["y"],
+                        bbox[0]
+                        + comment["x"] * self.rect_scale * self.box_size
+                        - self.rect_scale * self.box_size / 2,
+                        bbox[1]
+                        + comment["y"] * self.rect_scale * self.box_size
+                        - self.rect_scale * self.box_size / 2,
                         text=comment["comment"],
                         tag=comment["comment_tag"],
                     )
@@ -929,7 +933,9 @@ class Zoom_Advanced(ttk.Frame):
             self.entry = tk.Entry(self.tk_canvas)
             self.entry.pack()
             self.entry.focus_set()
-            self.entry.bind("<Return>", self.show_text)
+            self.entry.bind(
+                "<Return>", lambda event: self.show_text(event, tag_x, tag_y)
+            )
             self.tk_canvas.create_window(
                 self.text_x,
                 self.text_y,
@@ -1137,13 +1143,13 @@ class Zoom_Advanced(ttk.Frame):
                     )
                     draw.rectangle(
                         xy=(
-                            self.box_size * (pixel.pixel_x - 1.5),
-                            self.box_size * (pixel.pixel_y - 1.5),
-                            self.box_size * (pixel.pixel_x - 1.5) + self.box_size,
-                            self.box_size * (pixel.pixel_y - 1.5) + self.box_size,
+                            self.box_size * (pixel.pixel_x - 1),
+                            self.box_size * (pixel.pixel_y - 1),
+                            self.box_size * (pixel.pixel_x - 1) + self.box_size,
+                            self.box_size * (pixel.pixel_y - 1) + self.box_size,
                         ),
                         outline=None,
-                        #                        width=0,
+                        width=0,
                         fill=(
                             current_r,
                             current_g,
@@ -1362,16 +1368,16 @@ class Zoom_Advanced(ttk.Frame):
         else:
             return None
 
-    def show_text(self, event):
+    def show_text(self, event, tag_x=0, tag_y=0):
         text = self.entry.get()
         self.tk_canvas.delete("entry")
         self.entry = None
-        temp_tag = f"{self.text_x}-{self.text_y}-text"
+        temp_tag = f"{tag_x}-{tag_y}-text"
         self.tk_canvas.create_text(self.text_x, self.text_y, text=text, tag=temp_tag)
         self.comments.append(
             {
-                "x": self.text_x,
-                "y": self.text_y,
+                "x": tag_x,
+                "y": tag_y,
                 "comment": text,
                 "comment_day": self.current_day,
                 "comment_floor_id": self.current_floor_id,

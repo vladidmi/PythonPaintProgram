@@ -57,6 +57,7 @@ class Floor_level_info:
 
 cur_dir = os.getcwd()
 
+MAX_GRID_SIZE = 400
 
 BUTTON_TEXT_SIZE = 12
 PROJECT_INFO_TEXT_SIZE = 22
@@ -169,7 +170,7 @@ LAST_DAY = "Tag -"
 NEXT_DAY = "Tag +"
 DRAW_TEXT_ON_CANVAS = "Text einf."
 DELETE_TEXT_ON_CANVAS = "Text lösch."
-NEW_EVENT = "Neue Leistung"
+NEW_EVENT = "Sonst."
 
 # Tact division
 TACT = "BA"
