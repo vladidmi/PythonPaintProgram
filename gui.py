@@ -56,6 +56,7 @@ class Zoom_Advanced(ttk.Frame):
         self.shift_y = None
         self.drawing_direction = None
         self.comments = list()
+        self.delete_text_on_canvas_mode = False
 
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
@@ -75,6 +76,11 @@ class Zoom_Advanced(ttk.Frame):
                 image_file_width, image_file_height, pixel_history
             )
             self.all_floor_level_info.append(new_floor_level)
+
+        try:
+            self.comments = pd.read_excel(path_to_comments).to_dict("records")
+        except:
+            print(f"File with comments not found")
 
         self.current_image = full_image_path[
             list(full_image_path)[self.current_floor_id]
@@ -146,7 +152,6 @@ class Zoom_Advanced(ttk.Frame):
             self.current_tact = None
             self.current_structure = None
             self.current_status = None
-            print(self.comments)
 
         def change_mode():
             self.drawing_mode_id = (self.drawing_mode_id + 1) % len(
@@ -193,6 +198,9 @@ class Zoom_Advanced(ttk.Frame):
 
         def add_text():
             self.draw_text_on_canvas = True
+
+        def delete_text():
+            self.delete_text_on_canvas_mode = True
 
         # Navigation menu on the right (tact and plan)
         self.right_frame_tact_and_plan = tk.Frame(master=self.master)
@@ -556,7 +564,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=3,
             pady=3,
             text=DELETE_TEXT_ON_CANVAS,
-            command=add_text,
+            command=delete_text,
             bg=WHITE,
         )
         self.delete_text_on_canvas_button["font"] = button_font
@@ -821,7 +829,6 @@ class Zoom_Advanced(ttk.Frame):
                         and pixel_history[f"{i}-{j}"][NEW_EVENT]
                     ):
                         status[NEW_EVENT] = pixel_history[f"{i}-{j}"][NEW_EVENT]
-                        print(status)
                     grid[j].append(
                         Pixel(
                             pixel_x=i,
@@ -1229,6 +1236,8 @@ class Zoom_Advanced(ttk.Frame):
                     font=project_font_path_small,
                     fill=BLACK,
                 )
+            # for comment in self.comments:
+            #     if comment['comment_day'] == current_day and comment['comment_floor_id']==floor.
             img.save(
                 os.path.join(
                     floor.folder_with_print,
@@ -1269,6 +1278,10 @@ class Zoom_Advanced(ttk.Frame):
                         )
                 all_floor_levels.append(df)
         print("Files saved successfully")
+
+        df_comments = pd.DataFrame(self.comments)
+        df_comments.to_excel(path_to_comments, index=False)
+        print("Comments saved successfully")
 
         if make_time_plan:
             all_floor_levels_df = pd.concat(all_floor_levels)
@@ -1342,6 +1355,7 @@ class Zoom_Advanced(ttk.Frame):
             floor_levels_cleaned.to_excel(
                 os.path.join(path_to_image_folder, "zeitplan.xlsx"), index=False
             )
+            print("Gantt chart created successfully")
 
     def load_pixel_info(self, pixel_info_file):
         def get_dates(str_list):

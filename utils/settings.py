@@ -77,6 +77,8 @@ full_image_path = {
     if ".jpg" in file
 }
 
+path_to_comments = os.path.join(path_to_image_folder, "project_comments.xlsx")
+
 weekmask_germany = "Mon Tue Wed Thu Fri"
 german_holidays = [
     date[0]
