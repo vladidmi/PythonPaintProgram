@@ -56,15 +56,16 @@ class Zoom_Advanced(ttk.Frame):
         self.shift_y = None
         self.drawing_direction = None
         self.comments = list()
-        self.delete_text_on_canvas_mode = False
 
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
         for german_week_day in GERMAN_WEEK_DAYS:
             self.today_string = self.today_string.replace(*german_week_day)
 
-        for image_file in full_image_path:
-            new_floor_level = Floor_level_info(image_file, full_image_path[image_file])
+        for floor_id, image_file in enumerate(full_image_path):
+            new_floor_level = Floor_level_info(
+                image_file, full_image_path[image_file], floor_id
+            )
             image = Image.open(full_image_path[image_file])  # open image
             image_file_width, image_file_height = image.size
             try:
@@ -194,125 +195,237 @@ class Zoom_Advanced(ttk.Frame):
             print("all images created")
 
         def erase_mode_activate():
-            self.erase_mode = True
+            grid = self.all_floor_level_info[self.current_floor_id].grid
+            for i, row in enumerate(grid):
+                for j, row_cell in enumerate(row):
+                    current_pixel = grid[i][j]
+                    self.tk_canvas.delete(f"{i}-{j}")
+                    self.all_rects.discard(f"{i}-{j}")
+                    for step in current_pixel.status:
+                        current_pixel.status[step].discard(self.current_day)
+                        if step == POUR_CONCRETE and (
+                            current_pixel.type_structure == CONCRETE
+                            or current_pixel.type_structure == PREFABRICATED_PART
+                        ):
+                            current_pixel.status[PART_COMPLETE].discard(
+                                self.current_day + 1 * german_business_day
+                            )
 
         def add_text():
             self.draw_text_on_canvas = True
 
         def delete_text():
-            self.delete_text_on_canvas_mode = True
+            temp_comments = list()
+            for comment in self.comments:
+                if (
+                    self.current_day == comment["comment_day"]
+                    and self.current_floor_id == comment["comment_floor_id"]
+                ):
+                    self.tk_canvas.delete(comment["comment_tag"])
+                else:
+                    temp_comments.append(comment)
+            self.comments = temp_comments[::]
 
-        # Navigation menu on the right (tact and plan)
-        self.right_frame_tact_and_plan = tk.Frame(master=self.master)
+        # Navigation menu on the right (tact)
+        self.right_frame_tact = tk.Frame(master=self.master)
 
-        # Buttons for the navigation menu on the right (tact and plan)
-        self.next_floor_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        # Buttons for the navigation menu on the right (tact)
+        self.next_floor_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=NEXT_FLOOR,
             command=lambda: change_floor(1),
             bg=all_colors[NEXT_FLOOR],
         )
-        self.next_floor_tact_and_plan["font"] = button_font
-        self.next_floor_tact_and_plan.grid(
-            row=0, column=0, sticky="nswe", padx=5, pady=5
-        )
+        self.next_floor_tact["font"] = button_font
+        self.next_floor_tact.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.previous_floor_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        self.previous_floor_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=PREVIOUS_FLOOR,
             command=lambda: change_floor(-1),
             bg=all_colors[PREVIOUS_FLOOR],
         )
-        self.previous_floor_tact_and_plan["font"] = button_font
-        self.previous_floor_tact_and_plan.grid(
-            row=1, column=0, sticky="nswe", padx=5, pady=5
-        )
+        self.previous_floor_tact["font"] = button_font
+        self.previous_floor_tact.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.tact_1_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        self.tact_1_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=f"{TACT_PART} 1",
             command=lambda: change_tact(f"{TACT_PART} 1"),
             bg=all_colors[f"{TACT_PART} 1"],
         )
-        self.tact_1_tact_and_plan["font"] = button_font
-        self.tact_1_tact_and_plan.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
+        self.tact_1_tact["font"] = button_font
+        self.tact_1_tact.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.tact_2_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        self.tact_2_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=f"{TACT_PART} 2",
             command=lambda: change_tact(f"{TACT_PART} 2"),
             bg=all_colors[f"{TACT_PART} 2"],
         )
-        self.tact_2_tact_and_plan["font"] = button_font
-        self.tact_2_tact_and_plan.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
+        self.tact_2_tact["font"] = button_font
+        self.tact_2_tact.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.tact_3_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        self.tact_3_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=f"{TACT_PART} 3",
             command=lambda: change_tact(f"{TACT_PART} 3"),
             bg=all_colors[f"{TACT_PART} 3"],
         )
-        self.tact_3_tact_and_plan["font"] = button_font
-        self.tact_3_tact_and_plan.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
+        self.tact_3_tact["font"] = button_font
+        self.tact_3_tact.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.tact_4_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        self.tact_4_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=f"{TACT_PART} 4",
             command=lambda: change_tact(f"{TACT_PART} 4"),
             bg=all_colors[f"{TACT_PART} 4"],
         )
-        self.tact_4_tact_and_plan["font"] = button_font
-        self.tact_4_tact_and_plan.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
+        self.tact_4_tact["font"] = button_font
+        self.tact_4_tact.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.tact_5_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        self.tact_5_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=f"{TACT_PART} 5",
             command=lambda: change_tact(f"{TACT_PART} 5"),
             bg=all_colors[f"{TACT_PART} 5"],
         )
-        self.tact_5_tact_and_plan["font"] = button_font
-        self.tact_5_tact_and_plan.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
+        self.tact_5_tact["font"] = button_font
+        self.tact_5_tact.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.tact_6_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        self.tact_6_tact = tk.Button(
+            master=self.right_frame_tact,
             padx=3,
             pady=3,
             text=f"{TACT_PART} 6",
             command=lambda: change_tact(f"{TACT_PART} 6"),
             bg=all_colors[f"{TACT_PART} 6"],
         )
-        self.tact_6_tact_and_plan["font"] = button_font
-        self.tact_6_tact_and_plan.grid(row=7, column=0, sticky="nswe", padx=5, pady=5)
+        self.tact_6_tact["font"] = button_font
+        self.tact_6_tact.grid(row=7, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.no_tact_tact_and_plan = tk.Button(
-            master=self.right_frame_tact_and_plan,
+        # Placing all the buttons on main frame (tact)
+        self.right_frame_tact.grid(row=0, column=2, sticky="nswe", padx=10, pady=10)
+
+        # Navigation menu on the right (plan)
+        self.right_frame_plan = tk.Frame(master=self.master)
+
+        # Buttons for the navigation menu on the right (plan)
+        self.next_floor_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=NEXT_FLOOR,
+            command=lambda: change_floor(1),
+            bg=WHITE,
+        )
+        self.next_floor_plan["font"] = button_font
+        self.next_floor_plan.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.previous_floor_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=PREVIOUS_FLOOR,
+            command=lambda: change_floor(-1),
+            bg=WHITE,
+        )
+        self.previous_floor_plan["font"] = button_font
+        self.previous_floor_plan.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.tact_1_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=f"{TACT_PART} 1",
+            command=lambda: change_tact(f"{TACT_PART} 1"),
+            bg=WHITE,
+        )
+        self.tact_1_plan["font"] = button_font
+        self.tact_1_plan.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.tact_2_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=f"{TACT_PART} 2",
+            command=lambda: change_tact(f"{TACT_PART} 2"),
+            bg=WHITE,
+        )
+        self.tact_2_plan["font"] = button_font
+        self.tact_2_plan.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.tact_3_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=f"{TACT_PART} 3",
+            command=lambda: change_tact(f"{TACT_PART} 3"),
+            bg=WHITE,
+        )
+        self.tact_3_plan["font"] = button_font
+        self.tact_3_plan.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.tact_4_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=f"{TACT_PART} 4",
+            command=lambda: change_tact(f"{TACT_PART} 4"),
+            bg=WHITE,
+        )
+        self.tact_4_plan["font"] = button_font
+        self.tact_4_plan.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.tact_5_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=f"{TACT_PART} 5",
+            command=lambda: change_tact(f"{TACT_PART} 5"),
+            bg=WHITE,
+        )
+        self.tact_5_plan["font"] = button_font
+        self.tact_5_plan.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.tact_6_plan = tk.Button(
+            master=self.right_frame_plan,
+            padx=3,
+            pady=3,
+            text=f"{TACT_PART} 6",
+            command=lambda: change_tact(f"{TACT_PART} 6"),
+            bg=WHITE,
+        )
+        self.tact_6_plan["font"] = button_font
+        self.tact_6_plan.grid(row=7, column=0, sticky="nswe", padx=5, pady=5)
+
+        self.no_tact = tk.Button(
+            master=self.right_frame_plan,
             padx=3,
             pady=3,
             text=NO_TACT,
             command=lambda: change_tact(None),
             bg=all_colors[NO_TACT],
         )
-        self.no_tact_tact_and_plan["font"] = button_font
-        self.no_tact_tact_and_plan.grid(row=8, column=0, sticky="nswe", padx=5, pady=5)
+        self.no_tact["font"] = button_font
+        self.no_tact.grid(row=8, column=0, sticky="nswe", padx=5, pady=5)
 
-        # Placing all the buttons on main frame (tact and plan)
-        self.right_frame_tact_and_plan.grid(
-            row=0, column=2, sticky="nswe", padx=10, pady=10
-        )
+        # Placing all the buttons on main frame (plan)
+        self.right_frame_plan.grid(row=0, column=2, sticky="nswe", padx=10, pady=10)
 
         # Navigation menu on the right (draw)
         self.right_frame_draw = tk.Frame(master=self.master)
@@ -340,7 +453,7 @@ class Zoom_Advanced(ttk.Frame):
         self.previous_floor_draw["font"] = button_font
         self.previous_floor_draw.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
 
-        # Placing all the buttons on main frame (tact and plan)
+        # Placing all the buttons on main frame (draw)
         self.right_frame_draw.grid(row=0, column=2, sticky="nswe", padx=10, pady=10)
 
         # Navigation menu on the left
@@ -513,16 +626,49 @@ class Zoom_Advanced(ttk.Frame):
             row=0, column=5, sticky="nswe", padx=5, pady=5
         )
 
-        self.do_masonry = tk.Button(
+        self.do_ground_job = tk.Button(
             master=self.bottom_frame_plan,
             padx=3,
             pady=3,
-            text=DO_MASONRY,
-            command=lambda: change_status(DO_MASONRY),
-            bg=all_colors[DO_MASONRY],
+            text=GROUND_JOB,
+            command=lambda: change_status(GROUND_JOB),
+            bg=all_colors[GROUND_JOB],
         )
-        self.do_masonry["font"] = button_font
-        self.do_masonry.grid(row=0, column=6, sticky="nswe", padx=5, pady=5)
+        self.do_ground_job["font"] = button_font
+        self.do_ground_job.grid(row=0, column=6, sticky="nswe", padx=5, pady=5)
+
+        self.do_empty_pipes = tk.Button(
+            master=self.bottom_frame_plan,
+            padx=3,
+            pady=3,
+            text=EMPTY_PIPES,
+            command=lambda: change_status(EMPTY_PIPES),
+            bg=all_colors[EMPTY_PIPES],
+        )
+        self.do_empty_pipes["font"] = button_font
+        self.do_empty_pipes.grid(row=0, column=7, sticky="nswe", padx=5, pady=5)
+
+        self.do_built_in_part = tk.Button(
+            master=self.bottom_frame_plan,
+            padx=3,
+            pady=3,
+            text=BUILT_IN_PART,
+            command=lambda: change_status(BUILT_IN_PART),
+            bg=all_colors[BUILT_IN_PART],
+        )
+        self.do_built_in_part["font"] = button_font
+        self.do_built_in_part.grid(row=0, column=8, sticky="nswe", padx=5, pady=5)
+
+        # self.do_masonry = tk.Button(
+        #     master=self.bottom_frame_plan,
+        #     padx=3,
+        #     pady=3,
+        #     text=DO_MASONRY,
+        #     command=lambda: change_status(DO_MASONRY),
+        #     bg=all_colors[DO_MASONRY],
+        # )
+        # self.do_masonry["font"] = button_font
+        # self.do_masonry.grid(row=0, column=6, sticky="nswe", padx=5, pady=5)
 
         self.part_complete = tk.Button(
             master=self.bottom_frame_plan,
@@ -533,7 +679,7 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[PART_COMPLETE],
         )
         self.part_complete["font"] = button_font
-        self.part_complete.grid(row=0, column=7, sticky="nswe", padx=5, pady=5)
+        self.part_complete.grid(row=0, column=9, sticky="nswe", padx=5, pady=5)
 
         self.erase_plan = tk.Button(
             master=self.bottom_frame_plan,
@@ -544,7 +690,7 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[ERASE],
         )
         self.erase_plan["font"] = button_font
-        self.erase_plan.grid(row=0, column=8, sticky="nswe", padx=5, pady=5)
+        self.erase_plan.grid(row=0, column=10, sticky="nswe", padx=5, pady=5)
 
         self.draw_text_on_canvas_button = tk.Button(
             master=self.bottom_frame_plan,
@@ -556,7 +702,7 @@ class Zoom_Advanced(ttk.Frame):
         )
         self.draw_text_on_canvas_button["font"] = button_font
         self.draw_text_on_canvas_button.grid(
-            row=0, column=9, sticky="nswe", padx=5, pady=5
+            row=0, column=11, sticky="nswe", padx=5, pady=5
         )
 
         self.delete_text_on_canvas_button = tk.Button(
@@ -569,7 +715,7 @@ class Zoom_Advanced(ttk.Frame):
         )
         self.delete_text_on_canvas_button["font"] = button_font
         self.delete_text_on_canvas_button.grid(
-            row=0, column=10, sticky="nswe", padx=5, pady=5
+            row=0, column=12, sticky="nswe", padx=5, pady=5
         )
 
         self.new_event_button = tk.Button(
@@ -581,7 +727,7 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[NEW_EVENT],
         )
         self.new_event_button["font"] = button_font
-        self.new_event_button.grid(row=0, column=11, sticky="nswe", padx=5, pady=5)
+        self.new_event_button.grid(row=0, column=13, sticky="nswe", padx=5, pady=5)
 
         # Placing all the buttons on main frame (plan)
         self.bottom_frame_plan.grid(
@@ -615,28 +761,29 @@ class Zoom_Advanced(ttk.Frame):
         self.prefabricated_part["font"] = button_font
         self.prefabricated_part.grid(row=0, column=1, sticky="nswe", padx=5, pady=5)
 
-        self.masonry = tk.Button(
+        self.ground = tk.Button(
             master=self.bottom_frame_draw,
             padx=3,
             pady=3,
-            text=MASONRY,
-            command=lambda: change_draw_structure(MASONRY),
-            bg=all_colors[MASONRY],
+            text=GROUND,
+            command=lambda: change_draw_structure(GROUND),
+            bg=all_colors[GROUND],
             fg=WHITE,
         )
-        self.masonry["font"] = button_font
-        self.masonry.grid(row=0, column=2, sticky="nswe", padx=5, pady=5)
+        self.ground["font"] = button_font
+        self.ground.grid(row=0, column=2, sticky="nswe", padx=5, pady=5)
 
-        self.erase_draw = tk.Button(
-            master=self.bottom_frame_draw,
-            padx=3,
-            pady=3,
-            text=ERASE,
-            command=erase_mode_activate,
-            bg=all_colors[ERASE],
-        )
-        self.erase_draw["font"] = button_font
-        self.erase_draw.grid(row=0, column=3, sticky="nswe", padx=5, pady=5)
+        # self.masonry = tk.Button(
+        #     master=self.bottom_frame_draw,
+        #     padx=3,
+        #     pady=3,
+        #     text=MASONRY,
+        #     command=lambda: change_draw_structure(MASONRY),
+        #     bg=all_colors[MASONRY],
+        #     fg=WHITE,
+        # )
+        # self.masonry["font"] = button_font
+        # self.masonry.grid(row=0, column=2, sticky="nswe", padx=5, pady=5)
 
         # Placing all the buttons on main frame (draw)
         self.bottom_frame_draw.grid(
@@ -645,7 +792,7 @@ class Zoom_Advanced(ttk.Frame):
 
         self.drawing_mode_frames = {
             PLAN: [
-                self.right_frame_tact_and_plan,
+                self.right_frame_plan,
                 self.left_frame,
                 self.bottom_frame_plan,
             ],
@@ -655,7 +802,7 @@ class Zoom_Advanced(ttk.Frame):
                 self.bottom_frame_draw,
             ],
             TACT: [
-                self.right_frame_tact_and_plan,
+                self.right_frame_tact,
                 self.left_frame,
                 self.bottom_frame_tact,
             ],
@@ -1206,6 +1353,22 @@ class Zoom_Advanced(ttk.Frame):
                             int(255 * current_transparency),
                         ),
                     )
+
+        for comment in self.comments:
+            if (
+                # Comparison of Timestamp with datetime.date is deprecated in order to match the standard library behavior. In a future version these will be considered non-comparable. Use 'ts == pd.Timestamp(date)' or 'ts.date() == date' instead.
+                pd.Timestamp(current_day) == comment["comment_day"]
+                and floor.floor_id == comment["comment_floor_id"]
+            ):
+                try:
+                    draw.text(
+                        (self.box_size * comment["x"], self.box_size * comment["y"]),
+                        comment["comment"],
+                        font=project_font_path,
+                        fill=BLACK,
+                    )
+                except:
+                    print(f"Problem with {comment}")
         if active_works_on_floor:
             today_string = current_day.strftime("%A-%d-%m-%Y")
             for german_week_day in GERMAN_WEEK_DAYS:
@@ -1236,8 +1399,6 @@ class Zoom_Advanced(ttk.Frame):
                     font=project_font_path_small,
                     fill=BLACK,
                 )
-            # for comment in self.comments:
-            #     if comment['comment_day'] == current_day and comment['comment_floor_id']==floor.
             img.save(
                 os.path.join(
                     floor.folder_with_print,

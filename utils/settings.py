@@ -45,12 +45,12 @@ def weekdays_of_current_week(current_date):
 
 
 class Floor_level_info:
-    def __init__(self, image_name, full_image_name):
+    def __init__(self, image_name, full_image_name, floor_id):
         self.image_name = image_name
         self.full_path_image = full_image_name
         self.full_path_xlsx = full_image_name.replace("jpg", "xlsx")
         self.floor_name = image_name.replace(".jpg", "")
-
+        self.floor_id = floor_id
         self.image = Image.open(self.full_path_image)
         self.image_width, self.image_height = self.image.size
 
@@ -109,10 +109,12 @@ LIGHT_BLUE = "#00b0f0"  # Bewehren
 LIGHT_GREEN = "#00c000"  # Betonieren
 VIOLET = "#8057ff"  # Fertigteil setzen
 ORANGE = "#ffc000"  # Mauern
-DARK_RED = "#c00000"  # Fertig
+DARK_RED = "#c00000"  # Erledigt
 GREY = "#808080"
-BROWN = "#a52a2a"
+BROWN = "#644624"
 PINK = "#ffc0cb"
+BEIGE = "#d1bc8a"  # Leerohre
+
 
 BG_COLOR = WHITE
 TRANSPARENT = 0.4
@@ -141,7 +143,7 @@ VERTICAL = "vertical"
 CURSOR_SIZE = "Kursorgröße"
 
 # COMMON
-ERASE = "Entf."
+ERASE = "Planung entf."
 SAVE = "Speichern"
 BIGGER = "Größer"
 SMALLER = "Kleiner"
@@ -159,20 +161,24 @@ PREFABRICATED_PART = (
     "HFT."  # with point, as the name should be different from DO_MASONRY
 )
 MASONRY = "MW."  # with point, as the name should be different from PREFABRICATED_PART_ASSEMBLE
+GROUND = "Erde."
 
 # Planning
 PLAN = "Plan"
 FORMWORK = "SCH"
 REINFORCE = "BEW"
+EMPTY_PIPES = "Leerrohr"
+BUILT_IN_PART = "BST"
 POUR_CONCRETE = "BET"
 PREFABRICATED_PART_ASSEMBLE = "HFT"
 DO_MASONRY = "MW"
-PART_COMPLETE = "Fertig"
+PART_COMPLETE = "Erledigt"
 LAST_DAY = "Tag -"
 NEXT_DAY = "Tag +"
 DRAW_TEXT_ON_CANVAS = "Text einf."
 DELETE_TEXT_ON_CANVAS = "Text lösch."
 NEW_EVENT = "Sonst."
+GROUND_JOB = "Erdarb."
 
 # Tact division
 TACT = "BA"
@@ -199,16 +205,20 @@ all_colors = {
     CONCRETE: BLACK,
     PREFABRICATED_PART: RED,
     MASONRY: GREEN,
+    GROUND: GREY,
     # Planning
     FORMWORK: YELLOW,
     REINFORCE: LIGHT_BLUE,
     POUR_CONCRETE: LIGHT_GREEN,
     PREFABRICATED_PART_ASSEMBLE: VIOLET,
     DO_MASONRY: ORANGE,
+    GROUND_JOB: BROWN,
     PART_COMPLETE: DARK_RED,
     NEXT_DAY: WHITE,
     LAST_DAY: WHITE,
-    NEW_EVENT: PINK,
+    NEW_EVENT: GREY,
+    EMPTY_PIPES: BEIGE,
+    BUILT_IN_PART: PINK,
     # Tact division
     f"{TACT_PART} 1": BLUE,
     f"{TACT_PART} 2": ORANGE,
@@ -221,14 +231,22 @@ all_colors = {
 
 # Working steps for structures
 working_steps = {
-    CONCRETE: [FORMWORK, REINFORCE, POUR_CONCRETE, PART_COMPLETE],
+    CONCRETE: [
+        FORMWORK,
+        REINFORCE,
+        POUR_CONCRETE,
+        EMPTY_PIPES,
+        BUILT_IN_PART,
+        PART_COMPLETE,
+    ],
     PREFABRICATED_PART: [
         PREFABRICATED_PART_ASSEMBLE,
         REINFORCE,
         POUR_CONCRETE,
         PART_COMPLETE,
     ],
-    MASONRY: [DO_MASONRY, PART_COMPLETE],
+    GROUND: [GROUND_JOB],
+    #    MASONRY: [DO_MASONRY, PART_COMPLETE],
     NEW_EVENT: [NEW_EVENT],
 }
 
