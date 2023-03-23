@@ -59,8 +59,7 @@ class Zoom_Advanced(ttk.Frame):
 
         self.current_day = pd.Timestamp(datetime.date.today())
         self.today_string = self.current_day.strftime("%A-%d-%m-%Y")
-        for german_week_day in GERMAN_WEEK_DAYS:
-            self.today_string = self.today_string.replace(*german_week_day)
+        self.today_string = translate_days_to_german(self.today_string)
 
         for floor_id, image_file in enumerate(full_image_path):
             new_floor_level = Floor_level_info(
@@ -1510,6 +1509,13 @@ class Zoom_Advanced(ttk.Frame):
                 title="Terminplan",
             )
             fig.update_yaxes(autorange="reversed")
+            # Set the x-axis format to show the weekday in the date
+            fig.update_xaxes(
+                tickformat="%A %d-%m",
+                # ticktext=translate_days_to_german("%A %d-%m"),
+                #     tickvals=pd.date_range(start=df['Start'].min(), end=df['Finish'].max(), freq='D'),
+                #     ticktext=pd.date_range(start=df['Start'].min(), end=df['Finish'].max(), freq='D').strftime('%m-%d (%A)'),
+            )
             fig.write_html(os.path.join(path_to_image_folder, "zeitplan.html"))
 
             # writng xlsx file

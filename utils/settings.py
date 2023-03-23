@@ -44,6 +44,12 @@ def weekdays_of_current_week(current_date):
     return weekdays
 
 
+def translate_days_to_german(day):
+    for german_week_day in GERMAN_WEEK_DAYS:
+        day = day.replace(*german_week_day)
+    return day
+
+
 class Floor_level_info:
     def __init__(self, image_name, full_image_name, floor_id):
         self.image_name = image_name
