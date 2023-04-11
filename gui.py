@@ -101,6 +101,7 @@ class Zoom_Advanced(ttk.Frame):
                 self.current_tact = new_tact
                 self.active_tact_for_planing = new_tact
                 self.erase_mode = False
+                print(self.current_tact)
 
         def change_status(new_status):
             self.current_status = new_status
@@ -238,7 +239,9 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[NEXT_FLOOR],
         )
         self.next_floor_tact["font"] = button_font
-        self.next_floor_tact.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.next_floor_tact.grid(
+            row=0, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
+        )
 
         self.previous_floor_tact = tk.Button(
             master=self.right_frame_tact,
@@ -249,73 +252,36 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[PREVIOUS_FLOOR],
         )
         self.previous_floor_tact["font"] = button_font
-        self.previous_floor_tact.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_1_tact = tk.Button(
-            master=self.right_frame_tact,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 1",
-            command=lambda: change_tact(f"{TACT_PART} 1"),
-            bg=all_colors[f"{TACT_PART} 1"],
+        self.previous_floor_tact.grid(
+            row=1, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
         )
-        self.tact_1_tact["font"] = button_font
-        self.tact_1_tact.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.tact_2_tact = tk.Button(
-            master=self.right_frame_tact,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 2",
-            command=lambda: change_tact(f"{TACT_PART} 2"),
-            bg=all_colors[f"{TACT_PART} 2"],
+        # Information text for the tacts
+        self.tact_info_text = tk.Label(
+            self.right_frame_tact,
+            text=TACT,
+            font=("Arial", BUTTON_TEXT_SIZE),
         )
-        self.tact_2_tact["font"] = button_font
-        self.tact_2_tact.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
+        self.tact_info_text.grid(row=2, column=0, sticky="nswe", padx=5)
 
-        self.tact_3_tact = tk.Button(
-            master=self.right_frame_tact,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 3",
-            command=lambda: change_tact(f"{TACT_PART} 3"),
-            bg=all_colors[f"{TACT_PART} 3"],
-        )
-        self.tact_3_tact["font"] = button_font
-        self.tact_3_tact.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
+        # adding the tact buttons in tact mode
+        tact_buttons_for_tact_mode = [
+            tk.Button(
+                master=self.right_frame_tact,
+                padx=1,
+                pady=1,
+                text=tact_.replace(TACT_PART + " ", ""),
+                command=lambda tact_=tact_: change_tact(tact_),
+                bg=tact_color_dict[tact_],
+            )
+            for i, tact_ in enumerate(tact_color_dict)
+        ]
 
-        self.tact_4_tact = tk.Button(
-            master=self.right_frame_tact,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 4",
-            command=lambda: change_tact(f"{TACT_PART} 4"),
-            bg=all_colors[f"{TACT_PART} 4"],
-        )
-        self.tact_4_tact["font"] = button_font
-        self.tact_4_tact.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_5_tact = tk.Button(
-            master=self.right_frame_tact,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 5",
-            command=lambda: change_tact(f"{TACT_PART} 5"),
-            bg=all_colors[f"{TACT_PART} 5"],
-        )
-        self.tact_5_tact["font"] = button_font
-        self.tact_5_tact.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_6_tact = tk.Button(
-            master=self.right_frame_tact,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 6",
-            command=lambda: change_tact(f"{TACT_PART} 6"),
-            bg=all_colors[f"{TACT_PART} 6"],
-        )
-        self.tact_6_tact["font"] = button_font
-        self.tact_6_tact.grid(row=7, column=0, sticky="nswe", padx=5, pady=5)
+        for i, tact_button in enumerate(tact_buttons_for_tact_mode):
+            tact_button["font"] = button_font
+            tact_button.grid(
+                row=2 + i % 10, column=i // 10, sticky="nswe", padx=2, pady=2
+            )
 
         # Placing all the buttons on main frame (tact)
         self.right_frame_tact.grid(row=0, column=2, sticky="nswe", padx=10, pady=10)
@@ -333,7 +299,9 @@ class Zoom_Advanced(ttk.Frame):
             bg=WHITE,
         )
         self.next_floor_plan["font"] = button_font
-        self.next_floor_plan.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.next_floor_plan.grid(
+            row=0, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
+        )
 
         self.previous_floor_plan = tk.Button(
             master=self.right_frame_plan,
@@ -344,73 +312,9 @@ class Zoom_Advanced(ttk.Frame):
             bg=WHITE,
         )
         self.previous_floor_plan["font"] = button_font
-        self.previous_floor_plan.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_1_plan = tk.Button(
-            master=self.right_frame_plan,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 1",
-            command=lambda: change_tact(f"{TACT_PART} 1"),
-            bg=WHITE,
+        self.previous_floor_plan.grid(
+            row=1, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
         )
-        self.tact_1_plan["font"] = button_font
-        self.tact_1_plan.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_2_plan = tk.Button(
-            master=self.right_frame_plan,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 2",
-            command=lambda: change_tact(f"{TACT_PART} 2"),
-            bg=WHITE,
-        )
-        self.tact_2_plan["font"] = button_font
-        self.tact_2_plan.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_3_plan = tk.Button(
-            master=self.right_frame_plan,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 3",
-            command=lambda: change_tact(f"{TACT_PART} 3"),
-            bg=WHITE,
-        )
-        self.tact_3_plan["font"] = button_font
-        self.tact_3_plan.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_4_plan = tk.Button(
-            master=self.right_frame_plan,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 4",
-            command=lambda: change_tact(f"{TACT_PART} 4"),
-            bg=WHITE,
-        )
-        self.tact_4_plan["font"] = button_font
-        self.tact_4_plan.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_5_plan = tk.Button(
-            master=self.right_frame_plan,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 5",
-            command=lambda: change_tact(f"{TACT_PART} 5"),
-            bg=WHITE,
-        )
-        self.tact_5_plan["font"] = button_font
-        self.tact_5_plan.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
-
-        self.tact_6_plan = tk.Button(
-            master=self.right_frame_plan,
-            padx=3,
-            pady=3,
-            text=f"{TACT_PART} 6",
-            command=lambda: change_tact(f"{TACT_PART} 6"),
-            bg=WHITE,
-        )
-        self.tact_6_plan["font"] = button_font
-        self.tact_6_plan.grid(row=7, column=0, sticky="nswe", padx=5, pady=5)
 
         self.no_tact = tk.Button(
             master=self.right_frame_plan,
@@ -421,7 +325,26 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[NO_TACT],
         )
         self.no_tact["font"] = button_font
-        self.no_tact.grid(row=8, column=0, sticky="nswe", padx=5, pady=5)
+        self.no_tact.grid(row=2, column=0, sticky="nswe", padx=5, pady=5, columnspan=3)
+
+        # adding the tact buttons in plan mode
+        tact_buttons_in_plan_mode = [
+            tk.Button(
+                master=self.right_frame_plan,
+                padx=1,
+                pady=1,
+                text=tact_.replace(TACT_PART + " ", ""),
+                command=lambda tact_=tact_: change_tact(tact_),
+                bg=WHITE,
+            )
+            for tact_ in tact_color_dict
+        ]
+
+        for i, tact_button in enumerate(tact_buttons_in_plan_mode):
+            tact_button["font"] = button_font
+            tact_button.grid(
+                row=3 + i % 10, column=i // 10, sticky="nswe", padx=1, pady=1
+            )
 
         # Placing all the buttons on main frame (plan)
         self.right_frame_plan.grid(row=0, column=2, sticky="nswe", padx=10, pady=10)
@@ -1392,12 +1315,20 @@ class Zoom_Advanced(ttk.Frame):
                     outline=BLACK,
                     fill=all_colors[work_step],
                 )
-                draw.text(
-                    (box_x + BOX_SIZE // 5, box_y + BOX_SIZE // 2),
-                    work_step,
-                    font=project_font_path_small,
-                    fill=BLACK,
-                )
+                if work_step in long_names_for_legend:
+                    draw.text(
+                        (box_x, box_y + int(BOX_SIZE // 2.5)),
+                        long_names_for_legend[work_step],
+                        font=project_font_path_small,
+                        fill=BLACK,
+                    )
+                else:
+                    draw.text(
+                        (box_x, box_y + int(BOX_SIZE // 2.5)),
+                        work_step,
+                        font=project_font_path_small,
+                        fill=BLACK,
+                    )
             img.save(
                 os.path.join(
                     floor.folder_with_print,

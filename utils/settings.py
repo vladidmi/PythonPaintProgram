@@ -72,7 +72,7 @@ project_font_path = ImageFont.truetype(
     os.path.join(cur_dir, "utils", "arial.ttf"), PROJECT_INFO_TEXT_SIZE
 )
 project_font_path_small = ImageFont.truetype(
-    os.path.join(cur_dir, "utils", "arial.ttf"), BUTTON_TEXT_SIZE
+    os.path.join(cur_dir, "utils", "arial.ttf"), int(BUTTON_TEXT_SIZE // 1.2)
 )
 
 path_to_image_folder = os.path.join(cur_dir, "imgs")
@@ -120,7 +120,6 @@ GREY = "#808080"
 BROWN = "#644624"
 PINK = "#ffc0cb"
 BEIGE = "#d1bc8a"  # Leerohre
-
 
 BG_COLOR = WHITE
 TRANSPARENT = 0.4
@@ -172,10 +171,13 @@ GROUND = "Erde."
 # Planning
 PLAN = "Plan"
 FORMWORK = "SCH"
+FORMWORK_LONG = "Schalen"
 REINFORCE = "BEW"
+REINFORCE_LONG = "Bewehren"
 EMPTY_PIPES = "Leerrohr"
 BUILT_IN_PART = "BST"
 POUR_CONCRETE = "BET"
+POUR_CONCRETE_LONG = "Betonieren"
 PREFABRICATED_PART_ASSEMBLE = "HFT"
 DO_MASONRY = "MW"
 PART_COMPLETE = "Erledigt"
@@ -186,15 +188,60 @@ DELETE_TEXT_ON_CANVAS = "Text lösch."
 NEW_EVENT = "Sonst."
 GROUND_JOB = "Erdarb."
 
+long_names_for_legend = {
+    FORMWORK: FORMWORK_LONG,
+    REINFORCE: REINFORCE_LONG,
+    POUR_CONCRETE: POUR_CONCRETE_LONG,
+}
+
 # Tact division
 TACT = "BA"
-number_of_tacts = 6
 tact_id = None
 TACT_PART = "BA."
 tact_add = "BA+"
 tact_delete = "BA-"
 NO_TACT = "Kein BA"
 
+tact_colors = {
+    "TACT_DIMGRAY": "#696969",
+    "TACT_MAROON": "#b03060",
+    "TACT_DARKGREEN": "#006400",
+    "TACT_OLIVE": "#808000",
+    "TACT_DARKSLATEBLUE": "#483d8b",
+    "TACT_DARKCYAN": "#008b8b",
+    "TACT_NAVY": "#000080",
+    "TACT_CHOCOLATE": "#d2691e",
+    "TACT_YELLOWGREEN": "#9acd32",
+    "TACT_DARKSEAGREEN": "#8fbc8f",
+    "TACT_DARKMAGENTA": "#8b008b",
+    "TACT_MAROON3": "#b03060",
+    "TACT_ORANGERED": "#ff4500",
+    "TACT_ORANGE": "#ffa500",
+    "TACT_YELLOW": "#ffff00",
+    "TACT_LAWNGREEN": "#7cfc00",
+    "TACT_BLUEVIOLET": "#8a2be2",
+    "TACT_SPRINGGREEN": "#00ff7f",
+    "TACT_DARKSALMON": "#e9967a",
+    "TACT_CRIMSON": "#dc143c",
+    "TACT_AQUA": "#00ffff",
+    "TACT_DEEPSKYBLUE": "#00bfff",
+    "TACT_BLUE": "#0000ff",
+    "TACT_LIGHTSTEELBLUE": "#b0c4de",
+    "TACT_FUCHSIA": "#ff00ff",
+    "TACT_DODGERBLUE": "#1e90ff",
+    "TACT_PLUM": "#dda0dd",
+    "TACT_LIGHTGREEN": "#90ee90",
+    "TACT_DEEPPINK": "#ff1493",
+    "TACT_BISQUE": "#ffe4c4",
+}
+
+number_of_tacts = len(tact_colors)
+
+
+tact_color_dict = {
+    f"{TACT_PART} {i+1}": tact_colors[color_key]
+    for i, color_key in enumerate(tact_colors)
+}
 
 # Color_dict
 all_colors = {
@@ -226,12 +273,7 @@ all_colors = {
     EMPTY_PIPES: BEIGE,
     BUILT_IN_PART: PINK,
     # Tact division
-    f"{TACT_PART} 1": BLUE,
-    f"{TACT_PART} 2": ORANGE,
-    f"{TACT_PART} 3": VIOLET,
-    f"{TACT_PART} 4": GREY,
-    f"{TACT_PART} 5": YELLOW,
-    f"{TACT_PART} 6": BROWN,
+    **tact_color_dict,
     NO_TACT: WHITE,
 }
 
