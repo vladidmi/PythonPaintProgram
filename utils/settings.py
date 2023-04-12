@@ -65,8 +65,8 @@ cur_dir = os.getcwd()
 
 MAX_GRID_SIZE = 400
 
-BUTTON_TEXT_SIZE = 12
-PROJECT_INFO_TEXT_SIZE = 22
+BUTTON_TEXT_SIZE = 8
+PROJECT_INFO_TEXT_SIZE = 16
 
 project_font_path = ImageFont.truetype(
     os.path.join(cur_dir, "utils", "arial.ttf"), PROJECT_INFO_TEXT_SIZE
@@ -196,6 +196,7 @@ long_names_for_legend = {
 
 # Tact division
 TACT = "BA"
+TACT_LONG = "Bauabschnitte"
 tact_id = None
 TACT_PART = "BA."
 tact_add = "BA+"
@@ -214,7 +215,7 @@ tact_colors = {
     "TACT_YELLOWGREEN": "#9acd32",
     "TACT_DARKSEAGREEN": "#8fbc8f",
     "TACT_DARKMAGENTA": "#8b008b",
-    "TACT_MAROON3": "#b03060",
+    "TACT_MAROON3": "#cd2990",
     "TACT_ORANGERED": "#ff4500",
     "TACT_ORANGE": "#ffa500",
     "TACT_YELLOW": "#ffff00",

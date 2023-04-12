@@ -101,7 +101,6 @@ class Zoom_Advanced(ttk.Frame):
                 self.current_tact = new_tact
                 self.active_tact_for_planing = new_tact
                 self.erase_mode = False
-                print(self.current_tact)
 
         def change_status(new_status):
             self.current_status = new_status
@@ -232,37 +231,37 @@ class Zoom_Advanced(ttk.Frame):
         # Buttons for the navigation menu on the right (tact)
         self.next_floor_tact = tk.Button(
             master=self.right_frame_tact,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=NEXT_FLOOR,
             command=lambda: change_floor(1),
             bg=all_colors[NEXT_FLOOR],
         )
         self.next_floor_tact["font"] = button_font
         self.next_floor_tact.grid(
-            row=0, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
+            row=0, column=0, sticky="nswe", padx=3, pady=3, columnspan=3
         )
 
         self.previous_floor_tact = tk.Button(
             master=self.right_frame_tact,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=PREVIOUS_FLOOR,
             command=lambda: change_floor(-1),
             bg=all_colors[PREVIOUS_FLOOR],
         )
         self.previous_floor_tact["font"] = button_font
         self.previous_floor_tact.grid(
-            row=1, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
+            row=1, column=0, sticky="nswe", padx=3, pady=3, columnspan=3
         )
 
         # Information text for the tacts
         self.tact_info_text = tk.Label(
             self.right_frame_tact,
-            text=TACT,
-            font=("Arial", BUTTON_TEXT_SIZE),
+            text=TACT_LONG,
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
         )
-        self.tact_info_text.grid(row=2, column=0, sticky="nswe", padx=5)
+        self.tact_info_text.grid(row=2, column=0, sticky="nswe", padx=3, columnspan=3)
 
         # adding the tact buttons in tact mode
         tact_buttons_for_tact_mode = [
@@ -280,7 +279,7 @@ class Zoom_Advanced(ttk.Frame):
         for i, tact_button in enumerate(tact_buttons_for_tact_mode):
             tact_button["font"] = button_font
             tact_button.grid(
-                row=2 + i % 10, column=i // 10, sticky="nswe", padx=2, pady=2
+                row=3 + i % 10, column=i // 10, sticky="nswe", padx=2, pady=2
             )
 
         # Placing all the buttons on main frame (tact)
@@ -292,40 +291,50 @@ class Zoom_Advanced(ttk.Frame):
         # Buttons for the navigation menu on the right (plan)
         self.next_floor_plan = tk.Button(
             master=self.right_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=NEXT_FLOOR,
             command=lambda: change_floor(1),
             bg=WHITE,
         )
         self.next_floor_plan["font"] = button_font
         self.next_floor_plan.grid(
-            row=0, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
+            row=0, column=0, sticky="nswe", padx=3, pady=3, columnspan=3
         )
 
         self.previous_floor_plan = tk.Button(
             master=self.right_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=PREVIOUS_FLOOR,
             command=lambda: change_floor(-1),
             bg=WHITE,
         )
         self.previous_floor_plan["font"] = button_font
         self.previous_floor_plan.grid(
-            row=1, column=0, sticky="nswe", padx=5, pady=5, columnspan=3
+            row=1, column=0, sticky="nswe", padx=3, pady=3, columnspan=3
+        )
+
+        # Information text for the tacts for plan mode
+        self.tact_info_for_plan_text = tk.Label(
+            self.right_frame_plan,
+            text=TACT_LONG,
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
+        )
+        self.tact_info_for_plan_text.grid(
+            row=2, column=0, sticky="nswe", padx=3, columnspan=3
         )
 
         self.no_tact = tk.Button(
             master=self.right_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=NO_TACT,
             command=lambda: change_tact(None),
             bg=all_colors[NO_TACT],
         )
         self.no_tact["font"] = button_font
-        self.no_tact.grid(row=2, column=0, sticky="nswe", padx=5, pady=5, columnspan=3)
+        self.no_tact.grid(row=3, column=0, sticky="nswe", padx=3, pady=3, columnspan=3)
 
         # adding the tact buttons in plan mode
         tact_buttons_in_plan_mode = [
@@ -343,7 +352,7 @@ class Zoom_Advanced(ttk.Frame):
         for i, tact_button in enumerate(tact_buttons_in_plan_mode):
             tact_button["font"] = button_font
             tact_button.grid(
-                row=3 + i % 10, column=i // 10, sticky="nswe", padx=1, pady=1
+                row=4 + i % 10, column=i // 10, sticky="nswe", padx=1, pady=1
             )
 
         # Placing all the buttons on main frame (plan)
@@ -355,25 +364,25 @@ class Zoom_Advanced(ttk.Frame):
         # Buttons for the navigation menu on the right (draw)
         self.next_floor_draw = tk.Button(
             master=self.right_frame_draw,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=NEXT_FLOOR,
             command=lambda: change_floor(1),
             bg=all_colors[NEXT_FLOOR],
         )
         self.next_floor_draw["font"] = button_font
-        self.next_floor_draw.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.next_floor_draw.grid(row=0, column=0, sticky="nswe", padx=3, pady=3)
 
         self.previous_floor_draw = tk.Button(
             master=self.right_frame_draw,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=PREVIOUS_FLOOR,
             command=lambda: change_floor(-1),
             bg=all_colors[PREVIOUS_FLOOR],
         )
         self.previous_floor_draw["font"] = button_font
-        self.previous_floor_draw.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
+        self.previous_floor_draw.grid(row=1, column=0, sticky="nswe", padx=3, pady=3)
 
         # Placing all the buttons on main frame (draw)
         self.right_frame_draw.grid(row=0, column=2, sticky="nswe", padx=10, pady=10)
@@ -384,66 +393,66 @@ class Zoom_Advanced(ttk.Frame):
         # Buttons for the navigation menu on the left (tact, plan and draw)
         self.draw_mode = tk.Button(
             master=self.left_frame,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=DRAW_MODE,
             command=change_mode,
             bg=all_colors[DRAW_MODE],
         )
         self.draw_mode["font"] = button_font
-        self.draw_mode.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.draw_mode.grid(row=0, column=0, sticky="nswe", padx=3, pady=3)
 
-        # Information text on the bottom (cursor size)
+        # Information text (cursor size)
         self.cursor_size_text = tk.Label(
             self.left_frame,
             text=f"{CURSOR_SIZE}: {self.cursor_size}",
-            font=("Arial", BUTTON_TEXT_SIZE),
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
         )
-        self.cursor_size_text.grid(row=1, column=0, sticky="nswe", padx=5)
+        self.cursor_size_text.grid(row=1, column=0, sticky="nswe", padx=3)
 
         self.cursor_bigger = tk.Button(
             master=self.left_frame,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=BIGGER,
             command=lambda: change_cursor_size(1),
             bg=all_colors[BIGGER],
         )
         self.cursor_bigger["font"] = button_font
-        self.cursor_bigger.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
+        self.cursor_bigger.grid(row=2, column=0, sticky="nswe", padx=3, pady=3)
 
         self.cursor_smaller = tk.Button(
             master=self.left_frame,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=SMALLER,
             command=lambda: change_cursor_size(-1),
             bg=all_colors[SMALLER],
         )
         self.cursor_smaller["font"] = button_font
-        self.cursor_smaller.grid(row=3, column=0, sticky="nswe", padx=5, pady=5)
+        self.cursor_smaller.grid(row=3, column=0, sticky="nswe", padx=3, pady=3)
 
         self.save_button = tk.Button(
             master=self.left_frame,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=SAVE,
             command=save_floor_information,
             bg=all_colors[SAVE],
         )
         self.save_button["font"] = button_font
-        self.save_button.grid(row=4, column=0, sticky="nswe", padx=5, pady=5)
+        self.save_button.grid(row=4, column=0, sticky="nswe", padx=3, pady=3)
 
         self.print_button = tk.Button(
             master=self.left_frame,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=PRINT,
             command=print_week_planning,
             bg=all_colors[PRINT],
         )
         self.print_button["font"] = button_font
-        self.print_button.grid(row=5, column=0, sticky="nswe", padx=5, pady=5)
+        self.print_button.grid(row=5, column=0, sticky="nswe", padx=3, pady=3)
 
         # Placing all the buttons on main frame (tact, plan and draw)
         self.left_frame.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
@@ -453,9 +462,9 @@ class Zoom_Advanced(ttk.Frame):
         self.current_day_text = tk.Label(
             self.current_day_info,
             text=self.today_string,
-            font=("Arial", BUTTON_TEXT_SIZE),
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
         )
-        self.current_day_text.grid(row=0, column=0, sticky="w", padx=5)
+        self.current_day_text.grid(row=0, column=0, sticky="w", padx=3)
         self.current_day_info.grid(row=1, column=0, sticky="nswe", padx=2, pady=2)
 
         # Information text on the bottom (floor name)
@@ -463,9 +472,9 @@ class Zoom_Advanced(ttk.Frame):
         self.current_floor_text = tk.Label(
             self.current_floor_info,
             text=self.all_floor_level_info[self.current_floor_id].floor_name,
-            font=("Arial", BUTTON_TEXT_SIZE),
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
         )
-        self.current_floor_text.grid(row=0, column=0, sticky="e", padx=5)
+        self.current_floor_text.grid(row=0, column=0, sticky="e", padx=3)
         self.current_floor_info.grid(row=1, column=1, sticky="nswe", padx=2, pady=2)
 
         # Navigation menu on the bottom (tact)
@@ -482,174 +491,174 @@ class Zoom_Advanced(ttk.Frame):
         # Buttons for the navigation menu on the bottom (plan)
         self.last_date = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=LAST_DAY,
             command=lambda: change_day(-1),
             bg=all_colors[LAST_DAY],
         )
         self.last_date["font"] = button_font
-        self.last_date.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.last_date.grid(row=0, column=0, sticky="nswe", padx=3, pady=3)
 
         self.next_date = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=NEXT_DAY,
             command=lambda: change_day(1),
             bg=all_colors[NEXT_DAY],
         )
         self.next_date["font"] = button_font
-        self.next_date.grid(row=0, column=1, sticky="nswe", padx=5, pady=5)
+        self.next_date.grid(row=0, column=1, sticky="nswe", padx=3, pady=3)
 
         self.formwork = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=FORMWORK,
             command=lambda: change_status(FORMWORK),
             bg=all_colors[FORMWORK],
         )
         self.formwork["font"] = button_font
-        self.formwork.grid(row=0, column=2, sticky="nswe", padx=5, pady=5)
+        self.formwork.grid(row=0, column=2, sticky="nswe", padx=3, pady=3)
 
         self.reinforce = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=REINFORCE,
             command=lambda: change_status(REINFORCE),
             bg=all_colors[REINFORCE],
         )
         self.reinforce["font"] = button_font
-        self.reinforce.grid(row=0, column=3, sticky="nswe", padx=5, pady=5)
+        self.reinforce.grid(row=0, column=3, sticky="nswe", padx=3, pady=3)
 
         self.pour_concrete = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=POUR_CONCRETE,
             command=lambda: change_status(POUR_CONCRETE),
             bg=all_colors[POUR_CONCRETE],
         )
         self.pour_concrete["font"] = button_font
-        self.pour_concrete.grid(row=0, column=4, sticky="nswe", padx=5, pady=5)
+        self.pour_concrete.grid(row=0, column=4, sticky="nswe", padx=3, pady=3)
 
         self.prefabricated_part_assembly = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=PREFABRICATED_PART_ASSEMBLE,
             command=lambda: change_status(PREFABRICATED_PART_ASSEMBLE),
             bg=all_colors[PREFABRICATED_PART_ASSEMBLE],
         )
         self.prefabricated_part_assembly["font"] = button_font
         self.prefabricated_part_assembly.grid(
-            row=0, column=5, sticky="nswe", padx=5, pady=5
+            row=0, column=5, sticky="nswe", padx=3, pady=3
         )
 
         self.do_ground_job = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=GROUND_JOB,
             command=lambda: change_status(GROUND_JOB),
             bg=all_colors[GROUND_JOB],
         )
         self.do_ground_job["font"] = button_font
-        self.do_ground_job.grid(row=0, column=6, sticky="nswe", padx=5, pady=5)
+        self.do_ground_job.grid(row=0, column=6, sticky="nswe", padx=3, pady=3)
 
         self.do_empty_pipes = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=EMPTY_PIPES,
             command=lambda: change_status(EMPTY_PIPES),
             bg=all_colors[EMPTY_PIPES],
         )
         self.do_empty_pipes["font"] = button_font
-        self.do_empty_pipes.grid(row=0, column=7, sticky="nswe", padx=5, pady=5)
+        self.do_empty_pipes.grid(row=0, column=7, sticky="nswe", padx=3, pady=3)
 
         self.do_built_in_part = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=BUILT_IN_PART,
             command=lambda: change_status(BUILT_IN_PART),
             bg=all_colors[BUILT_IN_PART],
         )
         self.do_built_in_part["font"] = button_font
-        self.do_built_in_part.grid(row=0, column=8, sticky="nswe", padx=5, pady=5)
+        self.do_built_in_part.grid(row=0, column=8, sticky="nswe", padx=3, pady=3)
 
         # self.do_masonry = tk.Button(
         #     master=self.bottom_frame_plan,
-        #     padx=3,
-        #     pady=3,
+        #     padx=2,
+        #     pady=2,
         #     text=DO_MASONRY,
         #     command=lambda: change_status(DO_MASONRY),
         #     bg=all_colors[DO_MASONRY],
         # )
         # self.do_masonry["font"] = button_font
-        # self.do_masonry.grid(row=0, column=6, sticky="nswe", padx=5, pady=5)
+        # self.do_masonry.grid(row=0, column=6, sticky="nswe", padx=3, pady=3)
 
         self.part_complete = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=PART_COMPLETE,
             command=lambda: change_status(PART_COMPLETE),
             bg=all_colors[PART_COMPLETE],
         )
         self.part_complete["font"] = button_font
-        self.part_complete.grid(row=0, column=9, sticky="nswe", padx=5, pady=5)
+        self.part_complete.grid(row=0, column=9, sticky="nswe", padx=3, pady=3)
 
         self.erase_plan = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=ERASE,
             command=erase_mode_activate,
             bg=all_colors[ERASE],
         )
         self.erase_plan["font"] = button_font
-        self.erase_plan.grid(row=0, column=10, sticky="nswe", padx=5, pady=5)
+        self.erase_plan.grid(row=0, column=10, sticky="nswe", padx=3, pady=3)
 
         self.draw_text_on_canvas_button = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=DRAW_TEXT_ON_CANVAS,
             command=add_text,
             bg=WHITE,
         )
         self.draw_text_on_canvas_button["font"] = button_font
         self.draw_text_on_canvas_button.grid(
-            row=0, column=11, sticky="nswe", padx=5, pady=5
+            row=0, column=11, sticky="nswe", padx=3, pady=3
         )
 
         self.delete_text_on_canvas_button = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=DELETE_TEXT_ON_CANVAS,
             command=delete_text,
             bg=WHITE,
         )
         self.delete_text_on_canvas_button["font"] = button_font
         self.delete_text_on_canvas_button.grid(
-            row=0, column=12, sticky="nswe", padx=5, pady=5
+            row=0, column=12, sticky="nswe", padx=3, pady=3
         )
 
         self.new_event_button = tk.Button(
             master=self.bottom_frame_plan,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=NEW_EVENT,
             command=lambda: change_status(NEW_EVENT),
             bg=all_colors[NEW_EVENT],
         )
         self.new_event_button["font"] = button_font
-        self.new_event_button.grid(row=0, column=13, sticky="nswe", padx=5, pady=5)
+        self.new_event_button.grid(row=0, column=13, sticky="nswe", padx=3, pady=3)
 
         # Placing all the buttons on main frame (plan)
         self.bottom_frame_plan.grid(
@@ -661,51 +670,51 @@ class Zoom_Advanced(ttk.Frame):
 
         self.concrete = tk.Button(
             master=self.bottom_frame_draw,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=CONCRETE,
             command=lambda: change_draw_structure(CONCRETE),
             bg=all_colors[CONCRETE],
             fg=WHITE,
         )
         self.concrete["font"] = button_font
-        self.concrete.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.concrete.grid(row=0, column=0, sticky="nswe", padx=3, pady=3)
 
         self.prefabricated_part = tk.Button(
             master=self.bottom_frame_draw,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=PREFABRICATED_PART,
             command=lambda: change_draw_structure(PREFABRICATED_PART),
             bg=all_colors[PREFABRICATED_PART],
             fg=WHITE,
         )
         self.prefabricated_part["font"] = button_font
-        self.prefabricated_part.grid(row=0, column=1, sticky="nswe", padx=5, pady=5)
+        self.prefabricated_part.grid(row=0, column=1, sticky="nswe", padx=3, pady=3)
 
         self.ground = tk.Button(
             master=self.bottom_frame_draw,
-            padx=3,
-            pady=3,
+            padx=2,
+            pady=2,
             text=GROUND,
             command=lambda: change_draw_structure(GROUND),
             bg=all_colors[GROUND],
             fg=WHITE,
         )
         self.ground["font"] = button_font
-        self.ground.grid(row=0, column=2, sticky="nswe", padx=5, pady=5)
+        self.ground.grid(row=0, column=2, sticky="nswe", padx=3, pady=3)
 
         # self.masonry = tk.Button(
         #     master=self.bottom_frame_draw,
-        #     padx=3,
-        #     pady=3,
+        #     padx=2,
+        #     pady=2,
         #     text=MASONRY,
         #     command=lambda: change_draw_structure(MASONRY),
         #     bg=all_colors[MASONRY],
         #     fg=WHITE,
         # )
         # self.masonry["font"] = button_font
-        # self.masonry.grid(row=0, column=2, sticky="nswe", padx=5, pady=5)
+        # self.masonry.grid(row=0, column=2, sticky="nswe", padx=3, pady=3)
 
         # Placing all the buttons on main frame (draw)
         self.bottom_frame_draw.grid(
