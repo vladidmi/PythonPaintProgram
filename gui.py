@@ -402,36 +402,6 @@ class Zoom_Advanced(ttk.Frame):
         self.draw_mode["font"] = button_font
         self.draw_mode.grid(row=0, column=0, sticky="nswe", padx=3, pady=3)
 
-        # Information text (cursor size)
-        self.cursor_size_text = tk.Label(
-            self.left_frame,
-            text=f"{CURSOR_SIZE}: {self.cursor_size}",
-            font=("Arial", PROJECT_INFO_TEXT_SIZE),
-        )
-        self.cursor_size_text.grid(row=1, column=0, sticky="nswe", padx=3)
-
-        self.cursor_bigger = tk.Button(
-            master=self.left_frame,
-            padx=2,
-            pady=2,
-            text=BIGGER,
-            command=lambda: change_cursor_size(1),
-            bg=all_colors[BIGGER],
-        )
-        self.cursor_bigger["font"] = button_font
-        self.cursor_bigger.grid(row=2, column=0, sticky="nswe", padx=3, pady=3)
-
-        self.cursor_smaller = tk.Button(
-            master=self.left_frame,
-            padx=2,
-            pady=2,
-            text=SMALLER,
-            command=lambda: change_cursor_size(-1),
-            bg=all_colors[SMALLER],
-        )
-        self.cursor_smaller["font"] = button_font
-        self.cursor_smaller.grid(row=3, column=0, sticky="nswe", padx=3, pady=3)
-
         self.save_button = tk.Button(
             master=self.left_frame,
             padx=2,
@@ -441,7 +411,7 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[SAVE],
         )
         self.save_button["font"] = button_font
-        self.save_button.grid(row=4, column=0, sticky="nswe", padx=3, pady=3)
+        self.save_button.grid(row=1, column=0, sticky="nswe", padx=3, pady=3)
 
         self.print_button = tk.Button(
             master=self.left_frame,
@@ -452,7 +422,37 @@ class Zoom_Advanced(ttk.Frame):
             bg=all_colors[PRINT],
         )
         self.print_button["font"] = button_font
-        self.print_button.grid(row=5, column=0, sticky="nswe", padx=3, pady=3)
+        self.print_button.grid(row=2, column=0, sticky="nswe", padx=3, pady=3)
+
+        # Information text (cursor size)
+        self.cursor_size_text = tk.Label(
+            self.left_frame,
+            text=f"{CURSOR_SIZE}: {self.cursor_size}",
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
+        )
+        self.cursor_size_text.grid(row=3, column=0, sticky="nswe", padx=3)
+
+        self.cursor_bigger = tk.Button(
+            master=self.left_frame,
+            padx=2,
+            pady=2,
+            text=BIGGER,
+            command=lambda: change_cursor_size(1),
+            bg=all_colors[BIGGER],
+        )
+        self.cursor_bigger["font"] = button_font
+        self.cursor_bigger.grid(row=4, column=0, sticky="nswe", padx=3, pady=3)
+
+        self.cursor_smaller = tk.Button(
+            master=self.left_frame,
+            padx=2,
+            pady=2,
+            text=SMALLER,
+            command=lambda: change_cursor_size(-1),
+            bg=all_colors[SMALLER],
+        )
+        self.cursor_smaller["font"] = button_font
+        self.cursor_smaller.grid(row=5, column=0, sticky="nswe", padx=3, pady=3)
 
         # Placing all the buttons on main frame (tact, plan and draw)
         self.left_frame.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
@@ -1294,12 +1294,13 @@ class Zoom_Advanced(ttk.Frame):
                 try:
                     draw.text(
                         (self.box_size * comment["x"], self.box_size * comment["y"]),
-                        comment["comment"],
+                        str(comment["comment"]),
                         font=project_font_path,
                         fill=BLACK,
                     )
-                except:
+                except Exception as e:
                     print(f"Problem with {comment}")
+                    print(e)
         if active_works_on_floor:
             today_string = current_day.strftime("%A-%d-%m-%Y")
             for german_week_day in GERMAN_WEEK_DAYS:
@@ -1324,20 +1325,12 @@ class Zoom_Advanced(ttk.Frame):
                     outline=BLACK,
                     fill=all_colors[work_step],
                 )
-                if work_step in long_names_for_legend:
-                    draw.text(
-                        (box_x, box_y + int(BOX_SIZE // 2.5)),
-                        long_names_for_legend[work_step],
-                        font=project_font_path_small,
-                        fill=BLACK,
-                    )
-                else:
-                    draw.text(
-                        (box_x, box_y + int(BOX_SIZE // 2.5)),
-                        work_step,
-                        font=project_font_path_small,
-                        fill=BLACK,
-                    )
+                draw.text(
+                    (box_x, box_y + int(BOX_SIZE // 2.5)),
+                    long_names_for_legend.get(work_step, work_step),
+                    font=project_font_path_small,
+                    fill=BLACK,
+                )
             img.save(
                 os.path.join(
                     floor.folder_with_print,

@@ -65,14 +65,14 @@ cur_dir = os.getcwd()
 
 MAX_GRID_SIZE = 400
 
-BUTTON_TEXT_SIZE = 8
-PROJECT_INFO_TEXT_SIZE = 16
+BUTTON_TEXT_SIZE = 12
+PROJECT_INFO_TEXT_SIZE = 24
 
 project_font_path = ImageFont.truetype(
     os.path.join(cur_dir, "utils", "arial.ttf"), PROJECT_INFO_TEXT_SIZE
 )
 project_font_path_small = ImageFont.truetype(
-    os.path.join(cur_dir, "utils", "arial.ttf"), int(BUTTON_TEXT_SIZE // 1.2)
+    os.path.join(cur_dir, "utils", "arial.ttf"), BUTTON_TEXT_SIZE
 )
 
 path_to_image_folder = os.path.join(cur_dir, "imgs")
