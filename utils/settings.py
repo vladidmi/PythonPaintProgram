@@ -5,6 +5,7 @@ from pandas.tseries.offsets import CustomBusinessDay
 from PIL import Image, ImageDraw, ImageFont
 import pandas as pd
 import numpy as np
+import re
 import plotly.express as px
 
 
@@ -63,8 +64,8 @@ cur_dir = os.getcwd()
 
 MAX_GRID_SIZE = 400
 
-BUTTON_TEXT_SIZE = 12
-PROJECT_INFO_TEXT_SIZE = 24
+BUTTON_TEXT_SIZE = 8
+PROJECT_INFO_TEXT_SIZE = 14
 
 project_font_path = ImageFont.truetype(
     os.path.join(cur_dir, "utils", "arial.ttf"), PROJECT_INFO_TEXT_SIZE
