@@ -31,11 +31,15 @@ def resize_image(image_path):
     blank_image.save(image_path)
 
 
-def weekdays_of_current_week(current_date):
+def weekdays_of_current_week(current_date, project_info):
     current_date = list(current_date.isocalendar())
+    if project_info["Arbeiten am Samstag [ja/nein]"] == "ja":
+        weekdays_to_print = 7
+    else:
+        weekdays_to_print = 6
 
     weekdays = []
-    for i in range(1, 6):
+    for i in range(1, weekdays_to_print):
         current_date[2] = i
         current_date_iso = datetime.datetime.fromisocalendar(*current_date).date()
         if current_date_iso not in german_holidays:

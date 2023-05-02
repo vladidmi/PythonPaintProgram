@@ -179,7 +179,7 @@ class Zoom_Advanced(ttk.Frame):
             self.save_pixel_info(self.all_floor_level_info, make_time_plan=True)
 
         def print_week_planning():
-            weekdays_to_print = weekdays_of_current_week(self.current_day)
+            weekdays_to_print = weekdays_of_current_week(self.current_day, project_info)
 
             for floor in self.all_floor_level_info:
                 folder_with_floor = floor.full_path_image.replace(floor.image_name, "")
