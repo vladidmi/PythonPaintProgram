@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import re
 import plotly.express as px
+import openpyxl
 
 
 def hex_colour_to_rgb(hex_colour):
@@ -62,6 +63,97 @@ class Floor_level_info:
 
 cur_dir = os.getcwd()
 
+test_file = os.path.join(cur_dir,'utils','projekt_info.xlsx')
+
+def read_file_for_working_steps(filename):
+    # Load the workbook
+    workbook = openpyxl.load_workbook(filename)
+    # Get the specific worksheet
+    worksheet = workbook["Arbeitsschritte"]
+    # Initialize the dictionary to store the data
+    data = {}
+    # Iterate through the rows
+    for row in worksheet.iter_rows():
+        # Get the key from the first column
+        key = row[0].value
+        if key == "Strukturtyp":
+            continue
+        elif key == None:
+            break
+        # Initialize the dictionary for the current row
+        row_data = {}
+        # Iterate through the remaining columns
+        for cell in row[1:]:
+            # Get the value and color of the cell
+            value = cell.value
+            if value == None:
+                continue
+            else:
+                value = f'{key}@{value}'
+            color = str(cell.fill.start_color.index)
+            # Add the data to the dictionary for the current row
+            row_data[value] = '#'+color.lower()[2:]
+        # Add the data for the current row to the main dictionary
+        data[key] = {}
+        data[key]['Arbeitsschritte'] = row_data
+        data[key]['Strukturtypfarbe'] = '#'+str(row[0].fill.start_color.index).lower()[2:]
+    # Return the dictionary
+    return data
+
+
+def read_file_for_project_info(filename):
+    # Load the workbook
+    workbook = openpyxl.load_workbook(filename)
+    # Get the specific worksheet
+    worksheet = workbook["Projekt"]
+    # Initialize the dictionary to store the data
+    data = {}
+    # Iterate through the rows
+    for row in worksheet.iter_rows():
+        # Get the key from the first column
+        key = row[0].value
+        # Initialize the dictionary for the current row
+        row_data = {}
+        # Add the data for the current row to the main dictionary
+        data[key] = row[1].value
+    # Return the dictionary
+    return data
+
+
+def read_file_for_tact(filename):
+    # Load the workbook
+    workbook = openpyxl.load_workbook(filename)
+    # Get the specific worksheet
+    worksheet = workbook["Bauabschnitte"]
+    # Initialize the dictionary to store the data
+    data = []
+    # Iterate through the rows
+    for row in worksheet.iter_rows():
+        # Get the key from the first column
+        key = row[0].value
+        if key == None:
+                break
+        color = "#" + row[0].fill.start_color.index[2:]
+        if color == '#':
+            print(f'problem with {row[0].value}')
+        data.append({'tact_text':key, 'tact_color':color.lower()})
+    # Return the list with tacts
+    return data
+
+
+working_steps = read_file_for_working_steps(test_file)
+
+project_info = read_file_for_project_info(test_file)
+
+tact_info = read_file_for_tact(test_file)
+
+print({key:working_steps[key]['Strukturtypfarbe'] for key in working_steps})
+print(working_steps)
+print(project_info)
+
+for i in tact_info:
+    print(i)
+
 MAX_GRID_SIZE = 400
 
 BUTTON_TEXT_SIZE = 8
@@ -85,9 +177,11 @@ full_image_path = {
 path_to_comments = os.path.join(path_to_image_folder, "project_comments.xlsx")
 
 weekmask_germany = "Mon Tue Wed Thu Fri"
+if project_info['Arbeiten am Samstag [ja/nein]'] =='ja':
+    weekmask_germany+=' Sat'
 german_holidays = [
     date[0]
-    for date in holidays.Germany(years=list(range(2020, 2040)), prov="BW").items()
+    for date in holidays.Germany(years=list(range(2020, 2040)), prov=project_info['Bundesland']).items()
 ]
 
 for year in range(2020, 2030):
@@ -202,109 +296,22 @@ tact_add = "BA+"
 tact_delete = "BA-"
 NO_TACT = "Kein BA"
 
-tact_colors = {
-    "TACT_DIMGRAY": "#696969",
-    "TACT_MAROON": "#b03060",
-    "TACT_DARKGREEN": "#006400",
-    "TACT_OLIVE": "#808000",
-    "TACT_DARKSLATEBLUE": "#483d8b",
-    "TACT_DARKCYAN": "#008b8b",
-    "TACT_NAVY": "#000080",
-    "TACT_CHOCOLATE": "#d2691e",
-    "TACT_YELLOWGREEN": "#9acd32",
-    "TACT_DARKSEAGREEN": "#8fbc8f",
-    "TACT_DARKMAGENTA": "#8b008b",
-    "TACT_MAROON3": "#cd2990",
-    "TACT_ORANGERED": "#ff4500",
-    "TACT_ORANGE": "#ffa500",
-    "TACT_YELLOW": "#ffff00",
-    "TACT_LAWNGREEN": "#7cfc00",
-    "TACT_BLUEVIOLET": "#8a2be2",
-    "TACT_SPRINGGREEN": "#00ff7f",
-    "TACT_DARKSALMON": "#e9967a",
-    "TACT_CRIMSON": "#dc143c",
-    "TACT_AQUA": "#00ffff",
-    "TACT_DEEPSKYBLUE": "#00bfff",
-    "TACT_BLUE": "#0000ff",
-    "TACT_LIGHTSTEELBLUE": "#b0c4de",
-    "TACT_FUCHSIA": "#ff00ff",
-    "TACT_DODGERBLUE": "#1e90ff",
-    "TACT_PLUM": "#dda0dd",
-    "TACT_LIGHTGREEN": "#90ee90",
-    "TACT_DEEPPINK": "#ff1493",
-    "TACT_BISQUE": "#ffe4c4",
-}
-
-number_of_tacts = len(tact_colors)
-
-
-tact_color_dict = {
-    f"{TACT_PART} {i+1}": tact_colors[color_key]
-    for i, color_key in enumerate(tact_colors)
-}
 
 # Color_dict
 all_colors = {
-    # COMMON
-    ERASE: WHITE,
-    SAVE: WHITE,
-    BIGGER: WHITE,
-    SMALLER: WHITE,
-    DRAW_MODE: WHITE,
-    NEXT_FLOOR: WHITE,
-    PREVIOUS_FLOOR: WHITE,
-    PRINT: WHITE,
-    # Drawing structure
-    CONCRETE: BLACK,
-    PREFABRICATED_PART: RED,
-    MASONRY: GREEN,
-    GROUND: GREY,
-    # Planning
-    FORMWORK: YELLOW,
-    REINFORCE: LIGHT_BLUE,
-    POUR_CONCRETE: LIGHT_GREEN,
-    PREFABRICATED_PART_ASSEMBLE: VIOLET,
-    DO_MASONRY: ORANGE,
-    GROUND_JOB: BROWN,
-    PART_COMPLETE: DARK_RED,
-    NEXT_DAY: WHITE,
-    LAST_DAY: WHITE,
-    NEW_EVENT: GREY,
-    EMPTY_PIPES: BEIGE,
-    BUILT_IN_PART: PINK,
-    # Tact division
-    **tact_color_dict,
-    NO_TACT: WHITE,
+    **{key:working_steps[key]['Strukturtypfarbe'] for key in working_steps},
+    **{str(i['tact_text']):i['tact_color'] for i in tact_info}
 }
 
-# Working steps for structures
-working_steps = {
-    CONCRETE: [
-        FORMWORK,
-        REINFORCE,
-        POUR_CONCRETE,
-        EMPTY_PIPES,
-        BUILT_IN_PART,
-        PART_COMPLETE,
-    ],
-    PREFABRICATED_PART: [
-        PREFABRICATED_PART_ASSEMBLE,
-        REINFORCE,
-        POUR_CONCRETE,
-        PART_COMPLETE,
-    ],
-    GROUND: [GROUND_JOB],
-    #    MASONRY: [DO_MASONRY, PART_COMPLETE],
-    NEW_EVENT: [NEW_EVENT],
-}
+print(all_colors)
 
-working_steps_flat = set(
-    item
-    for sublist in [working_steps[key] for key in working_steps]
-    for item in sublist
-)
+for key in working_steps:
+    for step_key in working_steps[key]['Arbeitsschritte']:
+        all_colors[step_key]=working_steps[key]['Arbeitsschritte'][step_key]
+
 
 color_map_for_plotly = {
     step: "rgb" + str(hex_colour_to_rgb(all_colors[step]))
-    for step in working_steps_flat
+    for step in all_colors
 }
+
