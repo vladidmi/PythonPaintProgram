@@ -63,7 +63,8 @@ class Floor_level_info:
 
 cur_dir = os.getcwd()
 
-test_file = os.path.join(cur_dir,'utils','projekt_info.xlsx')
+test_file = os.path.join(cur_dir, "utils", "projekt_info.xlsx")
+
 
 def read_file_for_working_steps(filename):
     # Load the workbook
@@ -89,14 +90,16 @@ def read_file_for_working_steps(filename):
             if value == None:
                 continue
             else:
-                value = f'{key}@{value}'
+                value = f"{key}@{value}"
             color = str(cell.fill.start_color.index)
             # Add the data to the dictionary for the current row
-            row_data[value] = '#'+color.lower()[2:]
+            row_data[value] = "#" + color.lower()[2:]
         # Add the data for the current row to the main dictionary
         data[key] = {}
-        data[key]['Arbeitsschritte'] = row_data
-        data[key]['Strukturtypfarbe'] = '#'+str(row[0].fill.start_color.index).lower()[2:]
+        data[key]["Arbeitsschritte"] = row_data
+        data[key]["Strukturtypfarbe"] = (
+            "#" + str(row[0].fill.start_color.index).lower()[2:]
+        )
     # Return the dictionary
     return data
 
@@ -132,11 +135,11 @@ def read_file_for_tact(filename):
         # Get the key from the first column
         key = row[0].value
         if key == None:
-                break
+            break
         color = "#" + row[0].fill.start_color.index[2:]
-        if color == '#':
-            print(f'problem with {row[0].value}')
-        data.append({'tact_text':key, 'tact_color':color.lower()})
+        if color == "#":
+            print(f"problem with {row[0].value}")
+        data.append({"tact_text": key, "tact_color": color.lower()})
     # Return the list with tacts
     return data
 
@@ -147,7 +150,7 @@ project_info = read_file_for_project_info(test_file)
 
 tact_info = read_file_for_tact(test_file)
 
-print({key:working_steps[key]['Strukturtypfarbe'] for key in working_steps})
+print({key: working_steps[key]["Strukturtypfarbe"] for key in working_steps})
 print(working_steps)
 print(project_info)
 
@@ -166,6 +169,10 @@ project_font_path_small = ImageFont.truetype(
     os.path.join(cur_dir, "utils", "arial.ttf"), BUTTON_TEXT_SIZE
 )
 
+legend_font_path_medium = ImageFont.truetype(
+    os.path.join(cur_dir, "utils", "arial.ttf"), int(BUTTON_TEXT_SIZE * 1.5)
+)
+
 path_to_image_folder = os.path.join(cur_dir, "imgs")
 path_to_temp_image = os.path.join(cur_dir, "utils", "temp.jpg")
 full_image_path = {
@@ -177,11 +184,13 @@ full_image_path = {
 path_to_comments = os.path.join(path_to_image_folder, "project_comments.xlsx")
 
 weekmask_germany = "Mon Tue Wed Thu Fri"
-if project_info['Arbeiten am Samstag [ja/nein]'] =='ja':
-    weekmask_germany+=' Sat'
+if project_info["Arbeiten am Samstag [ja/nein]"] == "ja":
+    weekmask_germany += " Sat"
 german_holidays = [
     date[0]
-    for date in holidays.Germany(years=list(range(2020, 2040)), prov=project_info['Bundesland']).items()
+    for date in holidays.Germany(
+        years=list(range(2020, 2040)), prov=project_info["Bundesland"]
+    ).items()
 ]
 
 for year in range(2020, 2030):
@@ -299,19 +308,18 @@ NO_TACT = "Kein BA"
 
 # Color_dict
 all_colors = {
-    **{key:working_steps[key]['Strukturtypfarbe'] for key in working_steps},
-    **{str(i['tact_text']):i['tact_color'] for i in tact_info}
+    **{key: working_steps[key]["Strukturtypfarbe"] for key in working_steps},
+    **{str(i["tact_text"]): i["tact_color"] for i in tact_info},
+    NEW_EVENT: GREY,
 }
 
 print(all_colors)
 
 for key in working_steps:
-    for step_key in working_steps[key]['Arbeitsschritte']:
-        all_colors[step_key]=working_steps[key]['Arbeitsschritte'][step_key]
+    for step_key in working_steps[key]["Arbeitsschritte"]:
+        all_colors[step_key] = working_steps[key]["Arbeitsschritte"][step_key]
 
 
 color_map_for_plotly = {
-    step: "rgb" + str(hex_colour_to_rgb(all_colors[step]))
-    for step in all_colors
+    step: "rgb" + str(hex_colour_to_rgb(all_colors[step])) for step in all_colors
 }
-

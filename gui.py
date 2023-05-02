@@ -270,11 +270,11 @@ class Zoom_Advanced(ttk.Frame):
                 master=self.right_frame_tact,
                 padx=1,
                 pady=1,
-                text=tact_['tact_text'],
-                command=lambda tact_=tact_: change_tact(tact_['tact_text']),
-                bg=tact_['tact_color'],
+                text=tact_["tact_text"],
+                command=lambda tact_=tact_: change_tact(tact_["tact_text"]),
+                bg=tact_["tact_color"],
             )
-            for  tact_ in tact_info
+            for tact_ in tact_info
         ]
 
         for i, tact_button in enumerate(tact_buttons_for_tact_mode):
@@ -343,8 +343,8 @@ class Zoom_Advanced(ttk.Frame):
                 master=self.right_frame_plan,
                 padx=1,
                 pady=1,
-                text=tact_['tact_text'],
-                command=lambda tact_=tact_: change_tact(tact_['tact_text']),
+                text=tact_["tact_text"],
+                command=lambda tact_=tact_: change_tact(tact_["tact_text"]),
                 bg=WHITE,
             )
             for tact_ in tact_info
@@ -425,7 +425,7 @@ class Zoom_Advanced(ttk.Frame):
         self.print_button["font"] = button_font
         self.print_button.grid(row=2, column=0, sticky="nswe", padx=1, pady=1)
 
-         # Information text (cursor size)
+        # Information text (cursor size)
         self.cursor_size_text = tk.Label(
             self.left_frame,
             text=f"{CURSOR_SIZE}: {self.cursor_size}",
@@ -555,35 +555,42 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=NEW_EVENT,
             command=lambda: change_status(NEW_EVENT),
-            bg=WHITE,
+            bg=all_colors[NEW_EVENT],
         )
         self.new_event_button["font"] = button_font
         self.new_event_button.grid(row=0, column=5, sticky="nswe", padx=1, pady=1)
 
-        #hold all the buttons and labels for plan
+        # hold all the buttons and labels for plan
         working_steps_labels = {}
         working_steps_buttons = {}
 
-        for i,structure_type in enumerate(working_steps):
+        for i, structure_type in enumerate(working_steps):
             working_steps_labels[structure_type] = {}
-            working_steps_labels[structure_type]['label'] = tk.Label(
-            self.bottom_frame_plan,
-            text=structure_type,
-            font=("Arial", PROJECT_INFO_TEXT_SIZE),
-        )
-            working_steps_labels[structure_type]['label'].grid(row=1+i, column=0, sticky="w", padx=1)
-            for j,working_step in enumerate(working_steps[structure_type]['Arbeitsschritte']):
+            working_steps_labels[structure_type]["label"] = tk.Label(
+                self.bottom_frame_plan,
+                text=structure_type,
+                font=("Arial", PROJECT_INFO_TEXT_SIZE),
+            )
+            working_steps_labels[structure_type]["label"].grid(
+                row=1 + i, column=0, sticky="w", padx=1
+            )
+            for j, working_step in enumerate(
+                working_steps[structure_type]["Arbeitsschritte"]
+            ):
                 working_steps_buttons[working_step] = tk.Button(
-            master=self.bottom_frame_plan,
-            padx=2,
-            pady=2,
-            text=working_step.split('@')[-1],
-            command=lambda working_step=working_step: change_status(working_step),
-            bg=working_steps[structure_type]['Arbeitsschritte'][working_step],
-        )
+                    master=self.bottom_frame_plan,
+                    padx=2,
+                    pady=2,
+                    text=working_step.split("@")[-1],
+                    command=lambda working_step=working_step: change_status(
+                        working_step
+                    ),
+                    bg=working_steps[structure_type]["Arbeitsschritte"][working_step],
+                )
                 working_steps_buttons[working_step]["font"] = button_font
-                working_steps_buttons[working_step].grid(row=1+i, column=1+j, sticky="nswe", padx=1, pady=1)
-
+                working_steps_buttons[working_step].grid(
+                    row=1 + i, column=1 + j, sticky="nswe", padx=1, pady=1
+                )
 
         # Placing all the buttons on main frame (plan)
         self.bottom_frame_plan.grid(
@@ -593,23 +600,27 @@ class Zoom_Advanced(ttk.Frame):
         # Navigation menu on the bottom (draw)
         self.bottom_frame_draw = tk.Frame(master=self.master)
 
-        #hold all the buttons for draw
+        # hold all the buttons for draw
         working_structure_buttons = {}
-        for i,structure_type in enumerate(working_steps):
+        for i, structure_type in enumerate(working_steps):
             fg = BLACK
-            if working_steps[structure_type]['Strukturtypfarbe'] == BLACK:
+            if working_steps[structure_type]["Strukturtypfarbe"] == BLACK:
                 fg = WHITE
             working_structure_buttons[structure_type] = tk.Button(
-            master=self.bottom_frame_draw,
-            padx=2,
-            pady=2,
-            text=structure_type,
-            command=lambda structure_type=structure_type: change_draw_structure(structure_type),
-            bg=working_steps[structure_type]['Strukturtypfarbe'],
-            fg = fg,
-        )
+                master=self.bottom_frame_draw,
+                padx=2,
+                pady=2,
+                text=structure_type,
+                command=lambda structure_type=structure_type: change_draw_structure(
+                    structure_type
+                ),
+                bg=working_steps[structure_type]["Strukturtypfarbe"],
+                fg=fg,
+            )
             working_structure_buttons[structure_type]["font"] = button_font
-            working_structure_buttons[structure_type].grid(row=0, column=i, sticky="nswe", padx=1, pady=1)        
+            working_structure_buttons[structure_type].grid(
+                row=0, column=i, sticky="nswe", padx=1, pady=1
+            )
 
         # Placing all the buttons on main frame (draw)
         self.bottom_frame_draw.grid(
@@ -794,7 +805,7 @@ class Zoom_Advanced(ttk.Frame):
                     type_structure = pixel_history[f"{i}-{j}"]["pixel_type_structure"]
                     status = dict()
                     if type_structure:
-                        for step in working_steps[type_structure]:
+                        for step in working_steps[type_structure]["Arbeitsschritte"]:
                             current_step = pixel_history[f"{i}-{j}"].get(step, set())
                             status[step] = current_step
                     if (
@@ -954,7 +965,9 @@ class Zoom_Advanced(ttk.Frame):
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
                         current_pixel.type_structure = self.current_structure
                         current_pixel.status = dict()
-                        for step in working_steps[self.current_structure]:
+                        for step in working_steps[self.current_structure][
+                            "Arbeitsschritte"
+                        ]:
                             current_pixel.status[step] = set()
 
                         self.tk_canvas.create_rectangle(
@@ -1027,7 +1040,9 @@ class Zoom_Advanced(ttk.Frame):
 
                     elif (
                         self.current_status
-                        in working_steps.get(current_pixel.type_structure, [])
+                        in working_steps.get(
+                            current_pixel.type_structure, {"Arbeitsschritte": ()}
+                        )["Arbeitsschritte"]
                         and self.active_tact_for_planing == current_pixel.tact
                     ) or self.current_status == NEW_EVENT:
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
@@ -1053,13 +1068,16 @@ class Zoom_Advanced(ttk.Frame):
                             tags=f"{new_x}-{new_y}",
                         )
                         self.all_rects.add(f"{new_x}-{new_y}")
-                        if self.current_status == POUR_CONCRETE and (
-                            current_pixel.type_structure == CONCRETE
-                            or current_pixel.type_structure == PREFABRICATED_PART
-                        ):
-                            current_pixel.status[PART_COMPLETE].add(
-                                self.current_day + 1 * german_business_day
-                            )
+                        try:
+                            if self.current_status == POUR_CONCRETE and (
+                                current_pixel.type_structure == CONCRETE
+                                or current_pixel.type_structure == PREFABRICATED_PART
+                            ):
+                                current_pixel.status[PART_COMPLETE].add(
+                                    self.current_day + 1 * german_business_day
+                                )
+                        except:
+                            print("Die Verknüpfung zwischen Betonieren und ")
 
     def delete_rect(self, event=None):
         x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)
@@ -1189,7 +1207,7 @@ class Zoom_Advanced(ttk.Frame):
                 try:
                     draw.text(
                         (self.box_size * comment["x"], self.box_size * comment["y"]),
-                        comment["comment"],
+                        str(comment["comment"]),
                         font=project_font_path,
                         fill=BLACK,
                     )
@@ -1205,26 +1223,26 @@ class Zoom_Advanced(ttk.Frame):
                 font=project_font_path,
                 fill=BLACK,
             )
-            draw.text((600, 10), floor.floor_name, font=project_font_path, fill=BLACK)
+            draw.text((10, 30), floor.floor_name, font=project_font_path, fill=BLACK)
             for i, work_step in enumerate(legend):
-                box_x = 10 * (1 + i) + i * BOX_SIZE
+                box_x = 10 * (1 + i) + int(i * BOX_SIZE * 1.5)
                 box_y = HEIGHT + BOX_SIZE // 2
                 draw.rectangle(
                     xy=(
                         box_x,
                         box_y,
-                        box_x + BOX_SIZE,
+                        int(box_x + BOX_SIZE * 1.5),
                         box_y + BOX_SIZE,
                     ),
                     outline=BLACK,
                     fill=all_colors[work_step],
                 )
                 draw.text(
-                        (box_x, box_y + int(BOX_SIZE // 2.5)),
-                        long_names_for_legend.get(work_step,work_step),
-                        font=project_font_path_small,
-                        fill=BLACK,
-                    )
+                    (box_x, box_y + int(BOX_SIZE // 2.5)),
+                    long_names_for_legend.get(work_step, work_step).split("@")[-1],
+                    font=legend_font_path_medium,
+                    fill=BLACK,
+                )
             img.save(
                 os.path.join(
                     floor.folder_with_print,
@@ -1254,9 +1272,15 @@ class Zoom_Advanced(ttk.Frame):
             df.to_excel(temp_floor.full_path_xlsx, index=False)
 
             if make_time_plan:
+                working_steps_list = []
+                for working_step in working_steps:
+                    working_steps_list += working_steps[working_step].get(
+                        "Arbeitsschritte", []
+                    )
+
                 df["geschoss"] = temp_floor.floor_name
                 for df_column in df.columns:
-                    if df_column in working_steps:
+                    if df_column in working_steps_list:
                         df[f"{df_column}_erster_Tag"] = df[df_column].apply(
                             self.return_only_from_set, function_for_set=min
                         )
@@ -1299,14 +1323,18 @@ class Zoom_Advanced(ttk.Frame):
                 var_name="Vorgang",
                 value_name="Datum",
             ).dropna()
+            # floor_levels_melted["Vorgang"] = floor_levels_melted["Vorgang"].apply(
+            #     lambda x: x.split("@")[-1]
+            # )
+            floor_levels_melted = floor_levels_melted[
+                ~floor_levels_melted["Vorgang"].str.contains("Erledigt")
+            ]
             floor_levels_melted["Zeilenbezeichnung"] = (
                 floor_levels_melted["geschoss_"]
                 + "_"
                 + +floor_levels_melted["pixel_BA_"]
                 + "_"
-                + +floor_levels_melted["pixel_type_structure_"]
-                + "_"
-                + +floor_levels_melted["Vorgang"].apply(lambda x: x.split("_")[0])
+                + floor_levels_melted["Vorgang"].apply(lambda x: x.split("_")[0])
             )
             floor_levels_melted = floor_levels_melted[["Zeilenbezeichnung", "Datum"]]
             floor_levels_cleaned = (
