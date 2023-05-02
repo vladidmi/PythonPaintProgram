@@ -109,6 +109,7 @@ class Zoom_Advanced(ttk.Frame):
         def change_draw_structure(new_structure):
             self.current_structure = new_structure
             self.erase_mode = False
+            print(new_structure)
 
         def change_day(day_delta):
             self.current_day += day_delta * german_business_day
@@ -235,7 +236,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=NEXT_FLOOR,
             command=lambda: change_floor(1),
-            bg=all_colors[NEXT_FLOOR],
+            bg=WHITE,
         )
         self.next_floor_tact["font"] = button_font
         self.next_floor_tact.grid(
@@ -248,7 +249,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=PREVIOUS_FLOOR,
             command=lambda: change_floor(-1),
-            bg=all_colors[PREVIOUS_FLOOR],
+            bg=WHITE,
         )
         self.previous_floor_tact["font"] = button_font
         self.previous_floor_tact.grid(
@@ -269,11 +270,11 @@ class Zoom_Advanced(ttk.Frame):
                 master=self.right_frame_tact,
                 padx=1,
                 pady=1,
-                text=tact_.replace(TACT_PART + " ", ""),
-                command=lambda tact_=tact_: change_tact(tact_),
-                bg=tact_color_dict[tact_],
+                text=tact_['tact_text'],
+                command=lambda tact_=tact_: change_tact(tact_['tact_text']),
+                bg=tact_['tact_color'],
             )
-            for i, tact_ in enumerate(tact_color_dict)
+            for  tact_ in tact_info
         ]
 
         for i, tact_button in enumerate(tact_buttons_for_tact_mode):
@@ -331,7 +332,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=NO_TACT,
             command=lambda: change_tact(None),
-            bg=all_colors[NO_TACT],
+            bg=WHITE,
         )
         self.no_tact["font"] = button_font
         self.no_tact.grid(row=3, column=0, sticky="nswe", padx=1, pady=1, columnspan=3)
@@ -342,11 +343,11 @@ class Zoom_Advanced(ttk.Frame):
                 master=self.right_frame_plan,
                 padx=1,
                 pady=1,
-                text=tact_.replace(TACT_PART + " ", ""),
-                command=lambda tact_=tact_: change_tact(tact_),
+                text=tact_['tact_text'],
+                command=lambda tact_=tact_: change_tact(tact_['tact_text']),
                 bg=WHITE,
             )
-            for tact_ in tact_color_dict
+            for tact_ in tact_info
         ]
 
         for i, tact_button in enumerate(tact_buttons_in_plan_mode):
@@ -368,7 +369,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=NEXT_FLOOR,
             command=lambda: change_floor(1),
-            bg=all_colors[NEXT_FLOOR],
+            bg=WHITE,
         )
         self.next_floor_draw["font"] = button_font
         self.next_floor_draw.grid(row=0, column=0, sticky="nswe", padx=1, pady=1)
@@ -379,7 +380,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=PREVIOUS_FLOOR,
             command=lambda: change_floor(-1),
-            bg=all_colors[PREVIOUS_FLOOR],
+            bg=WHITE,
         )
         self.previous_floor_draw["font"] = button_font
         self.previous_floor_draw.grid(row=1, column=0, sticky="nswe", padx=1, pady=1)
@@ -397,7 +398,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=DRAW_MODE,
             command=change_mode,
-            bg=all_colors[DRAW_MODE],
+            bg=WHITE,
         )
         self.draw_mode["font"] = button_font
         self.draw_mode.grid(row=0, column=0, sticky="nswe", padx=1, pady=1)
@@ -408,7 +409,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=SAVE,
             command=save_floor_information,
-            bg=all_colors[SAVE],
+            bg=WHITE,
         )
         self.save_button["font"] = button_font
         self.save_button.grid(row=1, column=0, sticky="nswe", padx=1, pady=1)
@@ -419,7 +420,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=PRINT,
             command=print_week_planning,
-            bg=all_colors[PRINT],
+            bg=WHITE,
         )
         self.print_button["font"] = button_font
         self.print_button.grid(row=2, column=0, sticky="nswe", padx=1, pady=1)
@@ -438,7 +439,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=BIGGER,
             command=lambda: change_cursor_size(1),
-            bg=all_colors[BIGGER],
+            bg=WHITE,
         )
         self.cursor_bigger["font"] = button_font
         self.cursor_bigger.grid(row=4, column=0, sticky="nswe", padx=1, pady=1)
@@ -449,7 +450,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=SMALLER,
             command=lambda: change_cursor_size(-1),
-            bg=all_colors[SMALLER],
+            bg=WHITE,
         )
         self.cursor_smaller["font"] = button_font
         self.cursor_smaller.grid(row=5, column=0, sticky="nswe", padx=1, pady=1)
@@ -495,7 +496,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=LAST_DAY,
             command=lambda: change_day(-1),
-            bg=all_colors[LAST_DAY],
+            bg=WHITE,
         )
         self.last_date["font"] = button_font
         self.last_date.grid(row=0, column=0, sticky="nswe", padx=1, pady=1)
@@ -506,7 +507,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=NEXT_DAY,
             command=lambda: change_day(1),
-            bg=all_colors[NEXT_DAY],
+            bg=WHITE,
         )
         self.next_date["font"] = button_font
         self.next_date.grid(row=0, column=1, sticky="nswe", padx=1, pady=1)
@@ -517,7 +518,7 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=ERASE,
             command=erase_mode_activate,
-            bg=all_colors[ERASE],
+            bg=WHITE,
         )
         self.erase_plan["font"] = button_font
         self.erase_plan.grid(row=0, column=2, sticky="nswe", padx=1, pady=1)
@@ -554,14 +555,15 @@ class Zoom_Advanced(ttk.Frame):
             pady=2,
             text=NEW_EVENT,
             command=lambda: change_status(NEW_EVENT),
-            bg=all_colors[NEW_EVENT],
+            bg=WHITE,
         )
         self.new_event_button["font"] = button_font
         self.new_event_button.grid(row=0, column=5, sticky="nswe", padx=1, pady=1)
 
-        #hold all the buttons and labels
+        #hold all the buttons and labels for plan
         working_steps_labels = {}
         working_steps_buttons = {}
+
         for i,structure_type in enumerate(working_steps):
             working_steps_labels[structure_type] = {}
             working_steps_labels[structure_type]['label'] = tk.Label(
@@ -576,7 +578,7 @@ class Zoom_Advanced(ttk.Frame):
             padx=2,
             pady=2,
             text=working_step.split('@')[-1],
-            command=lambda: change_status(working_step),
+            command=lambda working_step=working_step: change_status(working_step),
             bg=working_steps[structure_type]['Arbeitsschritte'][working_step],
         )
                 working_steps_buttons[working_step]["font"] = button_font
@@ -591,41 +593,23 @@ class Zoom_Advanced(ttk.Frame):
         # Navigation menu on the bottom (draw)
         self.bottom_frame_draw = tk.Frame(master=self.master)
 
-        self.concrete = tk.Button(
+        #hold all the buttons for draw
+        working_structure_buttons = {}
+        for i,structure_type in enumerate(working_steps):
+            fg = BLACK
+            if working_steps[structure_type]['Strukturtypfarbe'] == BLACK:
+                fg = WHITE
+            working_structure_buttons[structure_type] = tk.Button(
             master=self.bottom_frame_draw,
             padx=2,
             pady=2,
-            text=CONCRETE,
-            command=lambda: change_draw_structure(CONCRETE),
-            bg=all_colors[CONCRETE],
-            fg=WHITE,
+            text=structure_type,
+            command=lambda structure_type=structure_type: change_draw_structure(structure_type),
+            bg=working_steps[structure_type]['Strukturtypfarbe'],
+            fg = fg,
         )
-        self.concrete["font"] = button_font
-        self.concrete.grid(row=0, column=0, sticky="nswe", padx=1, pady=1)
-
-        self.prefabricated_part = tk.Button(
-            master=self.bottom_frame_draw,
-            padx=2,
-            pady=2,
-            text=PREFABRICATED_PART,
-            command=lambda: change_draw_structure(PREFABRICATED_PART),
-            bg=all_colors[PREFABRICATED_PART],
-            fg=WHITE,
-        )
-        self.prefabricated_part["font"] = button_font
-        self.prefabricated_part.grid(row=0, column=1, sticky="nswe", padx=1, pady=1)
-
-        self.ground = tk.Button(
-            master=self.bottom_frame_draw,
-            padx=2,
-            pady=2,
-            text=GROUND,
-            command=lambda: change_draw_structure(GROUND),
-            bg=all_colors[GROUND],
-            fg=WHITE,
-        )
-        self.ground["font"] = button_font
-        self.ground.grid(row=0, column=2, sticky="nswe", padx=1, pady=1)
+            working_structure_buttons[structure_type]["font"] = button_font
+            working_structure_buttons[structure_type].grid(row=0, column=i, sticky="nswe", padx=1, pady=1)        
 
         # Placing all the buttons on main frame (draw)
         self.bottom_frame_draw.grid(
@@ -839,7 +823,7 @@ class Zoom_Advanced(ttk.Frame):
                 if self.current_mode == DRAW_SCTRUCTURE and pixel.type_structure:
                     current_fill = all_colors[pixel.type_structure]
                 elif self.current_mode == TACT and pixel.tact:
-                    current_fill = all_colors[pixel.tact]
+                    current_fill = all_colors[str(pixel.tact)]
                 elif (
                     self.current_mode == PLAN
                     and NEW_EVENT in pixel.status
@@ -1272,7 +1256,7 @@ class Zoom_Advanced(ttk.Frame):
             if make_time_plan:
                 df["geschoss"] = temp_floor.floor_name
                 for df_column in df.columns:
-                    if df_column in working_steps_flat:
+                    if df_column in working_steps:
                         df[f"{df_column}_erster_Tag"] = df[df_column].apply(
                             self.return_only_from_set, function_for_set=min
                         )
