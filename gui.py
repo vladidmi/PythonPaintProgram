@@ -179,7 +179,7 @@ class Zoom_Advanced(ttk.Frame):
             self.save_pixel_info(self.all_floor_level_info, make_time_plan=True)
 
         def print_week_planning():
-            weekdays_to_print = weekdays_of_current_week(self.current_day, project_info)
+            weekdays_to_print = weekdays_of_current_week(self.current_day)
 
             for floor in self.all_floor_level_info:
                 folder_with_floor = floor.full_path_image.replace(floor.image_name, "")
@@ -829,7 +829,9 @@ class Zoom_Advanced(ttk.Frame):
         bbox = self.tk_canvas.bbox(self.container)  # get image area
         print(self.current_mode)
         for grid_row in self.all_floor_level_info[self.current_floor_id].grid:
-            for pixel in grid_row:
+            pixel_fill = None
+
+            for i, pixel in enumerate(grid_row):
                 current_fill = None
                 if self.current_mode == DRAW_SCTRUCTURE and pixel.type_structure:
                     current_fill = all_colors[pixel.type_structure]
@@ -849,25 +851,35 @@ class Zoom_Advanced(ttk.Frame):
                         ):
                             current_fill = all_colors[step]
 
-                if current_fill:
+                if not pixel_fill and current_fill:
+                    start_pixel_x = pixel.pixel_x
+                    pixel_fill = current_fill
+
+                if pixel_fill and (
+                    current_fill != pixel_fill or i == len(grid_row) - 1
+                ):
                     self.tk_canvas.create_rectangle(
                         bbox[0]
-                        + pixel.pixel_x * self.rect_scale * self.box_size
+                        + start_pixel_x * self.rect_scale * self.box_size
                         - self.rect_scale * self.box_size / 2,
                         bbox[1]
                         + pixel.pixel_y * self.rect_scale * self.box_size
                         - self.rect_scale * self.box_size / 2,
                         bbox[0]
-                        + pixel.pixel_x * self.rect_scale * self.box_size
+                        + (pixel.pixel_x - 1) * self.rect_scale * self.box_size
                         + self.rect_scale * self.box_size / 2,
                         bbox[1]
                         + pixel.pixel_y * self.rect_scale * self.box_size
                         + self.rect_scale * self.box_size / 2,
-                        fill=current_fill,
+                        fill=pixel_fill,
                         outline="",
                         tags=f"{pixel.pixel_x}-{pixel.pixel_y}",
                     )
                     self.all_rects.add(f"{pixel.pixel_x}-{pixel.pixel_y}")
+                if current_fill != pixel_fill:
+                    start_pixel_x = pixel.pixel_x
+                    pixel_fill = current_fill
+
         if self.current_mode == PLAN:
             for comment in self.comments:
                 if (
@@ -1131,19 +1143,22 @@ class Zoom_Advanced(ttk.Frame):
         draw = ImageDraw.Draw(img, "RGBA")
 
         for i, row in enumerate(floor.grid):
+            temp_color = None
+            temp_transparency = None
             for j, pixel in enumerate(row):
                 current_color_key, current_transparency = pixel.get_color_key_for_plan(
                     current_mode, current_day
                 )
-                if current_color_key:
-                    current_r, current_g, current_b = hex_colour_to_rgb(
-                        all_colors[current_color_key]
-                    )
+
+                if (
+                    temp_color != current_color_key or j == len(row) - 1
+                ) and temp_color:
                     draw.rectangle(
                         xy=(
-                            self.box_size * (pixel.pixel_x - 1),
+                            self.box_size * (start_box_x - 1),
                             self.box_size * (pixel.pixel_y - 1),
-                            self.box_size * (pixel.pixel_x - 1) + self.box_size,
+                            self.box_size * (start_box_x - 1)
+                            + (pixel.pixel_x - start_box_x) * self.box_size,
                             self.box_size * (pixel.pixel_y - 1) + self.box_size,
                         ),
                         outline=None,
@@ -1152,9 +1167,18 @@ class Zoom_Advanced(ttk.Frame):
                             current_r,
                             current_g,
                             current_b,
-                            int(255 * current_transparency),
+                            int(255 * temp_transparency),
                         ),
                     )
+                if temp_color != current_color_key:
+                    temp_color = current_color_key
+                    temp_transparency = current_transparency
+                    start_box_x = pixel.pixel_x
+                    if current_color_key:
+                        current_r, current_g, current_b = hex_colour_to_rgb(
+                            all_colors[current_color_key]
+                        )
+
         img.save(os.path.join(path_to_temp_image))
 
     def draw_grid_for_print(self, floor, current_day):
@@ -1176,6 +1200,7 @@ class Zoom_Advanced(ttk.Frame):
                 current_color_key, current_transparency = pixel.get_color_key_for_print(
                     current_day
                 )
+
                 if current_color_key:
                     current_r, current_g, current_b = hex_colour_to_rgb(
                         all_colors[current_color_key]

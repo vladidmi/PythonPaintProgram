@@ -31,15 +31,11 @@ def resize_image(image_path):
     blank_image.save(image_path)
 
 
-def weekdays_of_current_week(current_date, project_info):
+def weekdays_of_current_week(current_date):
     current_date = list(current_date.isocalendar())
-    if project_info["Arbeiten am Samstag [ja/nein]"] == "ja":
-        weekdays_to_print = 7
-    else:
-        weekdays_to_print = 6
 
     weekdays = []
-    for i in range(1, weekdays_to_print):
+    for i in range(1, 7):
         current_date[2] = i
         current_date_iso = datetime.datetime.fromisocalendar(*current_date).date()
         if current_date_iso not in german_holidays:
@@ -282,7 +278,7 @@ REINFORCE = "BEW"
 REINFORCE_LONG = "Bewehren"
 EMPTY_PIPES = "Leerrohr"
 BUILT_IN_PART = "BST"
-POUR_CONCRETE = "BET"
+POUR_CONCRETE = "Betonieren"
 POUR_CONCRETE_LONG = "Betonieren"
 PREFABRICATED_PART_ASSEMBLE = "HFT"
 DO_MASONRY = "MW"
