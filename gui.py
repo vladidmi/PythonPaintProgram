@@ -1029,13 +1029,13 @@ class Zoom_Advanced(ttk.Frame):
                             current_pixel.status[step].discard(self.current_day)
                         self.tk_canvas.delete(f"{new_x}-{new_y}")
                         self.all_rects.discard(f"{new_x}-{new_y}")
-                        if self.current_status == POUR_CONCRETE and (
+                        if POUR_CONCRETE_LONG in self.current_status and (
                             current_pixel.type_structure == CONCRETE
                             or current_pixel.type_structure == PREFABRICATED_PART
                         ):
-                            current_pixel.status[PART_COMPLETE].discard(
-                                self.current_day + 1 * german_business_day
-                            )
+                            current_pixel.status[
+                                f"{current_pixel.type_structure}@{PART_COMPLETE}"
+                            ].discard(self.current_day + 1 * german_business_day)
                         return
 
                     elif (
@@ -1069,15 +1069,17 @@ class Zoom_Advanced(ttk.Frame):
                         )
                         self.all_rects.add(f"{new_x}-{new_y}")
                         try:
-                            if self.current_status == POUR_CONCRETE and (
+                            if POUR_CONCRETE_LONG in self.current_status and (
                                 current_pixel.type_structure == CONCRETE
                                 or current_pixel.type_structure == PREFABRICATED_PART
                             ):
-                                current_pixel.status[PART_COMPLETE].add(
-                                    self.current_day + 1 * german_business_day
-                                )
-                        except:
-                            print("Die Verknüpfung zwischen Betonieren und ")
+                                current_pixel.status[
+                                    f"{current_pixel.type_structure}@{PART_COMPLETE}"
+                                ].add(self.current_day + 1 * german_business_day)
+                        except Exception as e:
+                            print(e,
+                                "Die Verknüpfung zwischen Betonieren und erledigt hat nicht funktioniert"
+                            )
 
     def delete_rect(self, event=None):
         x, y = self.tk_canvas.canvasx(event.x), self.tk_canvas.canvasy(event.y)

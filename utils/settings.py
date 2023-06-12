@@ -143,6 +143,8 @@ def read_file_for_tact(filename):
         color = "#" + row[0].fill.start_color.index[2:]
         if color == "#":
             print(f"problem with {row[0].value}")
+        if not key.startswith("BA_"):
+            key = "BA_" + key
         data.append({"tact_text": key, "tact_color": color.lower()})
     # Return the list with tacts
     return data
@@ -267,7 +269,7 @@ BUTTON_TEXT_COLOUR = "Button_text_colour"
 
 # Drawing structure
 DRAW_SCTRUCTURE = "Draw structure"
-CONCRETE = "STB"
+CONCRETE = "Beton"
 PREFABRICATED_PART = (
     "HFT."  # with point, as the name should be different from DO_MASONRY
 )
