@@ -305,6 +305,7 @@ long_names_for_legend = {
 # Tact division
 TACT = "BA"
 TACT_LONG = "Bauabschnitte"
+CURRENT_TACT_LONG = "Ausgew. BA"
 tact_id = None
 TACT_PART = "BA."
 tact_add = "BA+"

@@ -101,6 +101,8 @@ class Zoom_Advanced(ttk.Frame):
                 self.current_tact = new_tact
                 self.active_tact_for_planing = new_tact
                 self.erase_mode = False
+            self.current_tact_chosen_tact_mode.config(text=str(self.current_tact))
+            self.current_tact_chosen_plan_mode.config(text=str(self.current_tact))
 
         def change_status(new_status):
             self.current_status = new_status
@@ -240,7 +242,12 @@ class Zoom_Advanced(ttk.Frame):
         )
         self.next_floor_tact["font"] = button_font
         self.next_floor_tact.grid(
-            row=0, column=0, sticky="nswe", padx=1, pady=1, columnspan=3
+            row=0,
+            column=0,
+            sticky="nswe",
+            padx=1,
+            pady=1,
+            columnspan=max(3, len(tact_info) // 10),
         )
 
         self.previous_floor_tact = tk.Button(
@@ -253,7 +260,12 @@ class Zoom_Advanced(ttk.Frame):
         )
         self.previous_floor_tact["font"] = button_font
         self.previous_floor_tact.grid(
-            row=1, column=0, sticky="nswe", padx=1, pady=1, columnspan=3
+            row=1,
+            column=0,
+            sticky="nswe",
+            padx=1,
+            pady=1,
+            columnspan=max(3, len(tact_info) // 10),
         )
 
         # Information text for the tacts
@@ -262,7 +274,13 @@ class Zoom_Advanced(ttk.Frame):
             text=TACT_LONG,
             font=("Arial", PROJECT_INFO_TEXT_SIZE),
         )
-        self.tact_info_text.grid(row=2, column=0, sticky="nswe", padx=1, columnspan=3)
+        self.tact_info_text.grid(
+            row=2,
+            column=0,
+            sticky="nswe",
+            padx=1,
+            columnspan=max(3, len(tact_info) // 10),
+        )
 
         # adding the tact buttons in tact mode
         tact_buttons_for_tact_mode = [
@@ -282,6 +300,36 @@ class Zoom_Advanced(ttk.Frame):
             tact_button.grid(
                 row=3 + i % 10, column=i // 10, sticky="nswe", padx=2, pady=2
             )
+
+        # Text for current tact in tact mode
+        self.current_tact_text_info_tact_mode = tk.Label(
+            self.right_frame_tact,
+            text=CURRENT_TACT_LONG,
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
+        )
+        self.current_tact_text_info_tact_mode.grid(
+            row=4 + min(10, len(tact_info)),
+            column=0,
+            sticky="nswe",
+            padx=1,
+            columnspan=max(3, len(tact_info) // 10),
+        )
+
+        # Text for chosen current tact
+        self.current_tact_chosen_tact_mode = tk.Label(
+            self.right_frame_tact,
+            text=str(self.current_tact),
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
+            borderwidth=2,
+            relief="solid",
+        )
+        self.current_tact_chosen_tact_mode.grid(
+            row=5 + min(10, len(tact_info)),
+            column=0,
+            sticky="nswe",
+            padx=1,
+            columnspan=max(3, len(tact_info) // 10),
+        )
 
         # Placing all the buttons on main frame (tact)
         self.right_frame_tact.grid(row=0, column=2, sticky="nswe", padx=3, pady=3)
@@ -355,6 +403,36 @@ class Zoom_Advanced(ttk.Frame):
             tact_button.grid(
                 row=4 + i % 10, column=i // 10, sticky="nswe", padx=1, pady=1
             )
+
+        # Text for current tact in plan mode
+        self.current_tact_text_info_plan_mode = tk.Label(
+            self.right_frame_plan,
+            text=CURRENT_TACT_LONG,
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
+        )
+        self.current_tact_text_info_plan_mode.grid(
+            row=5 + min(10, len(tact_info)),
+            column=0,
+            sticky="nswe",
+            padx=1,
+            columnspan=max(3, len(tact_info) // 10),
+        )
+
+        # Text for chosen current tact
+        self.current_tact_chosen_plan_mode = tk.Label(
+            self.right_frame_plan,
+            text=str(self.current_tact),
+            font=("Arial", PROJECT_INFO_TEXT_SIZE),
+            borderwidth=2,
+            relief="solid",
+        )
+        self.current_tact_chosen_plan_mode.grid(
+            row=6 + min(10, len(tact_info)),
+            column=0,
+            sticky="nswe",
+            padx=1,
+            columnspan=max(3, len(tact_info) // 10),
+        )
 
         # Placing all the buttons on main frame (plan)
         self.right_frame_plan.grid(row=0, column=2, sticky="nswe", padx=3, pady=3)
@@ -1077,8 +1155,9 @@ class Zoom_Advanced(ttk.Frame):
                                     f"{current_pixel.type_structure}@{PART_COMPLETE}"
                                 ].add(self.current_day + 1 * german_business_day)
                         except Exception as e:
-                            print(e,
-                                "Die Verknüpfung zwischen Betonieren und erledigt hat nicht funktioniert"
+                            print(
+                                e,
+                                "Die Verknüpfung zwischen Betonieren und erledigt hat nicht funktioniert",
                             )
 
     def delete_rect(self, event=None):
@@ -1226,25 +1305,28 @@ class Zoom_Advanced(ttk.Frame):
                 fill=BLACK,
             )
             draw.text((10, 30), floor.floor_name, font=project_font_path, fill=BLACK)
+            already_in_legend = list()
             for i, work_step in enumerate(legend):
-                box_x = 10 * (1 + i) + int(i * BOX_SIZE * 1.5)
-                box_y = HEIGHT + BOX_SIZE // 2
-                draw.rectangle(
-                    xy=(
-                        box_x,
-                        box_y,
-                        int(box_x + BOX_SIZE * 1.5),
-                        box_y + BOX_SIZE,
-                    ),
-                    outline=BLACK,
-                    fill=all_colors[work_step],
-                )
-                draw.text(
-                    (box_x, box_y + int(BOX_SIZE // 2.5)),
-                    long_names_for_legend.get(work_step, work_step).split("@")[-1],
-                    font=legend_font_path_medium,
-                    fill=BLACK,
-                )
+                if work_step.split("@")[-1] not in already_in_legend:
+                    already_in_legend.append(work_step.split("@")[-1])
+                    box_x = 10 * (1 + i) + int(i * BOX_SIZE * 1.5)
+                    box_y = HEIGHT + BOX_SIZE // 2
+                    draw.rectangle(
+                        xy=(
+                            box_x,
+                            box_y,
+                            int(box_x + BOX_SIZE * 1.5),
+                            box_y + BOX_SIZE,
+                        ),
+                        outline=BLACK,
+                        fill=all_colors[work_step],
+                    )
+                    draw.text(
+                        (box_x, box_y + int(BOX_SIZE // 2.5)),
+                        long_names_for_legend.get(work_step, work_step).split("@")[-1],
+                        font=legend_font_path_medium,
+                        fill=BLACK,
+                    )
             img.save(
                 os.path.join(
                     floor.folder_with_print,
